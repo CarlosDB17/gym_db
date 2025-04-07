@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.naranjaBrillante),
       ),
-      home: const MyHomePage(title: 'GYM DB 2'),
+      home: const MyHomePage(title: 'GYM DB'),
     );
   }
 }
