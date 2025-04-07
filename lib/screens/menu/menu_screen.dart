@@ -30,6 +30,7 @@ class _MenuScreenState extends State<MenuScreen> {
       appBar: AppBar(
         title: const Text('Menú Principal'),
         backgroundColor: AppColors.naranjaBrillante, 
+        automaticallyImplyLeading: false, // Elimina el botón de retroceso
       ),
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(

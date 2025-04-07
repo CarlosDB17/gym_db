@@ -12,7 +12,10 @@ class AjustesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Ajustes')),
+appBar: AppBar(
+  title: const Text('Ajustes'),
+  automaticallyImplyLeading: false, // Desactiva la flecha de retroceso
+),
       body: Center(
         child: ElevatedButton(
           onPressed: () => _cerrarSesion(context),

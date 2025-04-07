@@ -7,8 +7,12 @@ class ListadoUsuariosScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Listado de Usuarios')),
+appBar: AppBar(
+  title: const Text('Listado de Usuarios'),
+  automaticallyImplyLeading: false, // Desactiva la flecha de retroceso
+),
       body: const Center(child: Text('Pantalla de Listado de Usuarios')),
+
     );
   }
 }
