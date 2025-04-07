@@ -2,11 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'navigation/app_routes.dart';
 import 'theme/app_colors.dart';
-import 'utils/session_manager.dart'; // Importa SessionManager
+import 'utils/session_manager.dart'; 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
+  // Cargar las variables de entorno
+  await dotenv.load(fileName: "config.env");
+  print('API Key: ${dotenv.env['FIREBASE_API_KEY']}');
+
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+
+  // Inicializar Firebase con las variables de entorno
+  await Firebase.initializeApp(
+    options: FirebaseOptions(
+      apiKey: dotenv.env['FIREBASE_API_KEY']!,
+      appId: "1:302016834907:android:e1859d26cbc7663fcb7e7e",
+      messagingSenderId: "302016834907",
+      projectId: "pf25-carlos-db",
+    ),
+  );
 
   // Verificar si la sesión está activa
   final bool sesionActiva = await SessionManager.verificarSesionActiva();

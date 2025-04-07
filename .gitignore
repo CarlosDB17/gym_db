@@ -49,4 +49,4 @@ app.*.map.json
 ios/Runner/GoogleService-Info.plist
 
 #Environment variables
-.env
+config.env
