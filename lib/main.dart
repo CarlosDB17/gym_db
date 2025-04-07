@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Importamos Firestore
+import 'navigation/app_routes.dart';
 import 'theme/app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // ✅ Inicializamos Firebase
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -19,61 +19,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.naranjaBrillante),
       ),
-      home: const MyHomePage(title: 'GYM DB'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  String firebaseStatus = "Verificando conexión con Firebase...";
-
-  @override
-  void initState() {
-    super.initState();
-    _checkFirebaseConnection();
-  }
-
-  Future<void> _checkFirebaseConnection() async {
-    try {
-      // Intentamos escribir un dato de prueba en Firestore
-      await FirebaseFirestore.instance.collection('test').doc('connection').set({
-        'timestamp': DateTime.now(),
-      });
-
-      setState(() {
-        firebaseStatus = "Firebase está funcionando correctamente 👌";
-      });
-    } catch (e) {
-      setState(() {
-        firebaseStatus = "Error al conectar con Firebase: $e";
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(firebaseStatus), // Mostramos el estado de Firebase
-          ],
-        ),
-      ),
+      initialRoute: AppRoutes.login,
+      onGenerateRoute: AppRoutes.generateRoute,
     );
   }
 }
