@@ -47,7 +47,8 @@ class _LoginScreenState extends State<LoginScreen> {
     await googleSignIn.signOut();
     final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
     if (googleUser != null) {
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -65,7 +66,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _showErrorMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(
+        content: Text(message),
+        backgroundColor:
+            AppColors.naranjaOscuro, // Cambia el color del fondo del SnackBar
+      ),
     );
   }
 
@@ -99,10 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Image.asset(
-                  'assets/images/gym_logo.png',
-                  height: 100,
-                ),
+                Image.asset('assets/images/gym_logo.png', height: 100),
                 const SizedBox(height: 30),
                 TextField(
                   controller: _emailController,
@@ -110,14 +112,33 @@ class _LoginScreenState extends State<LoginScreen> {
                     labelText: 'Email',
                     labelStyle: TextStyle(color: AppColors.verdeOscuro),
                     enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        20.0,
+                      ), // Bordes redondeados
                       borderSide: BorderSide(color: AppColors.verdeOscuro),
                     ),
                     focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        20.0,
+                      ), // Bordes redondeados
                       borderSide: BorderSide(color: AppColors.verdeVibrante),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        20.0,
+                      ), // Bordes redondeados en caso de error
+                      borderSide: BorderSide(color: AppColors.naranjaOscuro),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        20.0,
+                      ), // Bordes redondeados al enfocar en error
+                      borderSide: BorderSide(color: AppColors.naranjaOscuro),
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
+
                 TextField(
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible, // Controla la visibilidad
@@ -125,14 +146,34 @@ class _LoginScreenState extends State<LoginScreen> {
                     labelText: 'Contraseña',
                     labelStyle: TextStyle(color: AppColors.verdeOscuro),
                     enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        20.0,
+                      ), // Bordes redondeados
                       borderSide: BorderSide(color: AppColors.verdeOscuro),
                     ),
                     focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        20.0,
+                      ), // Bordes redondeados
                       borderSide: BorderSide(color: AppColors.verdeVibrante),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        20.0,
+                      ), // Bordes redondeados en caso de error
+                      borderSide: BorderSide(color: AppColors.naranjaOscuro),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        20.0,
+                      ), // Bordes redondeados al enfocar en error
+                      borderSide: BorderSide(color: AppColors.naranjaOscuro),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                         color: AppColors.verdeOscuro,
                       ),
                       onPressed: () {
@@ -148,7 +189,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _signInWithEmailPassword,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.naranjaBrillante,
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                    foregroundColor: AppColors.blanco,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 15,
+                      horizontal: 50,
+                    ),
                   ),
                   child: const Text('Iniciar sesión'),
                 ),
