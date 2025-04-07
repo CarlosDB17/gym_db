@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'registro_usuarios.dart';
-import 'listado_usuarios.dart';
-import 'qr.dart';
-import 'csv_usuarios.dart';
-import 'ajustes.dart';
+import 'registro_usuarios_screen.dart';
+import 'listado_usuarios_screen.dart';
+import 'qr_screen.dart';
+import 'csv_usuarios_screen.dart';
+import 'ajustes_screen.dart';
 import '../../theme/app_colors.dart'; 
 
 class MenuScreen extends StatefulWidget {
