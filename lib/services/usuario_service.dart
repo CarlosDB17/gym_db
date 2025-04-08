@@ -169,6 +169,14 @@ Future<String> subirFoto(String documentoIdentidad, File foto) async {
   }
 }
 
+// Eliminar foto
+Future<void> eliminarFotoUsuario(String documentoIdentidad) async {
+  final response = await http.delete(Uri.parse("$_baseUrl/$documentoIdentidad/foto"));
+  if (response.statusCode != 200) {
+    throw Exception('Error al eliminar la foto');
+  }
+}
+
   // Obtener foto
   Future<String> obtenerFoto(String documentoIdentidad) async {
     final response = await http.get(Uri.parse("$_baseUrl/$documentoIdentidad/foto"));
@@ -200,4 +208,29 @@ Future<String> subirFoto(String documentoIdentidad, File foto) async {
       throw Exception('Error al verificar usuario');
     }
   }
+
+
+// Buscar usuarios por valor con paginación
+Future<Map<String, dynamic>> buscarUsuariosPorValor(String valor, {int skip = 0, int limit = 3}) async {
+  final response = await http.get(
+    Uri.parse("$_baseUrl/buscar/$valor?skip=$skip&limit=$limit"),
+  );
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    List<Usuario> usuarios = List<Usuario>.from(data['usuarios'].map((u) => Usuario.fromJson(u)));
+    return {
+      'usuarios': usuarios,
+      'total': data['total'],
+    };
+  } else if (response.statusCode == 404) {
+    return {
+      'usuarios': [],
+      'total': 0,
+    };
+  } else {
+    throw Exception('Error al buscar usuarios: ${response.body}');
+  }
+}
+
 }

@@ -4,6 +4,8 @@ import 'navigation/app_routes.dart';
 import 'theme/app_colors.dart';
 import 'utils/session_manager.dart'; 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'screens/menu/listado_usuarios_screen.dart'; // Importar ListadoUsuariosScreen
+import 'screens/menu/listado_usuarios_actualizar_screen.dart'; // Importar ListadoUsuariosActualizarScreen
 
 void main() async {
   // Cargar las variables de entorno
@@ -43,6 +45,10 @@ class MyApp extends StatelessWidget {
       // Define la ruta inicial según el estado de la sesión
       initialRoute: sesionActiva ? AppRoutes.menu : AppRoutes.login,
       onGenerateRoute: AppRoutes.generateRoute,
+      routes: {
+        '/menu': (context) => const ListadoUsuariosScreen(),
+        '/listado_usuarios_actualizar': (context) => ListadoUsuariosActualizarScreen(),
+      },
     );
   }
 }
