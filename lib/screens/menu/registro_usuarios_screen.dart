@@ -226,7 +226,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Ya existe un usuario con ese documento de identidad.'),
-            backgroundColor: AppColors.naranjaOscuro,
+            backgroundColor: Colors.red,
           ),
         );
         setState(() {
@@ -257,7 +257,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Subiendo foto...'),
-                  backgroundColor: Colors.blue,
+                  backgroundColor: AppColors.naranjaOscuro,
                   duration: Duration(seconds: 2),
                 ),
               );
@@ -270,7 +270,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Usuario registrado y foto subida correctamente'),
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppColors.verdeVibrante,
                 ),
               );
               
