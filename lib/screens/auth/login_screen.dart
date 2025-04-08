@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../utils/session_manager.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/custom_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,33 +13,34 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  bool _isPasswordVisible = false; // Controla la visibilidad de la contraseña
+  final TextEditingController controladorCorreo = TextEditingController();
+  final TextEditingController controladorContrasena = TextEditingController();
+  final FirebaseAuth autenticacion = FirebaseAuth.instance;
+  bool contrasenaVisible = false; // Controla la visibilidad de la contraseña
 
-  Future<void> _signInWithEmailPassword() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
+  Future<void> iniciarSesionCorreoContrasena() async {
+    final correo = controladorCorreo.text.trim();
+    final contrasena = controladorContrasena.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      _showErrorMessage('Por favor, completa todos los campos.');
+    if (correo.isEmpty || contrasena.isEmpty) {
+      mostrarMensajeError('Por favor, completa todos los campos.');
       return;
     }
 
-    if (!_isValidEmail(email)) {
-      _showErrorMessage('Por favor, ingresa un email válido.');
+    if (!esCorreoValido(correo)) {
+      mostrarMensajeError('Por favor, ingresa un correo válido.');
       return;
     }
 
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      await autenticacion.signInWithEmailAndPassword(
+          email: correo, password: contrasena);
       await SessionManager.guardarSesionActiva();
       Navigator.pushReplacementNamed(context, '/menu');
     } on FirebaseAuthException catch (e) {
-      _handleAuthError(e);
+      manejarErrorAutenticacion(e);
     } catch (e) {
-      _showErrorMessage('Ocurrió un error inesperado. Inténtalo de nuevo.');
+      mostrarMensajeError('Ocurrió un error inesperado. Inténtalo de nuevo.');
     }
   }
 
@@ -53,18 +55,18 @@ class _LoginScreenState extends State<LoginScreen> {
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-      await _auth.signInWithCredential(credential);
+      await autenticacion.signInWithCredential(credential);
       await SessionManager.guardarSesionActiva();
       Navigator.pushReplacementNamed(context, '/menu');
     }
   }
 
-  bool _isValidEmail(String email) {
+  bool esCorreoValido(String correo) {
     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-    return emailRegex.hasMatch(email);
+    return emailRegex.hasMatch(correo);
   }
 
-  void _showErrorMessage(String message) {
+  void mostrarMensajeError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -74,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _handleAuthError(FirebaseAuthException e) {
+  void manejarErrorAutenticacion(FirebaseAuthException e) {
     String message;
     switch (e.code) {
       case 'user-not-found':
@@ -89,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
       default:
         message = 'Ocurrió un error al iniciar sesión. Inténtalo de nuevo.';
     }
-    _showErrorMessage(message);
+    mostrarMensajeError(message);
   }
 
   @override
@@ -106,87 +108,25 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 Image.asset('assets/images/gym_logo.png', height: 100),
                 const SizedBox(height: 30),
-                TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    labelStyle: TextStyle(color: AppColors.verdeOscuro),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        20.0,
-                      ), // Bordes redondeados
-                      borderSide: BorderSide(color: AppColors.verdeOscuro),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        20.0,
-                      ), // Bordes redondeados
-                      borderSide: BorderSide(color: AppColors.verdeVibrante),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        20.0,
-                      ), // Bordes redondeados en caso de error
-                      borderSide: BorderSide(color: AppColors.naranjaOscuro),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        20.0,
-                      ), // Bordes redondeados al enfocar en error
-                      borderSide: BorderSide(color: AppColors.naranjaOscuro),
-                    ),
-                  ),
+                CampoTextoPersonalizado(
+                  controlador: controladorCorreo,
+                  texto: 'Email',
                 ),
                 const SizedBox(height: 20),
-
-                TextField(
-                  controller: _passwordController,
-                  obscureText: !_isPasswordVisible, // Controla la visibilidad
-                  decoration: InputDecoration(
-                    labelText: 'Contraseña',
-                    labelStyle: TextStyle(color: AppColors.verdeOscuro),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        20.0,
-                      ), // Bordes redondeados
-                      borderSide: BorderSide(color: AppColors.verdeOscuro),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        20.0,
-                      ), // Bordes redondeados
-                      borderSide: BorderSide(color: AppColors.verdeVibrante),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        20.0,
-                      ), // Bordes redondeados en caso de error
-                      borderSide: BorderSide(color: AppColors.naranjaOscuro),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        20.0,
-                      ), // Bordes redondeados al enfocar en error
-                      borderSide: BorderSide(color: AppColors.naranjaOscuro),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                        color: AppColors.verdeOscuro,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isPasswordVisible = !_isPasswordVisible;
-                        });
-                      },
-                    ),
-                  ),
+                CampoTextoPersonalizado(
+                  controlador: controladorContrasena,
+                  texto: 'Contraseña',
+                  esContrasena: true,
+                  textoOculto: !contrasenaVisible, // Controla la visibilidad
+                  alternarVisibilidadContrasena: () {
+                    setState(() {
+                      contrasenaVisible = !contrasenaVisible;
+                    });
+                  },
                 ),
                 const SizedBox(height: 30),
                 ElevatedButton(
-                  onPressed: _signInWithEmailPassword,
+                  onPressed: iniciarSesionCorreoContrasena,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.naranjaBrillante,
                     foregroundColor: AppColors.blanco,

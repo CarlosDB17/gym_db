@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/custom_text_field.dart';
 // Importamos el modelo Usuario y el servicio
 import '../../models/usuario.dart';
 import '../../services/usuario_service.dart';
@@ -121,29 +122,6 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
     });
   }
 
-  InputDecoration _buildInputDecoration(String label, {Widget? suffixIcon}) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: TextStyle(color: AppColors.verdeOscuro),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20.0),
-        borderSide: BorderSide(color: AppColors.verdeOscuro),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20.0),
-        borderSide: BorderSide(color: AppColors.verdeVibrante),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20.0),
-        borderSide: BorderSide(color: AppColors.naranjaOscuro),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20.0),
-        borderSide: BorderSide(color: AppColors.naranjaOscuro),
-      ),
-      suffixIcon: suffixIcon,
-    );
-  }
 
   // Función para validar email
   bool _isValidEmail(String email) {
@@ -419,42 +397,38 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                TextField(
-                  controller: _nombreController,
-                  decoration: _buildInputDecoration('Nombre'),
+                CampoTextoPersonalizado(
+                  controlador: _nombreController,
+                  texto: 'Nombre',
                 ),
                 const SizedBox(height: 20),
-                TextField(
-                  controller: _emailController,
-                  decoration: _buildInputDecoration('Email'),
+                CampoTextoPersonalizado(
+                  controlador: _emailController,
+                  texto: 'Email',
                 ),
                 const SizedBox(height: 20),
-                TextField(
-                  controller: _documentoController,
-                  decoration: _buildInputDecoration(
-                    'Documento de identidad',
-                    suffixIcon: const Icon(Icons.perm_identity, color: AppColors.verdeOscuro),
-                  ),
+                CampoTextoPersonalizado(
+                  controlador: _documentoController,
+                  texto: 'Documento de identidad',
+                  iconoSufijo: const Icon(Icons.perm_identity, color: AppColors.verdeOscuro),
                 ),
                 const SizedBox(height: 20),
-                TextField(
-                  controller: _fechaNacimientoController,
-                  decoration: _buildInputDecoration(
-                    'Fecha de Nacimiento',
-                    suffixIcon: const Icon(Icons.calendar_today, color: AppColors.verdeOscuro),
-                  ),
-                  readOnly: true,
-                  onTap: () async {
-                    final DateTime? pickedDate = await showDatePicker(
+                CampoTextoPersonalizado(
+                  controlador: _fechaNacimientoController,
+                  texto: 'Fecha de Nacimiento',
+                  soloLectura: true,
+                  iconoSufijo: const Icon(Icons.calendar_today, color: AppColors.verdeOscuro),
+                  alTocar: () async {
+                    final DateTime? fechaSeleccionada = await showDatePicker(
                       context: context,
                       initialDate: DateTime.now(),
                       firstDate: DateTime(1900),
                       lastDate: DateTime.now(),
                     );
-                    if (pickedDate != null) {
+                    if (fechaSeleccionada != null) {
                       setState(() {
                         _fechaNacimientoController.text =
-                            '${pickedDate.day}/${pickedDate.month}/${pickedDate.year}';
+                            '${fechaSeleccionada.day}/${fechaSeleccionada.month}/${fechaSeleccionada.year}';
                       });
                     }
                   },
