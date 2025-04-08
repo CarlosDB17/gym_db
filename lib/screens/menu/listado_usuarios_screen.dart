@@ -29,22 +29,28 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
   Future<void> _cargarUsuarios({String? filtro}) async {
     setState(() => _cargando = true);
     try {
-      final data = filtro == null || filtro.isEmpty
-          ? await _usuarioService.obtenerUsuarios(_paginaActual * _usuariosPorPagina, _usuariosPorPagina)
-          : await _usuarioService.buscarUsuariosPorValor(filtro, skip: _paginaActual * _usuariosPorPagina, limit: _usuariosPorPagina);
+      final data =
+          filtro == null || filtro.isEmpty
+              ? await _usuarioService.obtenerUsuarios(
+                _paginaActual * _usuariosPorPagina,
+                _usuariosPorPagina,
+              )
+              : await _usuarioService.buscarUsuariosPorValor(
+                filtro,
+                skip: _paginaActual * _usuariosPorPagina,
+                limit: _usuariosPorPagina,
+              );
       setState(() {
         _usuarios = data['usuarios'];
         _totalUsuarios = data['total'];
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       setState(() => _cargando = false);
     }
-  }
-
-  void _mostrarDetallesUsuario(Usuario usuario) {
-    setState(() => _usuarioSeleccionado = usuario);
   }
 
   Future<void> _actualizarUsuario(Usuario usuario) async {
@@ -54,20 +60,28 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
   Future<void> _eliminarFotoUsuario(String documentoIdentidad) async {
     try {
       await _usuarioService.eliminarFotoUsuario(documentoIdentidad);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Foto eliminada correctamente.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Foto eliminada correctamente.')),
+      );
       _cargarUsuarios();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
   Future<void> _eliminarUsuario(String documentoIdentidad) async {
     try {
       await _usuarioService.eliminarUsuario(documentoIdentidad);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Usuario eliminado correctamente.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Usuario eliminado correctamente.')),
+      );
       _cargarUsuarios();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
@@ -99,7 +113,10 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
-                        onPressed: () => _cargarUsuarios(filtro: _busquedaController.text),
+                        onPressed:
+                            () => _cargarUsuarios(
+                              filtro: _busquedaController.text,
+                            ),
                         child: const Text('Buscar'),
                       ),
                       const SizedBox(width: 8),
@@ -114,65 +131,113 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                   ),
                 ),
                 Expanded(
-                  child: _cargando
-                      ? const Center(child: CircularProgressIndicator())
-                      : SingleChildScrollView(
-                          scrollDirection: Axis.horizontal, // Permitir desplazamiento horizontal
-                          child: SingleChildScrollView(
-                            child: DataTable(
-                              columns: const [
-                                DataColumn(label: Text('Foto')),
-                                DataColumn(label: Text('Nombre')),
-                                DataColumn(label: Text('Email')),
-                                DataColumn(label: Text('Documento de identidad')),
-                                DataColumn(label: Text('Fecha de Nacimiento')),
-                              ],
-                              rows: _usuarios.map((usuario) {
-                                return DataRow(
-                                  onSelectChanged: (selected) {
-                                    if (selected == true) {
-                                      Navigator.pushNamed(
-                                        context,
-                                        '/listado_usuarios_actualizar',
-                                        arguments: usuario,
-                                      );
-                                    }
-                                  },
-                                  cells: [
-                                    DataCell(usuario.foto != null
-                                        ? Image.network(usuario.foto!, height: 50, width: 50)
-                                        : const Icon(Icons.person)),
-                                    DataCell(Text(usuario.nombre)),
-                                    DataCell(Text(usuario.email)),
-                                    DataCell(Text(usuario.documentoIdentidad)),
-                                    DataCell(Text(usuario.fechaNacimiento)),
-                                  ],
-                                );
-                              }).toList(),
+                  child: Column(
+                    children: [
+                      _cargando
+                          ? const Center(child: CircularProgressIndicator())
+                          : Expanded(
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: SingleChildScrollView(
+                                        child: DataTable(
+                                          showCheckboxColumn: false,
+                                          columns: const [
+                                            DataColumn(label: Text('Foto')),
+                                            DataColumn(label: Text('Nombre')),
+                                            DataColumn(label: Text('Email')),
+                                            DataColumn(label: Text('Documento de identidad')),
+                                            DataColumn(label: Text('Fecha de Nacimiento')),
+                                          ],
+                                          rows: _usuarios.map((usuario) {
+                                            return DataRow(
+                                              onSelectChanged: (selected) {
+                                                if (selected == true) {
+                                                  Navigator.pushNamed(
+                                                    context,
+                                                    '/listado_usuarios_actualizar',
+                                                    arguments: usuario,
+                                                  );
+                                                }
+                                              },
+                                              cells: [
+                                                DataCell(
+                                                  usuario.foto != null
+                                                      ? ClipRRect(
+                                                          borderRadius: BorderRadius.circular(25), // Bordes redondeados
+                                                          child: Image.network(
+                                                            usuario.foto!,
+                                                            height: 50,
+                                                            width: 50,
+                                                            fit: BoxFit.cover, // Ajustar la imagen al contenedor
+                                                          ),
+                                                        )
+                                                      : ClipRRect(
+                                                          borderRadius: BorderRadius.circular(25), // Bordes redondeados
+                                                          child: Image.asset(
+                                                            'assets/images/default_avatar.png',
+                                                            height: 50,
+                                                            width: 50,
+                                                            fit: BoxFit.cover, // Ajustar la imagen al contenedor
+                                                          ),
+                                                        ),
+                                                ),
+                                                DataCell(Text(usuario.nombre)),
+                                                DataCell(Text(usuario.email)),
+                                                DataCell(Text(usuario.documentoIdentidad)),
+                                                DataCell(Text(usuario.fechaNacimiento)),
+                                              ],
+                                            );
+                                          }).toList(),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  // Espacio amplio entre la tabla y el texto
+                                  const SizedBox(height: 10),
+                                  // Texto instructivo
+                                  const Padding(
+                                    padding: EdgeInsets.only(bottom: 26.0),
+                                    child: Text(
+                                      'Pulsa sobre un usuario para editarlo',
+                                      style: TextStyle(
+                                        fontStyle: FontStyle.italic,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ),
+                    ],
+                  ),
                 ),
+                // Botones de paginación en una Row separada
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
-                      onPressed: _paginaActual > 0
-                          ? () {
-                              setState(() => _paginaActual--);
-                              _cargarUsuarios();
-                            }
-                          : null,
+                      onPressed:
+                          _paginaActual > 0
+                              ? () {
+                                setState(() => _paginaActual--);
+                                _cargarUsuarios();
+                              }
+                              : null,
                       icon: const Icon(Icons.arrow_back),
                     ),
                     Text('Página ${_paginaActual + 1}'),
                     IconButton(
-                      onPressed: (_paginaActual + 1) * _usuariosPorPagina < _totalUsuarios
-                          ? () {
-                              setState(() => _paginaActual++);
-                              _cargarUsuarios();
-                            }
-                          : null,
+                      onPressed:
+                          (_paginaActual + 1) * _usuariosPorPagina <
+                                  _totalUsuarios
+                              ? () {
+                                setState(() => _paginaActual++);
+                                _cargarUsuarios();
+                              }
+                              : null,
                       icon: const Icon(Icons.arrow_forward),
                     ),
                   ],
@@ -191,21 +256,33 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                     ListTile(
                       title: Text(_usuarioSeleccionado!.nombre),
                       subtitle: Text(_usuarioSeleccionado!.email),
-                      leading: _usuarioSeleccionado!.foto != null
-                          ? Image.network(_usuarioSeleccionado!.foto!, height: 50, width: 50)
-                          : const Icon(Icons.person),
+                      leading:
+                          _usuarioSeleccionado!.foto != null
+                              ? Image.network(
+                                _usuarioSeleccionado!.foto!,
+                                height: 50,
+                                width: 50,
+                              )
+                              : const Icon(Icons.person),
                     ),
                     const Divider(),
                     ElevatedButton(
-                      onPressed: () => _actualizarUsuario(_usuarioSeleccionado!),
+                      onPressed:
+                          () => _actualizarUsuario(_usuarioSeleccionado!),
                       child: const Text('Actualizar'),
                     ),
                     ElevatedButton(
-                      onPressed: () => _eliminarFotoUsuario(_usuarioSeleccionado!.documentoIdentidad),
+                      onPressed:
+                          () => _eliminarFotoUsuario(
+                            _usuarioSeleccionado!.documentoIdentidad,
+                          ),
                       child: const Text('Eliminar Foto'),
                     ),
                     ElevatedButton(
-                      onPressed: () => _eliminarUsuario(_usuarioSeleccionado!.documentoIdentidad),
+                      onPressed:
+                          () => _eliminarUsuario(
+                            _usuarioSeleccionado!.documentoIdentidad,
+                          ),
                       child: const Text('Eliminar Usuario'),
                     ),
                   ],
