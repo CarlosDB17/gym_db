@@ -8,7 +8,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 void main() async {
   // Cargar las variables de entorno
   await dotenv.load(fileName: "config.env");
-  print('API Key: ${dotenv.env['FIREBASE_API_KEY']}');
+  //print('API Key: ${dotenv.env['FIREBASE_API_KEY']}');
 
   WidgetsFlutterBinding.ensureInitialized();
 
