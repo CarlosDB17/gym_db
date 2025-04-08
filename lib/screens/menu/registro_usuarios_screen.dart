@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../theme/app_colors.dart';
-import '../../widgets/custom_text_field.dart';
+import '../../widgets/campo_texto_personalizado.dart';
 // Importamos el modelo Usuario y el servicio
 import '../../models/usuario.dart';
 import '../../services/usuario_service.dart';

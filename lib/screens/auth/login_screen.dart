@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../utils/session_manager.dart';
 import '../../theme/app_colors.dart';
-import '../../widgets/custom_text_field.dart';
+import '../../widgets/campo_texto_personalizado.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
