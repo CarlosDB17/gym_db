@@ -17,7 +17,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
   //Usuario? _usuarioSeleccionado;
   int _paginaActual = 0;
   int _totalUsuarios = 0;
-  final int _usuariosPorPagina = 3;
+  final int _usuariosPorPagina = 4;
   bool _cargando = false;
 
   @override
@@ -57,6 +57,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Quitar la flecha de volver atrás
         title: const Text(
           'Listado de Usuarios',
           style: TextStyle(
@@ -88,10 +89,19 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                             labelStyle: const TextStyle(color: Colors.grey),
                             prefixIcon: const Icon(Icons.search, color: Colors.grey),
                             filled: true,
+                            
                             fillColor: const Color(0xFFF5F5F5), // Fondo claro
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(30), // Bordes redondeados
-                              borderSide: BorderSide.none, // Sin borde
+                              borderSide: const BorderSide(color: AppColors.verdeVibrante, width: 2), // Borde verde vibrante
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30), // Bordes redondeados
+                              borderSide: const BorderSide(color: AppColors.verdeVibrante, width: 2), // Borde verde vibrante
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30), // Bordes redondeados
+                              borderSide: const BorderSide(color: AppColors.verdeVibrante, width: 2), // Borde verde vibrante
                             ),
                           ),
                         ),
@@ -155,45 +165,36 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                             return DataRow(
                               cells: [
                                 DataCell(
-                                  usuario.foto != null
-                                      ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(25), // Bordes redondeados
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              border: Border.all(
-                                                color: AppColors.verdeOscuro, // Borde verde oscuro
-                                                width: 2,
-                                              ),
-                                              borderRadius: BorderRadius.circular(25),
-                                            ),
-                                            child: Image.network(
-                                              usuario.foto!,
-                                              height: 50,
-                                              width: 50,
-                                              fit: BoxFit.cover, // Ajustar la imagen al contenedor
-                                            ),
-                                          ),
-                                        )
-                                      : ClipRRect(
-                                          borderRadius: BorderRadius.circular(25), // Bordes redondeados
-                                          child: Container(
-                                            height: 50,
-                                            width: 50,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.naranjaBrillante, // Fondo naranja brillante
-                                              border: Border.all(
-                                                color: AppColors.naranjaOscuro, // Borde naranja oscuro
-                                                width: 2,
-                                              ),
-                                              borderRadius: BorderRadius.circular(25),
-                                            ),
-                                            child: const Icon(
-                                              Icons.person,
-                                              color: AppColors.blanco, // Ícono blanco
-                                              size: 30,
-                                            ),
-                                          ),
+                                    usuario.foto != null
+                                      ? ClipOval(
+                                        child: Container(
+                                        decoration: BoxDecoration(
+                                        
+                                          shape: BoxShape.circle, // Forma circular
                                         ),
+                                        child: Image.network(
+                                          usuario.foto!,
+                                          height: 50,
+                                          width: 50,
+                                          fit: BoxFit.cover, // Ajustar la imagen al contenedor
+                                        ),
+                                        ),
+                                      )
+                                      : ClipOval(
+                                        child: Container(
+                                        height: 50,
+                                        width: 50,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.naranjaBrillante, // Fondo naranja brillante
+                                          shape: BoxShape.circle, // Forma circular
+                                        ),
+                                        child: const Icon(
+                                          Icons.person,
+                                          color: AppColors.blanco, // Ícono blanco
+                                          size: 30,
+                                        ),
+                                        ),
+                                      ),
                                   onTap: () {
                                     Navigator.pushNamed(
                                       context,
@@ -247,6 +248,15 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                           }).toList(),
                         ),
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Pulsa en un usuario para editarlo. Desliza para ver el resto de datos.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey,
                     ),
                   ),
                   const SizedBox(height: 16),

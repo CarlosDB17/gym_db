@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'registro_usuarios_screen.dart';
 import 'listado_usuarios_screen.dart';
 import 'qr_screen.dart';
 import 'csv_usuarios_screen.dart';
 import 'ajustes_screen.dart';
-import '../../theme/app_colors.dart'; 
+import '../../theme/app_colors.dart';
+
+
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
@@ -15,7 +18,7 @@ class MenuScreen extends StatefulWidget {
 
 class _MenuScreenState extends State<MenuScreen> {
   int _currentIndex = 0;
-
+  
   final List<Widget> _screens = [
     const RegistroUsuariosScreen(),
     const ListadoUsuariosScreen(),
@@ -24,49 +27,213 @@ class _MenuScreenState extends State<MenuScreen> {
     const AjustesScreen(),
   ];
 
+  final List<String> _titles = [
+    'Registro de Usuarios',
+    'Listado de Usuarios',
+    'Escanear QR',
+    'Importar/Exportar CSV',
+    'Ajustes',
+  ];
+
   @override
   Widget build(BuildContext context) {
+    // Configuración de la barra de estado
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+    ));
+
     return Scaffold(
+      backgroundColor: AppColors.fondoClaro,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Menú Principal'),
-        backgroundColor: AppColors.naranjaBrillante, 
-        automaticallyImplyLeading: false, // Elimina el botón de retroceso
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        toolbarHeight: 0,
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+        ),
       ),
-      body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: (int index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        selectedItemColor: AppColors.naranjaBrillante, 
-        unselectedItemColor: AppColors.verdeOscuro, 
-        backgroundColor: AppColors.blanco, 
-        showUnselectedLabels: true, 
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_add),
-            label: 'Registro',
+      body: Stack(
+        children: [
+          // Fondo superior
+          Container(
+            height: 180,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: AppColors.verdeVibrante,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.sombra.withOpacity(0.15),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Image.asset(
+                            'assets/images/gym_logo.png',
+                            height: 30,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            _titles[_currentIndex],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                        // Icono de campana eliminado
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'Listado',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.qr_code),
-            label: 'QR',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.file_upload),
-            label: 'CSV',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Ajustes',
+          
+          // Contenido principal
+          Padding(
+            padding: const EdgeInsets.only(
+              top: 130,
+              bottom: 0,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.fondoClaro,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(30),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.sombra.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(30),
+                ),
+                child: _screens[_currentIndex],
+              ),
+            ),
           ),
         ],
+      ),
+      
+      // Menú de navegación con todos los iconos iguales
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(25),
+            topRight: Radius.circular(25),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.sombra.withOpacity(0.08),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+          child: SafeArea(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavButton(0, Icons.person_add_rounded, 'Registro'),
+                _buildNavButton(1, Icons.format_list_bulleted_rounded, 'Listado'),
+                _buildNavButton(2, Icons.qr_code_scanner_rounded, 'QR'),
+                _buildNavButton(3, Icons.file_upload_outlined, 'CSV'),
+                _buildNavButton(4, Icons.settings_rounded, 'Ajustes'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavButton(int index, IconData icon, String label) {
+    final isSelected = _currentIndex == index;
+    
+    return InkWell(
+      onTap: () => setState(() {
+        _currentIndex = index;
+      }),
+      borderRadius: BorderRadius.circular(15),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.verdeVibrante : Colors.transparent,
+                shape: BoxShape.circle,
+                boxShadow: isSelected ? [
+                  BoxShadow(
+                    color: AppColors.verdeVibrante.withOpacity(0.4),
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 2),
+                  ),
+                ] : null,
+              ),
+              child: Icon(
+                icon,
+                color: isSelected ? Colors.white : AppColors.textoOscuro.withOpacity(0.6),
+                size: 24,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? AppColors.verdeVibrante : AppColors.textoOscuro.withOpacity(0.6),
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

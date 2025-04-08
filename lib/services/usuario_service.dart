@@ -9,9 +9,16 @@ class UsuarioService {
 
   // Obtener usuarios con paginación
   Future<Map<String, dynamic>> obtenerUsuarios(int skip, int limit) async {
-    final response = await http.get(Uri.parse("$_baseUrl?skip=$skip&limit=$limit"));
+    final response = await http.get(
+      Uri.parse("$_baseUrl?skip=$skip&limit=$limit"),
+      headers: {'Accept': 'application/json; charset=utf-8'}, // Asegurar UTF-8
+    );
+
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      // Decodificar explícitamente como UTF-8
+      final utf8Body = utf8.decode(response.bodyBytes);
+      final data = jsonDecode(utf8Body);
+
       List<Usuario> usuarios = List<Usuario>.from(data['usuarios'].map((u) => Usuario.fromJson(u)));
       return {
         'usuarios': usuarios,
@@ -28,7 +35,9 @@ class UsuarioService {
       print('Intentando registrar usuario: ${usuario.toJson()}');
       final response = await http.post(
         Uri.parse(_baseUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8', // Asegurar UTF-8
+        },
         body: jsonEncode(usuario.toJson()),
       );
       
