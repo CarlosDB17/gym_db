@@ -19,8 +19,8 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
   final TextEditingController _documentoController = TextEditingController();
   final TextEditingController _fechaNacimientoController =
       TextEditingController();
-  File? _selectedImage;
-  bool _isLoading = false; // Añadimos variable para controlar el estado de carga
+  File? _imagenSeleccionada;
+  bool _estaCargando = false; // Añadimos variable para controlar el estado de carga
 
   // Instanciamos el servicio de usuarios
   final UsuarioService _usuarioService = UsuarioService();
@@ -51,7 +51,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
         }
         
         setState(() {
-          _selectedImage = File(pickedFile.path);
+          _imagenSeleccionada = File(pickedFile.path);
         });
         
         print('Imagen seleccionada: ${pickedFile.path}');
@@ -96,7 +96,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
         }
         
         setState(() {
-          _selectedImage = File(pickedFile.path);
+          _imagenSeleccionada = File(pickedFile.path);
         });
         
         print('Foto tomada: ${pickedFile.path}');
@@ -117,7 +117,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
 
   void _removeSelectedImage() {
     setState(() {
-      _selectedImage = null;
+      _imagenSeleccionada = null;
     });
   }
 
@@ -151,7 +151,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
   }
 
   Future<void> _subirFotoUsuario(String documentoIdentidad) async {
-    if (_selectedImage == null) return;
+    if (_imagenSeleccionada == null) return;
     
     try {
       print('Iniciando subida de foto para usuario: $documentoIdentidad');
@@ -165,11 +165,11 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
         throw Exception('El usuario no existe para subir la foto');
       }
       
-      await _usuarioService.subirFoto(documentoIdentidad, _selectedImage!);
+      await _usuarioService.subirFoto(documentoIdentidad, _imagenSeleccionada!);
       print('Foto subida correctamente para: $documentoIdentidad');
     } catch (e) {
       print('Error al subir la foto: $e');
-      throw e; // Re-lanzar para manejo externo
+      rethrow; // Re-lanzar para manejo externo
     }
   }
 
@@ -206,7 +206,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
     }
 
     setState(() {
-      _isLoading = true;
+      _estaCargando = true;
     });
 
     try {
@@ -230,7 +230,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
           ),
         );
         setState(() {
-          _isLoading = false;
+          _estaCargando = false;
         });
         return;
       }
@@ -250,7 +250,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
         print('Usuario registrado exitosamente: $documentoRegistrado');
         
         // Si hay foto seleccionada, la subimos y manejamos errores
-        if (_selectedImage != null) {
+        if (_imagenSeleccionada != null) {
           try {
             // Mostrar mensaje de que se está subiendo la foto
             if (mounted) {
@@ -383,7 +383,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
     } finally {
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _estaCargando = false;
         });
       }
     }
@@ -396,7 +396,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
     _documentoController.clear();
     _fechaNacimientoController.clear();
     setState(() {
-      _selectedImage = null;
+      _imagenSeleccionada = null;
     });
   }
 
@@ -465,11 +465,11 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
-                if (_selectedImage != null)
+                if (_imagenSeleccionada != null)
                   Column(
                     children: [
                       Image.file(
-                        _selectedImage!,
+                        _imagenSeleccionada!,
                         height: 150,
                         width: 150,
                         fit: BoxFit.cover,
@@ -511,7 +511,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
                 const SizedBox(height: 30),
                 Center(
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _registrarUsuario,
+                    onPressed: _estaCargando ? null : _registrarUsuario,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.naranjaBrillante,
                       foregroundColor: AppColors.blanco,
@@ -521,7 +521,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
                       ),
                       disabledBackgroundColor: Colors.grey,
                     ),
-                    child: _isLoading 
+                    child: _estaCargando 
                       ? const SizedBox(
                           width: 20,
                           height: 20,
@@ -534,7 +534,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
             ),
           ),
           // Indicador de carga que cubre toda la pantalla cuando está registrando
-          if (_isLoading)
+          if (_estaCargando)
             Container(
               color: Colors.black.withOpacity(0.3),
               child: const Center(
