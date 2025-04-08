@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../theme/app_colors.dart';
+// Importamos el modelo Usuario y el servicio
+import '../../models/usuario.dart';
+import '../../services/usuario_service.dart';
 
 class RegistroUsuariosScreen extends StatefulWidget {
   const RegistroUsuariosScreen({super.key});
@@ -17,24 +20,98 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
   final TextEditingController _fechaNacimientoController =
       TextEditingController();
   File? _selectedImage;
+  bool _isLoading = false; // Añadimos variable para controlar el estado de carga
 
+  // Instanciamos el servicio de usuarios
+  final UsuarioService _usuarioService = UsuarioService();
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _selectImageFromGallery() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImage = File(pickedFile.path);
-      });
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,  // Reducir un poco la calidad para bajar el tamaño
+      );
+      
+      if (pickedFile != null) {
+        // Verificar el formato del archivo
+        final String extension = pickedFile.path.split('.').last.toLowerCase();
+        final List<String> formatosPermitidos = ['png', 'jpg', 'jpeg', 'heic', 'heif'];
+        
+        if (!formatosPermitidos.contains(extension)) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Formato de imagen no permitido. Use PNG, JPG, JPEG, HEIC o HEIF.'),
+                backgroundColor: AppColors.naranjaOscuro,
+              ),
+            );
+          }
+          return;
+        }
+        
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+        
+        print('Imagen seleccionada: ${pickedFile.path}');
+        print('Formato: $extension');
+      }
+    } catch (e) {
+      print('Error al seleccionar imagen: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al seleccionar imagen: $e'),
+            backgroundColor: AppColors.naranjaOscuro,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _takePhotoWithCamera() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImage = File(pickedFile.path);
-      });
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+        preferredCameraDevice: CameraDevice.rear,
+      );
+      
+      if (pickedFile != null) {
+        // Las fotos tomadas con la cámara normalmente son JPEG, pero verificamos igualmente
+        final String extension = pickedFile.path.split('.').last.toLowerCase();
+        final List<String> formatosPermitidos = ['png', 'jpg', 'jpeg', 'heic', 'heif'];
+        
+        if (!formatosPermitidos.contains(extension)) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Formato de imagen no permitido. Use PNG, JPG, JPEG, HEIC o HEIF.'),
+                backgroundColor: AppColors.naranjaOscuro,
+              ),
+            );
+          }
+          return;
+        }
+        
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+        
+        print('Foto tomada: ${pickedFile.path}');
+        print('Formato: $extension');
+      }
+    } catch (e) {
+      print('Error al tomar foto: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al tomar foto: $e'),
+            backgroundColor: AppColors.naranjaOscuro,
+          ),
+        );
+      }
     }
   }
 
@@ -68,154 +145,403 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
     );
   }
 
+  // Función para validar email
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
+  Future<void> _subirFotoUsuario(String documentoIdentidad) async {
+    if (_selectedImage == null) return;
+    
+    try {
+      print('Iniciando subida de foto para usuario: $documentoIdentidad');
+      // Pequeña pausa para asegurar que el registro se completó
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // Verificar si el usuario existe antes de subir la foto
+      bool usuarioExiste = await _usuarioService.verificarUsuarioExistente(documentoIdentidad);
+      if (!usuarioExiste) {
+        print('Error: El usuario $documentoIdentidad no existe para subir la foto');
+        throw Exception('El usuario no existe para subir la foto');
+      }
+      
+      await _usuarioService.subirFoto(documentoIdentidad, _selectedImage!);
+      print('Foto subida correctamente para: $documentoIdentidad');
+    } catch (e) {
+      print('Error al subir la foto: $e');
+      throw e; // Re-lanzar para manejo externo
+    }
+  }
+
+  // Función para manejar el registro de usuario
+  Future<void> _registrarUsuario() async {
+    // Validar los campos
+    final nombre = _nombreController.text.trim();
+    final email = _emailController.text.trim();
+    final documento = _documentoController.text.trim();
+    final fechaNacimientoStr = _fechaNacimientoController.text.trim();
+
+    if (nombre.isEmpty ||
+        email.isEmpty ||
+        documento.isEmpty ||
+        fechaNacimientoStr.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Por favor, completa todos los campos.'),
+          backgroundColor: AppColors.naranjaOscuro,
+        ),
+      );
+      return;
+    }
+
+    // Validar formato de email
+    if (!_isValidEmail(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Por favor, ingresa un email válido.'),
+          backgroundColor: AppColors.naranjaOscuro,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Convertir formato de fecha según lo esperado por la API
+      // Asumiendo que el formato actual es dd/mm/yyyy y necesitamos yyyy-mm-dd
+      final fechaParts = fechaNacimientoStr.split('/');
+      if (fechaParts.length != 3) {
+        throw Exception('Formato de fecha inválido');
+      }
+      
+      final fechaNacimiento = '${fechaParts[2]}-${fechaParts[1].padLeft(2, '0')}-${fechaParts[0].padLeft(2, '0')}';
+      print('Fecha formateada para API: $fechaNacimiento');
+
+      // Verificar si el usuario ya existe
+      bool usuarioExiste = await _usuarioService.verificarUsuarioExistente(documento);
+      if (usuarioExiste) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Ya existe un usuario con ese documento de identidad.'),
+            backgroundColor: AppColors.naranjaOscuro,
+          ),
+        );
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Registrar usuario
+      try {
+        final usuario = Usuario(
+          nombre: nombre,
+          email: email,
+          documentoIdentidad: documento,
+          fechaNacimiento: fechaNacimiento,
+        );
+        
+        print('Intentando registrar usuario con datos: ${usuario.toJson()}');
+        Usuario usuarioRegistrado = await _usuarioService.registrarUsuario(usuario);
+        String documentoRegistrado = usuarioRegistrado.documentoIdentidad;
+        print('Usuario registrado exitosamente: $documentoRegistrado');
+        
+        // Si hay foto seleccionada, la subimos y manejamos errores
+        if (_selectedImage != null) {
+          try {
+            // Mostrar mensaje de que se está subiendo la foto
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Subiendo foto...'),
+                  backgroundColor: Colors.blue,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
+            
+            await _subirFotoUsuario(documentoRegistrado);
+            
+            // Solo si la foto se subió correctamente, mostramos éxito completo
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Usuario registrado y foto subida correctamente'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              
+              // Limpiar el formulario SOLO si todo fue exitoso
+              _limpiarFormulario();
+            }
+          } catch (fotoError) {
+            print('Error al subir la foto: $fotoError');
+            
+            // Como el usuario quería subir foto pero falló, eliminamos el usuario
+            try {
+              print('Eliminando usuario debido a fallo en subida de foto: $documentoRegistrado');
+              await _usuarioService.eliminarUsuario(documentoRegistrado);
+              print('Usuario eliminado tras fallar la subida de foto');
+              
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Error al subir la foto. El registro ha sido cancelado. Por favor, inténtelo de nuevo.',
+                    ),
+                    backgroundColor: AppColors.naranjaOscuro,
+                    duration: Duration(seconds: 5),
+                  ),
+                );
+              }
+            } catch (eliminarError) {
+              print('Error al eliminar usuario: $eliminarError');
+              
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text(
+                      'Error al subir la foto. El usuario fue creado pero sin foto. '
+                      'Contacte al administrador.',
+                    ),
+                    backgroundColor: AppColors.naranjaOscuro,
+                    action: SnackBarAction(
+                      label: 'Cerrar',
+                      textColor: Colors.white,
+                      onPressed: () {},
+                    ),
+                    duration: const Duration(seconds: 10),
+                  ),
+                );
+              }
+            }
+            return; // Salimos para no limpiar el formulario si hubo error
+          }
+        } else {
+          // Si no hay foto seleccionada, solo mostramos éxito del registro
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Usuario registrado con éxito'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            
+            // Limpiar el formulario
+            _limpiarFormulario();
+          }
+        }
+      } catch (e) {
+        print('Error al registrar usuario: $e');
+        
+        // Verificar si el usuario se registró a pesar del error
+        try {
+          bool existe = await _usuarioService.verificarUsuarioExistente(documento);
+          if (existe) {
+            print('El usuario parece haberse registrado a pesar del error');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Usuario registrado correctamente'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              
+              // Limpiar formulario
+              _limpiarFormulario();
+            }
+            return;
+          }
+        } catch (_) {
+          // Si hay error al verificar, continuamos con el manejo del error original
+        }
+        
+        // Mostrar error
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al registrar: ${e.toString()}'),
+              backgroundColor: AppColors.naranjaOscuro,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('Error durante el registro: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al registrar: ${e.toString()}'),
+            backgroundColor: AppColors.naranjaOscuro,
+            duration: const Duration(seconds: 8), // Mostrar por más tiempo
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+  
+  // Método para limpiar el formulario
+  void _limpiarFormulario() {
+    _nombreController.clear();
+    _emailController.clear();
+    _documentoController.clear();
+    _fechaNacimientoController.clear();
+    setState(() {
+      _selectedImage = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Registro',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: AppColors.verdeOscuro,
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _nombreController,
-              decoration: _buildInputDecoration('Nombre'),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _emailController,
-              decoration: _buildInputDecoration('Email'),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _documentoController,
-              decoration: _buildInputDecoration(
-                'Documento de identidad',
-                suffixIcon: const Icon(Icons.perm_identity, color: AppColors.verdeOscuro),
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _fechaNacimientoController,
-              decoration: _buildInputDecoration(
-                'Fecha de Nacimiento',
-                suffixIcon: const Icon(Icons.calendar_today, color: AppColors.verdeOscuro),
-              ),
-              readOnly: true,
-              onTap: () async {
-                final DateTime? pickedDate = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime.now(),
-                );
-                if (pickedDate != null) {
-                  setState(() {
-                    _fechaNacimientoController.text =
-                        '${pickedDate.day}/${pickedDate.month}/${pickedDate.year}';
-                  });
-                }
-              },
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Foto',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            if (_selectedImage != null)
-              Column(
-                children: [
-                  Image.file(
-                    _selectedImage!,
-                    height: 150,
-                    width: 150,
-                    fit: BoxFit.cover,
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: _removeSelectedImage,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.naranjaOscuro,
-                    ),
-                    child: const Text('Eliminar foto'),
-                  ),
-                ],
-              )
-            else
-              Row(
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: _selectImageFromGallery,
-                    icon: const Icon(Icons.photo_library),
-                    label: const Text('Seleccionar archivo'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.verdeOscuro,
-                      foregroundColor: AppColors.blanco,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  ElevatedButton.icon(
-                    onPressed: _takePhotoWithCamera,
-                    icon: const Icon(Icons.camera_alt),
-                    label: const Text('Tomar foto'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.verdeOscuro,
-                      foregroundColor: AppColors.blanco,
-                    ),
-                  ),
-                ],
-              ),
-            const SizedBox(height: 30),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  final nombre = _nombreController.text.trim();
-                  final email = _emailController.text.trim();
-                  final documento = _documentoController.text.trim();
-                  final fechaNacimiento =
-                      _fechaNacimientoController.text.trim();
-
-                  if (nombre.isEmpty ||
-                      email.isEmpty ||
-                      documento.isEmpty ||
-                      fechaNacimiento.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Por favor, completa todos los campos.'),
-                        backgroundColor: AppColors.naranjaOscuro,
-                      ),
-                    );
-                    return;
-                  }
-
-                  print('Nombre: $nombre');
-                  print('Email: $email');
-                  print('Documento: $documento');
-                  print('Fecha de Nacimiento: $fechaNacimiento');
-                  print('Foto seleccionada: ${_selectedImage?.path}');
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.naranjaBrillante,
-                  foregroundColor: AppColors.blanco,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 15,
-                    horizontal: 50,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Registro',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.verdeOscuro,
                   ),
                 ),
-                child: const Text('Registrarse'),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _nombreController,
+                  decoration: _buildInputDecoration('Nombre'),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _emailController,
+                  decoration: _buildInputDecoration('Email'),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _documentoController,
+                  decoration: _buildInputDecoration(
+                    'Documento de identidad',
+                    suffixIcon: const Icon(Icons.perm_identity, color: AppColors.verdeOscuro),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _fechaNacimientoController,
+                  decoration: _buildInputDecoration(
+                    'Fecha de Nacimiento',
+                    suffixIcon: const Icon(Icons.calendar_today, color: AppColors.verdeOscuro),
+                  ),
+                  readOnly: true,
+                  onTap: () async {
+                    final DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime.now(),
+                    );
+                    if (pickedDate != null) {
+                      setState(() {
+                        _fechaNacimientoController.text =
+                            '${pickedDate.day}/${pickedDate.month}/${pickedDate.year}';
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Foto',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                if (_selectedImage != null)
+                  Column(
+                    children: [
+                      Image.file(
+                        _selectedImage!,
+                        height: 150,
+                        width: 150,
+                        fit: BoxFit.cover,
+                      ),
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: _removeSelectedImage,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.naranjaOscuro,
+                        ),
+                        child: const Text('Eliminar foto'),
+                      ),
+                    ],
+                  )
+                else
+                  Row(
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: _selectImageFromGallery,
+                        icon: const Icon(Icons.photo_library),
+                        label: const Text('Seleccionar archivo'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.verdeOscuro,
+                          foregroundColor: AppColors.blanco,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton.icon(
+                        onPressed: _takePhotoWithCamera,
+                        icon: const Icon(Icons.camera_alt),
+                        label: const Text('Tomar foto'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.verdeOscuro,
+                          foregroundColor: AppColors.blanco,
+                        ),
+                      ),
+                    ],
+                  ),
+                const SizedBox(height: 30),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _registrarUsuario,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.naranjaBrillante,
+                      foregroundColor: AppColors.blanco,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 15,
+                        horizontal: 50,
+                      ),
+                      disabledBackgroundColor: Colors.grey,
+                    ),
+                    child: _isLoading 
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Text('Registrarse'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Indicador de carga que cubre toda la pantalla cuando está registrando
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(
+                child: CircularProgressIndicator(),
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }

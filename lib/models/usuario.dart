@@ -32,4 +32,39 @@ class Usuario {
       if (foto != null) 'foto': foto,
     };
   }
+  
+  // Método para crear un mapa con valores para actualización parcial
+  // Solo incluye los campos que se proporcionan, lo que permite actualizaciones selectivas
+  static Map<String, dynamic> toUpdateJson({
+    String? nombre,
+    String? email,
+    String? fechaNacimiento,
+    String? foto,
+  }) {
+    final Map<String, dynamic> updateData = {};
+    
+    if (nombre != null) updateData['nombre'] = nombre;
+    if (email != null) updateData['email'] = email;
+    if (fechaNacimiento != null) updateData['fecha_nacimiento'] = fechaNacimiento;
+    if (foto != null) updateData['foto'] = foto;
+    
+    return updateData;
+  }
+  
+  // Método para crear una copia del usuario con campos actualizados
+  Usuario copyWith({
+    String? nombre,
+    String? email,
+    String? documentoIdentidad,
+    String? fechaNacimiento,
+    String? foto,
+  }) {
+    return Usuario(
+      nombre: nombre ?? this.nombre,
+      email: email ?? this.email,
+      documentoIdentidad: documentoIdentidad ?? this.documentoIdentidad,
+      fechaNacimiento: fechaNacimiento ?? this.fechaNacimiento,
+      foto: foto ?? this.foto,
+    );
+  }
 }
