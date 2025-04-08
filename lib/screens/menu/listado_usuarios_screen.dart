@@ -14,10 +14,10 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
   final UsuarioService _usuarioService = UsuarioService();
   final TextEditingController _busquedaController = TextEditingController();
   List<Usuario> _usuarios = [];
-  Usuario? _usuarioSeleccionado;
+  //Usuario? _usuarioSeleccionado;
   int _paginaActual = 0;
   int _totalUsuarios = 0;
-  final int _usuariosPorPagina = 5;
+  final int _usuariosPorPagina = 3;
   bool _cargando = false;
 
   @override
@@ -53,71 +53,62 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
     }
   }
 
-  Future<void> _actualizarUsuario(Usuario usuario) async {
-    // Implementar lógica de actualización
-  }
-
-  Future<void> _eliminarFotoUsuario(String documentoIdentidad) async {
-    try {
-      await _usuarioService.eliminarFotoUsuario(documentoIdentidad);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Foto eliminada correctamente.')),
-      );
-      _cargarUsuarios();
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
-    }
-  }
-
-  Future<void> _eliminarUsuario(String documentoIdentidad) async {
-    try {
-      await _usuarioService.eliminarUsuario(documentoIdentidad);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Usuario eliminado correctamente.')),
-      );
-      _cargarUsuarios();
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Listado de Usuarios'),
-        automaticallyImplyLeading: false,
+        title: const Text(
+          'Listado de Usuarios',
+          style: TextStyle(
+            color: AppColors.verdeVibrante, // Título en verde vibrante
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: AppColors.blanco, // Fondo blanco
+        iconTheme: const IconThemeData(color: AppColors.verdeOscuro),
+        elevation: 0,
       ),
-      body: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
+      body: _cargando
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.verdeOscuro, // Indicador de carga en verde oscuro
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(16.0), // Padding general
+              child: Column(
+                children: [
+                  Row(
                     children: [
                       Expanded(
                         child: TextField(
                           controller: _busquedaController,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: 'Buscar usuario',
-                            border: OutlineInputBorder(),
+                            labelStyle: const TextStyle(color: Colors.grey),
+                            prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                            filled: true,
+                            fillColor: const Color(0xFFF5F5F5), // Fondo claro
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30), // Bordes redondeados
+                              borderSide: BorderSide.none, // Sin borde
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
-                        onPressed:
-                            () => _cargarUsuarios(
-                              filtro: _busquedaController.text,
-                            ),
-                        child: const Text('Buscar'),
+                        onPressed: () => _cargarUsuarios(filtro: _busquedaController.text),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.verdeVibrante, // Verde vibrante
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20), // Bordes redondeados
+                          ),
+                        ),
+                        child: const Text(
+                          'Buscar',
+                          style: TextStyle(color: AppColors.blanco),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
@@ -125,172 +116,180 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                           _busquedaController.clear();
                           _cargarUsuarios();
                         },
-                        child: const Text('Limpiar'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.naranjaBrillante, // Naranja brillante
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20), // Bordes redondeados
+                          ),
+                        ),
+                        child: const Text(
+                          'Limpiar',
+                          style: TextStyle(color: AppColors.blanco),
+                        ),
                       ),
                     ],
                   ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      _cargando
-                          ? const Center(child: CircularProgressIndicator())
-                          : Expanded(
-                              child: Column(
-                                children: [
-                                  Expanded(
-                                    child: SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: SingleChildScrollView(
-                                        child: DataTable(
-                                          showCheckboxColumn: false,
-                                          columns: const [
-                                            DataColumn(label: Text('Foto')),
-                                            DataColumn(label: Text('Nombre')),
-                                            DataColumn(label: Text('Email')),
-                                            DataColumn(label: Text('Documento de identidad')),
-                                            DataColumn(label: Text('Fecha de Nacimiento')),
-                                          ],
-                                          rows: _usuarios.map((usuario) {
-                                            return DataRow(
-                                              onSelectChanged: (selected) {
-                                                if (selected == true) {
-                                                  Navigator.pushNamed(
-                                                    context,
-                                                    '/listado_usuarios_actualizar',
-                                                    arguments: usuario,
-                                                  );
-                                                }
-                                              },
-                                              cells: [
-                                                DataCell(
-                                                  usuario.foto != null
-                                                      ? ClipRRect(
-                                                          borderRadius: BorderRadius.circular(25), // Bordes redondeados
-                                                          child: Image.network(
-                                                            usuario.foto!,
-                                                            height: 50,
-                                                            width: 50,
-                                                            fit: BoxFit.cover, // Ajustar la imagen al contenedor
-                                                          ),
-                                                        )
-                                                      : ClipRRect(
-                                                          borderRadius: BorderRadius.circular(25), // Bordes redondeados
-                                                          child: Image.asset(
-                                                            'assets/images/default_avatar.png',
-                                                            height: 50,
-                                                            width: 50,
-                                                            fit: BoxFit.cover, // Ajustar la imagen al contenedor
-                                                          ),
-                                                        ),
-                                                ),
-                                                DataCell(Text(usuario.nombre)),
-                                                DataCell(Text(usuario.email)),
-                                                DataCell(Text(usuario.documentoIdentidad)),
-                                                DataCell(Text(usuario.fechaNacimiento)),
-                                              ],
-                                            );
-                                          }).toList(),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SingleChildScrollView(
+                        child: DataTable(
+                          headingRowColor: MaterialStateProperty.all(
+                            AppColors.verdeVibrante.withOpacity(0.2),
+                          ), // Fondo verde claro para encabezados
+                          columnSpacing: 20, // Espaciado entre columnas
+                          dataRowHeight: 60, // Altura de las filas
+                          headingTextStyle: const TextStyle(
+                            color: AppColors.verdeOscuro, // Texto de encabezados en verde oscuro
+                            fontWeight: FontWeight.bold,
+                          ),
+                          columns: const [
+                            DataColumn(label: Text('Foto')),
+                            DataColumn(label: Text('Nombre')),
+                            DataColumn(label: Text('Email')),
+                            DataColumn(label: Text('Documento de identidad')),
+                            DataColumn(label: Text('Fecha de Nacimiento')),
+                          ],
+                          rows: _usuarios.map((usuario) {
+                            return DataRow(
+                              cells: [
+                                DataCell(
+                                  usuario.foto != null
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.circular(25), // Bordes redondeados
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                color: AppColors.verdeOscuro, // Borde verde oscuro
+                                                width: 2,
+                                              ),
+                                              borderRadius: BorderRadius.circular(25),
+                                            ),
+                                            child: Image.network(
+                                              usuario.foto!,
+                                              height: 50,
+                                              width: 50,
+                                              fit: BoxFit.cover, // Ajustar la imagen al contenedor
+                                            ),
+                                          ),
+                                        )
+                                      : ClipRRect(
+                                          borderRadius: BorderRadius.circular(25), // Bordes redondeados
+                                          child: Container(
+                                            height: 50,
+                                            width: 50,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.naranjaBrillante, // Fondo naranja brillante
+                                              border: Border.all(
+                                                color: AppColors.naranjaOscuro, // Borde naranja oscuro
+                                                width: 2,
+                                              ),
+                                              borderRadius: BorderRadius.circular(25),
+                                            ),
+                                            child: const Icon(
+                                              Icons.person,
+                                              color: AppColors.blanco, // Ícono blanco
+                                              size: 30,
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                  ),
-                                  // Espacio amplio entre la tabla y el texto
-                                  const SizedBox(height: 10),
-                                  // Texto instructivo
-                                  const Padding(
-                                    padding: EdgeInsets.only(bottom: 26.0),
-                                    child: Text(
-                                      'Pulsa sobre un usuario para editarlo',
-                                      style: TextStyle(
-                                        fontStyle: FontStyle.italic,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                    ],
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/listado_usuarios_actualizar',
+                                      arguments: usuario,
+                                    );
+                                  },
+                                ),
+                                DataCell(
+                                  Text(usuario.nombre),
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/listado_usuarios_actualizar',
+                                      arguments: usuario,
+                                    );
+                                  },
+                                ),
+                                DataCell(
+                                  Text(usuario.email),
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/listado_usuarios_actualizar',
+                                      arguments: usuario,
+                                    );
+                                  },
+                                ),
+                                DataCell(
+                                  Text(usuario.documentoIdentidad),
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/listado_usuarios_actualizar',
+                                      arguments: usuario,
+                                    );
+                                  },
+                                ),
+                                DataCell(
+                                  Text(usuario.fechaNacimiento),
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/listado_usuarios_actualizar',
+                                      arguments: usuario,
+                                    );
+                                  },
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                // Botones de paginación en una Row separada
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      onPressed:
-                          _paginaActual > 0
-                              ? () {
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        onPressed: _paginaActual > 0
+                            ? () {
                                 setState(() => _paginaActual--);
                                 _cargarUsuarios();
                               }
-                              : null,
-                      icon: const Icon(Icons.arrow_back),
-                    ),
-                    Text('Página ${_paginaActual + 1}'),
-                    IconButton(
-                      onPressed:
-                          (_paginaActual + 1) * _usuariosPorPagina <
-                                  _totalUsuarios
-                              ? () {
+                            : null,
+                        icon: Icon(
+                          Icons.arrow_back,
+                          color: _paginaActual > 0
+                              ? AppColors.verdeOscuro
+                              : Colors.grey, // Cambia a gris si no hay más páginas atrás
+                        ),
+                      ),
+                      Text(
+                        'Página ${_paginaActual + 1} / ${(_totalUsuarios / _usuariosPorPagina).ceil()}',
+                        style: const TextStyle(color: AppColors.verdeOscuro),
+                      ),
+                      IconButton(
+                        onPressed: (_paginaActual + 1) * _usuariosPorPagina < _totalUsuarios
+                            ? () {
                                 setState(() => _paginaActual++);
                                 _cargarUsuarios();
                               }
-                              : null,
-                      icon: const Icon(Icons.arrow_forward),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          if (_usuarioSeleccionado != null)
-            Expanded(
-              flex: 1,
-              child: Container(
-                color: AppColors.blanco,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ListTile(
-                      title: Text(_usuarioSeleccionado!.nombre),
-                      subtitle: Text(_usuarioSeleccionado!.email),
-                      leading:
-                          _usuarioSeleccionado!.foto != null
-                              ? Image.network(
-                                _usuarioSeleccionado!.foto!,
-                                height: 50,
-                                width: 50,
-                              )
-                              : const Icon(Icons.person),
-                    ),
-                    const Divider(),
-                    ElevatedButton(
-                      onPressed:
-                          () => _actualizarUsuario(_usuarioSeleccionado!),
-                      child: const Text('Actualizar'),
-                    ),
-                    ElevatedButton(
-                      onPressed:
-                          () => _eliminarFotoUsuario(
-                            _usuarioSeleccionado!.documentoIdentidad,
-                          ),
-                      child: const Text('Eliminar Foto'),
-                    ),
-                    ElevatedButton(
-                      onPressed:
-                          () => _eliminarUsuario(
-                            _usuarioSeleccionado!.documentoIdentidad,
-                          ),
-                      child: const Text('Eliminar Usuario'),
-                    ),
-                  ],
-                ),
+                            : null,
+                        icon: Icon(
+                          Icons.arrow_forward,
+                          color: (_paginaActual + 1) * _usuariosPorPagina < _totalUsuarios
+                              ? AppColors.verdeOscuro
+                              : Colors.grey, // Cambia a gris si no hay más páginas adelante
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-        ],
-      ),
     );
   }
 }
