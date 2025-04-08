@@ -96,6 +96,29 @@ class UsuarioService {
 
   // Actualizar usuario
   Future<Usuario> actualizarUsuario(String documentoIdentidad, Map<String, dynamic> data) async {
+    // Verificar si el documentoIdentidad o email ya existen en otro usuario
+    if (data.containsKey('documento_identidad') || data.containsKey('email')) {
+      final nuevoDocumento = data['documento_identidad'];
+      final nuevoEmail = data['email'];
+
+      if (nuevoDocumento != null && nuevoDocumento != documentoIdentidad) {
+        final existeDocumento = await verificarUsuarioExistente(nuevoDocumento);
+        if (existeDocumento) {
+          throw Exception('Ya existe un usuario con el documento de identidad proporcionado.');
+        }
+      }
+
+      if (nuevoEmail != null) {
+        final usuariosConEmail = await buscarUsuariosPorValor(nuevoEmail, skip: 0, limit: 1);
+        if (usuariosConEmail['total'] > 0) {
+          final usuarioEncontrado = usuariosConEmail['usuarios'][0];
+          if (usuarioEncontrado.documentoIdentidad != documentoIdentidad) {
+            throw ('Ya existe un usuario con el email proporcionado.'); // Cambiado a un simple String
+          }
+        }
+      }
+    }
+
     final response = await http.patch(
       Uri.parse("$_baseUrl/$documentoIdentidad"),
       headers: {'Content-Type': 'application/json'},
