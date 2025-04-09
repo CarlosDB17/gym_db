@@ -133,6 +133,24 @@ Future<Usuario> actualizarUsuario(String documentoIdentidad, Map<String, dynamic
     data['documento_identidad'] = data['documento_identidad'].toString().toUpperCase();
   }
 
+  // Convertir fecha al formato YYYY-MM-DD si está presente
+  if (data.containsKey('fechaNacimiento')) {
+    final fecha = data['fechaNacimiento'];
+    if (fecha is String && fecha.contains('/')) {
+      final partes = fecha.split('/');
+      if (partes.length == 3) {
+        data['fechaNacimiento'] = '${partes[2]}-${partes[1].padLeft(2, '0')}-${partes[0].padLeft(2, '0')}';
+      }
+    }
+  }
+
+  // Convertir claves a snake_case
+  final Map<String, dynamic> dataSnakeCase = {};
+  data.forEach((key, value) {
+    final snakeCaseKey = key.replaceAllMapped(RegExp(r'[A-Z]'), (match) => '_${match.group(0)!.toLowerCase()}');
+    dataSnakeCase[snakeCaseKey] = value;
+  });
+
   // Convertir el documento actual a mayúsculas
   documentoIdentidad = documentoIdentidad.toUpperCase();
 
@@ -173,17 +191,17 @@ Future<Usuario> actualizarUsuario(String documentoIdentidad, Map<String, dynamic
 
   print('Documento que se usará en la URL: $documentoIdentidad');
   print('Documento que se usará en el cuerpo: $nuevoDocumentoIdentidad');
-  print('Datos enviados después de ajustes: $data');
+  print('Datos enviados después de ajustes: $dataSnakeCase');
 
   try {
     print('URL de la solicitud: $_baseUrl/$documentoIdentidad');
     print('Encabezados de la solicitud: ${{'Content-Type': 'application/json; charset=utf-8'}}');
-    print('Cuerpo de la solicitud: ${jsonEncode(data)}');
+    print('Cuerpo de la solicitud: ${jsonEncode(dataSnakeCase)}');
 
     final response = await http.patch(
       Uri.parse("$_baseUrl/$documentoIdentidad"), // Usar el documento antiguo en la URL
       headers: {'Content-Type': 'application/json; charset=utf-8'},
-      body: jsonEncode(data), // Enviar el nuevo documento en el cuerpo si ha cambiado
+      body: jsonEncode(dataSnakeCase), // Enviar el nuevo documento en el cuerpo si ha cambiado
     );
 
     print('Respuesta del servidor - Código: ${response.statusCode}');

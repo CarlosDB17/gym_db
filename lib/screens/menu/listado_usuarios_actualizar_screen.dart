@@ -152,7 +152,7 @@ class _ListadoUsuariosActualizarScreenState
           ),
           if (_estaCargando)
             Container(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withAlpha(76),
               child: const Center(
                 child: CircularProgressIndicator(),
               ),
