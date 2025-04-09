@@ -40,14 +40,18 @@ Future<void> _selectImageFromGallery() async {
 
       if (!formatosPermitidos.contains(extension)) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          if (mounted) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Formato de imagen no permitido. Use PNG, JPG, JPEG, HEIC o HEIF.'),
               backgroundColor: AppColors.naranjaOscuro,
             ),
           );
+          }
+          }
         }
-        return;
+                return;
       }
 
       setState(() {
@@ -163,12 +167,16 @@ Future<void> _selectImageFromGallery() async {
         email.isEmpty ||
         documento.isEmpty ||
         fechaNacimientoStr.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Por favor, completa todos los campos.'),
-          backgroundColor: AppColors.naranjaOscuro,
-        ),
-      );
+      if (mounted) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Por favor, completa todos los campos.'),
+              backgroundColor: AppColors.naranjaOscuro,
+            ),
+          );
+        }
+      }
       return;
     }
 
@@ -510,7 +518,7 @@ Future<void> _selectImageFromGallery() async {
           // Indicador de carga que cubre toda la pantalla cuando está registrando
           if (_estaCargando)
             Container(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               child: const Center(
                 child: CircularProgressIndicator(),
               ),

@@ -148,10 +148,11 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                       child: SingleChildScrollView(
                         child: DataTable(
                           headingRowColor: WidgetStateProperty.all(
-                            AppColors.verdeVibrante.withOpacity(0.2),
+                        AppColors.verdeVibrante.withAlpha((0.2 * 255).toInt())
                           ), // Fondo verde claro para encabezados
                           columnSpacing: 20, // Espaciado entre columnas
-                          dataRowHeight: 60, // Altura de las filas
+                          dataRowMinHeight: 60,
+                          dataRowMaxHeight: 60,
                           headingTextStyle: const TextStyle(
                             color: AppColors.verdeOscuro, // Texto de encabezados en verde oscuro
                             fontWeight: FontWeight.bold,

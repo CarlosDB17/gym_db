@@ -69,7 +69,7 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.sombra.withOpacity(0.15),
+                  color: AppColors.sombra.withValues(alpha: 0.15),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
@@ -92,7 +92,7 @@ class _MenuScreenState extends State<MenuScreen> {
                             borderRadius: BorderRadius.circular(15),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.15),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -138,7 +138,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.sombra.withOpacity(0.1),
+                    color: AppColors.sombra.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, -4),
                   ),
@@ -165,7 +165,7 @@ class _MenuScreenState extends State<MenuScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.sombra.withOpacity(0.08),
+              color: AppColors.sombra.withValues(alpha: 0.08),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),
@@ -210,7 +210,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 shape: BoxShape.circle,
                 boxShadow: isSelected ? [
                   BoxShadow(
-                    color: AppColors.verdeVibrante.withOpacity(0.4),
+                    color: AppColors.verdeVibrante.withValues(alpha: 0.4),
                     blurRadius: 8,
                     spreadRadius: 1,
                     offset: const Offset(0, 2),
@@ -219,7 +219,7 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
               child: Icon(
                 icon,
-                color: isSelected ? Colors.white : AppColors.textoOscuro.withOpacity(0.6),
+                color: isSelected ? Colors.white : AppColors.textoOscuro.withValues(alpha: 0.6),
                 size: 24,
               ),
             ),
@@ -227,7 +227,7 @@ class _MenuScreenState extends State<MenuScreen> {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppColors.verdeVibrante : AppColors.textoOscuro.withOpacity(0.6),
+                color: isSelected ? AppColors.verdeVibrante : AppColors.textoOscuro.withValues(alpha: 0.6),
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
