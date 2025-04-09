@@ -12,7 +12,7 @@ class CampoTextoPersonalizado extends StatelessWidget {
   final VoidCallback? alternarVisibilidadContrasena; // Propiedad para alternar visibilidad
 
   const CampoTextoPersonalizado({
-    Key? key,
+    super.key,
     required this.controlador,
     required this.texto,
     this.esContrasena = false,
@@ -21,7 +21,7 @@ class CampoTextoPersonalizado extends StatelessWidget {
     this.alTocar,
     this.textoOculto,
     this.alternarVisibilidadContrasena,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

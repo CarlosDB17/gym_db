@@ -7,6 +7,8 @@ import '../../theme/app_colors.dart';
 import '../../widgets/campo_texto_personalizado.dart';
 
 class ListadoUsuariosActualizarScreen extends StatefulWidget {
+  const ListadoUsuariosActualizarScreen({super.key});
+
   @override
   _ListadoUsuariosActualizarScreenState createState() =>
       _ListadoUsuariosActualizarScreenState();

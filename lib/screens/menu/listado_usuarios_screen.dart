@@ -145,7 +145,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                       scrollDirection: Axis.horizontal,
                       child: SingleChildScrollView(
                         child: DataTable(
-                          headingRowColor: MaterialStateProperty.all(
+                          headingRowColor: WidgetStateProperty.all(
                             AppColors.verdeVibrante.withOpacity(0.2),
                           ), // Fondo verde claro para encabezados
                           columnSpacing: 20, // Espaciado entre columnas
