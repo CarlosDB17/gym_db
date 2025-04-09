@@ -162,114 +162,110 @@ class _ListadoUsuariosActualizarScreenState
     );
   }
 
-  Future<void> _actualizarUsuario() async {
-    setState(() => _estaCargando = true);
+Future<void> _actualizarUsuario() async {
+  setState(() => _estaCargando = true);
 
-    try {
-      final String nuevoNombre = _nombreController.text.trim();
-      final String nuevoEmail = _emailController.text.trim();
-      final String nuevoDocumentoIdentidad =
-          _documentoIdentidadController.text.trim();
-      final String nuevaFechaNacimiento =
-          _fechaNacimientoController.text.trim();
+  try {
+    final String nuevoNombre = _nombreController.text.trim();
+    final String nuevoEmail = _emailController.text.trim();
+    final String nuevoDocumentoIdentidad =
+        _documentoIdentidadController.text.trim();
+    final String nuevaFechaNacimiento =
+        _fechaNacimientoController.text.trim();
 
-      if (nuevoNombre.isEmpty ||
-          nuevoEmail.isEmpty ||
-          nuevoDocumentoIdentidad.isEmpty ||
-          nuevaFechaNacimiento.isEmpty) {
-        _mostrarMensajeError('Por favor, completa todos los campos.');
-        return;
-      }
+    if (nuevoNombre.isEmpty ||
+        nuevoEmail.isEmpty ||
+        nuevoDocumentoIdentidad.isEmpty ||
+        nuevaFechaNacimiento.isEmpty) {
+      _mostrarMensajeError('Por favor, completa todos los campos.');
+      setState(() => _estaCargando = false);
+      return;
+    }
 
-      // Verificar si se hicieron cambios
-      bool cambiosRealizados = nuevoNombre != _usuario!.nombre ||
-          nuevoEmail != _usuario!.email ||
-          _nuevaFoto != null ||
-          nuevaFechaNacimiento != _usuario!.fechaNacimiento ||
-          nuevoDocumentoIdentidad != _usuario!.documentoIdentidad;
+    final RegExp regexDocumento = RegExp(r'^[a-zA-Z0-9]{6,15}$');
+    if (!regexDocumento.hasMatch(nuevoDocumentoIdentidad)) {
+      _mostrarMensajeError(
+          'El documento de identidad debe ser alfanumérico y tener entre 6 y 15 caracteres.');
+      setState(() => _estaCargando = false);
+      return;
+    }
 
-      if (!cambiosRealizados) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No se han realizado cambios.'),
-            backgroundColor: Colors.grey,
-          ),
-        );
-        setState(() => _estaCargando = false);
-        return;
-      }
+    // Verificar si se hicieron cambios
+    bool cambiosRealizados = nuevoNombre != _usuario!.nombre ||
+        nuevoEmail != _usuario!.email ||
+        _nuevaFoto != null ||
+        nuevaFechaNacimiento != _usuario!.fechaNacimiento ||
+        nuevoDocumentoIdentidad != _usuario!.documentoIdentidad;
 
-      // Verificar si el nuevo documento de identidad ya existe
-      if (nuevoDocumentoIdentidad != _usuario!.documentoIdentidad) {
-        final existe = await _usuarioService
-            .verificarUsuarioExistente(nuevoDocumentoIdentidad);
-        if (existe) {
-          _mostrarMensajeError('El documento de identidad ya está registrado.');
-          return;
-        }
-      }
-
-      // Convertir formato de fecha según lo esperado por la API
-      String fechaFormateada = nuevaFechaNacimiento;
-      if (nuevaFechaNacimiento.contains('/')) {
-        final fechaParts = nuevaFechaNacimiento.split('/');
-        if (fechaParts.length == 3) {
-          fechaFormateada =
-              '${fechaParts[2]}-${fechaParts[1].padLeft(2, '0')}-${fechaParts[0].padLeft(2, '0')}';
-        }
-      }
-
-      // Crear un mapa con solo los campos que se van a actualizar
-      Map<String, dynamic> camposActualizados = {};
-
-      if (nuevoNombre != _usuario!.nombre) {
-        camposActualizados['nombre'] = nuevoNombre;
-      }
-
-      if (nuevoEmail != _usuario!.email) {
-        camposActualizados['email'] = nuevoEmail;
-      }
-
-      if (fechaFormateada != _usuario!.fechaNacimiento) {
-        camposActualizados['fechaNacimiento'] = fechaFormateada;
-      }
-
-      if (nuevoDocumentoIdentidad != _usuario!.documentoIdentidad) {
-        camposActualizados['documentoIdentidad'] = nuevoDocumentoIdentidad;
-      }
-
-      // Manejar la foto de manera especial
-      String? urlFoto;
-      if (_nuevaFoto != null) {
-        urlFoto = await _usuarioService.subirFoto(
-          _usuario!.documentoIdentidad, _nuevaFoto!);
-        camposActualizados['foto'] = urlFoto;
-      }
-
-      // Actualizar el usuario
-      // ignore: unused_local_variable
-      final actualizado = await _usuarioService.actualizarUsuario(
-        _usuario!.documentoIdentidad,
-        camposActualizados,
-      );
-
-      if (!mounted) return;
+    if (!cambiosRealizados) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Usuario actualizado correctamente.'),
-          backgroundColor: AppColors.verdeVibrante,
+          content: Text('No se han realizado cambios.'),
+          backgroundColor: Colors.grey,
         ),
       );
+      setState(() => _estaCargando = false);
+      return;
+    }
 
-      Navigator.pop(context, true);
-    } catch (e) {
-      _mostrarMensajeError('Error al actualizar el usuario: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _estaCargando = false);
-      }
+    // Crear un mapa con solo los campos que se van a actualizar
+    Map<String, dynamic> camposActualizados = {};
+
+    if (nuevoNombre != _usuario!.nombre) {
+      camposActualizados['nombre'] = nuevoNombre;
+    }
+
+    if (nuevoEmail != _usuario!.email) {
+      camposActualizados['email'] = nuevoEmail;
+    }
+
+    if (nuevaFechaNacimiento != _usuario!.fechaNacimiento) {
+      camposActualizados['fechaNacimiento'] = nuevaFechaNacimiento;
+    }
+
+    if (nuevoDocumentoIdentidad != _usuario!.documentoIdentidad) {
+      camposActualizados['documento_identidad'] = nuevoDocumentoIdentidad; // Cambiar a snake_case
+    }
+
+    // Manejar la foto de manera especial
+    String? urlFoto;
+    if (_nuevaFoto != null) {
+      urlFoto = await _usuarioService.subirFoto(
+        _usuario!.documentoIdentidad, _nuevaFoto!);
+      camposActualizados['foto'] = urlFoto;
+    }
+
+    // Verificar que el mapa no esté vacío
+    if (camposActualizados.isEmpty) {
+      _mostrarMensajeError('No se proporcionaron datos para actualizar.');
+      setState(() => _estaCargando = false);
+      return;
+    }
+
+    // Actualizar el usuario
+    await _usuarioService.actualizarUsuario(
+      _usuario!.documentoIdentidad, // Documento actual
+      camposActualizados, // Campos actualizados, incluyendo el nuevo documento
+    );
+
+print('Campos actualizados antes de enviar: $camposActualizados');
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Usuario actualizado correctamente.'),
+        backgroundColor: AppColors.verdeVibrante,
+      ),
+    );
+
+    Navigator.pop(context, true);
+  } catch (e) {
+    _mostrarMensajeError('Error al actualizar el usuario: $e');
+  } finally {
+    if (mounted) {
+      setState(() => _estaCargando = false);
     }
   }
+}
 
   Future<void> _eliminarFoto() async {
     setState(() => _estaCargando = true);

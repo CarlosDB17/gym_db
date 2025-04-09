@@ -5,7 +5,8 @@ import '../models/usuario.dart';
 
 class UsuarioService {
 
-  final String _baseUrl = "https://pf25-carlos-db-v6-302016834907.europe-west1.run.app/usuarios";
+  final String _baseUrl = "http://192.168.1.38:8000/usuarios";
+  //final String _baseUrl = "https://pf25-carlos-db-v6-302016834907.europe-west1.run.app/usuarios";
 
   // Obtener usuarios con paginación
   Future<Map<String, dynamic>> obtenerUsuarios(int skip, int limit) async {
@@ -117,40 +118,97 @@ Future<Usuario> actualizarUsuarioParcial(String documentoIdentidad, {
 
 // Actualizar usuario
 Future<Usuario> actualizarUsuario(String documentoIdentidad, Map<String, dynamic> data) async {
+  print('Iniciando actualización del usuario...');
+  print('Documento actual: $documentoIdentidad');
+  print('Datos enviados antes de ajustes: $data');
+
+  // Convertir email a minúsculas y documento a mayúsculas
+  if (data.containsKey('email')) {
+    data['email'] = data['email'].toString().toLowerCase();
+  }
+  if (data.containsKey('documentoIdentidad')) {
+    data['documentoIdentidad'] = data['documentoIdentidad'].toString().toUpperCase();
+  }
+  if (data.containsKey('documento_identidad')) {
+    data['documento_identidad'] = data['documento_identidad'].toString().toUpperCase();
+  }
+
+  // Convertir el documento actual a mayúsculas
+  documentoIdentidad = documentoIdentidad.toUpperCase();
+
   // Verificar si el documentoIdentidad o email ya existen en otro usuario
-  if (data.containsKey('documento_identidad') || data.containsKey('email')) {
-    final nuevoDocumento = data['documento_identidad'];
+  if (data.containsKey('documentoIdentidad') || data.containsKey('email')) {
+    final nuevoDocumento = data['documentoIdentidad'];
     final nuevoEmail = data['email'];
 
+    print('URL de la solicitud: $_baseUrl/$documentoIdentidad');
+    print('Encabezados de la solicitud: ${{'Content-Type': 'application/json; charset=utf-8'}}');
+    print('Cuerpo de la solicitud (JSON): ${jsonEncode(data)}');
+
     if (nuevoDocumento != null && nuevoDocumento != documentoIdentidad) {
+      print('Verificando si el nuevo documento ya existe: $nuevoDocumento');
       final existeDocumento = await verificarUsuarioExistente(nuevoDocumento);
       if (existeDocumento) {
+        print('Error: Ya existe un usuario con el documento de identidad proporcionado.');
         throw Exception('Ya existe un usuario con el documento de identidad proporcionado.');
       }
     }
 
     if (nuevoEmail != null) {
+      print('Verificando si el nuevo email ya existe: $nuevoEmail');
       final usuariosConEmail = await buscarUsuariosPorValor(nuevoEmail, skip: 0, limit: 1);
       if (usuariosConEmail['total'] > 0) {
         final usuarioEncontrado = usuariosConEmail['usuarios'][0];
         if (usuarioEncontrado.documentoIdentidad != documentoIdentidad) {
+          print('Error: Ya existe un usuario con el email proporcionado.');
           throw ('Ya existe un usuario con el email proporcionado.');
         }
       }
     }
   }
 
-  final response = await http.patch(
-    Uri.parse("$_baseUrl/$documentoIdentidad"),
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode(data),
-  );
-  if (response.statusCode == 200) {
-    // En lugar de intentar convertir directamente la respuesta parcial,
-    // obtenemos el usuario completo actualizado
-    return await buscarPorDocumentoExacto(documentoIdentidad);
-  } else {
-    throw Exception('Error al actualizar usuario');
+  // Si el documentoIdentidad ha cambiado, actualizar el valor en el cuerpo de la solicitud
+  final nuevoDocumentoIdentidad = data['documentoIdentidad'] ?? documentoIdentidad;
+  data['documentoIdentidad'] = nuevoDocumentoIdentidad; // Asegurarse de que el nuevo documento esté en el cuerpo
+
+  print('Documento que se usará en la URL: $documentoIdentidad');
+  print('Documento que se usará en el cuerpo: $nuevoDocumentoIdentidad');
+  print('Datos enviados después de ajustes: $data');
+
+  try {
+    print('URL de la solicitud: $_baseUrl/$documentoIdentidad');
+    print('Encabezados de la solicitud: ${{'Content-Type': 'application/json; charset=utf-8'}}');
+    print('Cuerpo de la solicitud: ${jsonEncode(data)}');
+
+    final response = await http.patch(
+      Uri.parse("$_baseUrl/$documentoIdentidad"), // Usar el documento antiguo en la URL
+      headers: {'Content-Type': 'application/json; charset=utf-8'},
+      body: jsonEncode(data), // Enviar el nuevo documento en el cuerpo si ha cambiado
+    );
+
+    print('Respuesta del servidor - Código: ${response.statusCode}');
+    print('Respuesta del servidor - Cuerpo: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+
+      // Si el documentoIdentidad cambió, usar el nuevo documento en mayúsculas
+      if (responseData is Map && responseData.containsKey('nuevo_documento_identidad')) {
+        final nuevoDocumento = responseData['nuevo_documento_identidad'].toString().toUpperCase();
+        print('El documentoIdentidad ha cambiado. Nuevo documento: $nuevoDocumento');
+        return await buscarPorDocumentoExacto(nuevoDocumento);
+      }
+
+      // Si no cambió, buscar el usuario actualizado con el documento actual
+      print('El documentoIdentidad no cambió. Buscando usuario actualizado...');
+      return await buscarPorDocumentoExacto(documentoIdentidad);
+    } else {
+      print('Error al actualizar usuario: ${response.body}');
+      throw Exception('Error al actualizar usuario');
+    }
+  } catch (e) {
+    print('Excepción capturada durante la actualización: $e');
+    rethrow;
   }
 }
 
