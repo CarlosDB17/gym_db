@@ -31,6 +31,14 @@ class _ListadoUsuariosActualizarScreenState
 
   Usuario? _usuario;
 
+  String _formatearFecha(String fecha) {
+    final partes = fecha.split('-');
+    if (partes.length == 3) {
+      return '${partes[2]}-${partes[1]}-${partes[0]}';
+    }
+    return fecha; // Retorna la fecha original si no tiene el formato esperado
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_usuario == null) {
@@ -38,7 +46,7 @@ class _ListadoUsuariosActualizarScreenState
       _nombreController.text = _usuario!.nombre;
       _emailController.text = _usuario!.email;
       _documentoIdentidadController.text = _usuario!.documentoIdentidad;
-      _fechaNacimientoController.text = _usuario!.fechaNacimiento;
+      _fechaNacimientoController.text = _formatearFecha(_usuario!.fechaNacimiento);
       _tieneFoto = _usuario!.foto != null;
     }
 
@@ -115,7 +123,7 @@ class _ListadoUsuariosActualizarScreenState
                     if (fechaSeleccionada != null) {
                       setState(() {
                         _fechaNacimientoController.text =
-                          '${fechaSeleccionada.day}/${fechaSeleccionada.month}/${fechaSeleccionada.year}';
+                          '${fechaSeleccionada.day.toString().padLeft(2, '0')}-${fechaSeleccionada.month.toString().padLeft(2, '0')}-${fechaSeleccionada.year}';
                       });
                     }
                   },
@@ -170,13 +178,16 @@ Future<void> _actualizarUsuario() async {
     final String nuevoEmail = _emailController.text.trim();
     final String nuevoDocumentoIdentidad =
         _documentoIdentidadController.text.trim();
-    final String nuevaFechaNacimiento =
+    final String nuevaFechaNacimientoFormateada =
         _fechaNacimientoController.text.trim();
+        
+    // Convertir la fecha formateada al formato original para comparar correctamente
+    final String nuevaFechaNacimiento = _convertirFormatoFecha(nuevaFechaNacimientoFormateada);
 
     if (nuevoNombre.isEmpty ||
         nuevoEmail.isEmpty ||
         nuevoDocumentoIdentidad.isEmpty ||
-        nuevaFechaNacimiento.isEmpty) {
+        nuevaFechaNacimientoFormateada.isEmpty) {
       _mostrarMensajeError('Por favor, completa todos los campos.');
       setState(() => _estaCargando = false);
       return;
@@ -248,7 +259,7 @@ Future<void> _actualizarUsuario() async {
       camposActualizados, // Campos actualizados, incluyendo el nuevo documento
     );
 
-print('Campos actualizados antes de enviar: $camposActualizados');
+    print('Campos actualizados antes de enviar: $camposActualizados');
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -265,6 +276,15 @@ print('Campos actualizados antes de enviar: $camposActualizados');
       setState(() => _estaCargando = false);
     }
   }
+}
+
+// Añadir este método para convertir del formato mostrado (DD-MM-YYYY) al formato almacenado (YYYY-MM-DD)
+String _convertirFormatoFecha(String fechaFormateada) {
+  final partes = fechaFormateada.split('-');
+  if (partes.length == 3) {
+    return '${partes[2]}-${partes[1]}-${partes[0]}';
+  }
+  return fechaFormateada;
 }
 
   Future<void> _eliminarFoto() async {

@@ -136,8 +136,8 @@ Future<Usuario> actualizarUsuario(String documentoIdentidad, Map<String, dynamic
   // Convertir fecha al formato YYYY-MM-DD si está presente
   if (data.containsKey('fechaNacimiento')) {
     final fecha = data['fechaNacimiento'];
-    if (fecha is String && fecha.contains('/')) {
-      final partes = fecha.split('/');
+    if (fecha is String && fecha.contains('-')) {
+      final partes = fecha.split('-');
       if (partes.length == 3) {
         data['fechaNacimiento'] = '${partes[2]}-${partes[1].padLeft(2, '0')}-${partes[0].padLeft(2, '0')}';
       }

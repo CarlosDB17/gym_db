@@ -56,6 +56,14 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
     }
   }
 
+  String _formatearFecha(String fecha) {
+    final partes = fecha.split('-');
+    if (partes.length == 3) {
+      return '${partes[2]}-${partes[1]}-${partes[0]}';
+    }
+    return fecha; // Retorna la fecha original si no tiene el formato esperado
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -235,7 +243,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                                   },
                                 ),
                                 DataCell(
-                                  Text(usuario.fechaNacimiento),
+                                  Text(_formatearFecha(usuario.fechaNacimiento)),
                                   onTap: () async {
                                     final resultado = await Navigator.pushNamed(
                                       context,
