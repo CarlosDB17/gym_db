@@ -9,7 +9,7 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -34,9 +34,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await autenticacion.signInWithEmailAndPassword(
-          email: correo, password: contrasena);
+        email: correo, password: contrasena);
       await SessionManager.guardarSesionActiva();
+      if (mounted) {
       Navigator.pushReplacementNamed(context, '/menu');
+      }
     } on FirebaseAuthException catch (e) {
       manejarErrorAutenticacion(e);
     } catch (e) {
@@ -57,7 +59,9 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       await autenticacion.signInWithCredential(credential);
       await SessionManager.guardarSesionActiva();
-      Navigator.pushReplacementNamed(context, '/menu');
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/menu');
+      }
     }
   }
 

@@ -11,7 +11,7 @@ class RegistroUsuariosScreen extends StatefulWidget {
   const RegistroUsuariosScreen({super.key});
 
   @override
-  _RegistroUsuariosScreenState createState() => _RegistroUsuariosScreenState();
+  State<RegistroUsuariosScreen> createState() => _RegistroUsuariosScreenState();
 }
 
 class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
@@ -27,49 +27,49 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
   final UsuarioService _usuarioService = UsuarioService();
   final ImagePicker _picker = ImagePicker();
 
-  Future<void> _selectImageFromGallery() async {
-    try {
-      final XFile? pickedFile = await _picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 80,  // Reducir un poco la calidad para bajar el tamaño
-      );
-      
-      if (pickedFile != null) {
-        // Verificar el formato del archivo
-        final String extension = pickedFile.path.split('.').last.toLowerCase();
-        final List<String> formatosPermitidos = ['png', 'jpg', 'jpeg', 'heic', 'heif'];
-        
-        if (!formatosPermitidos.contains(extension)) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Formato de imagen no permitido. Use PNG, JPG, JPEG, HEIC o HEIF.'),
-                backgroundColor: AppColors.naranjaOscuro,
-              ),
-            );
-          }
-          return;
+Future<void> _selectImageFromGallery() async {
+  try {
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80, // Reducir un poco la calidad para bajar el tamaño
+    );
+
+    if (pickedFile != null) {
+      final String extension = pickedFile.path.split('.').last.toLowerCase();
+      final List<String> formatosPermitidos = ['png', 'jpg', 'jpeg', 'heic', 'heif'];
+
+      if (!formatosPermitidos.contains(extension)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Formato de imagen no permitido. Use PNG, JPG, JPEG, HEIC o HEIF.'),
+              backgroundColor: AppColors.naranjaOscuro,
+            ),
+          );
         }
-        
-        setState(() {
-          _imagenSeleccionada = File(pickedFile.path);
-        });
-        
-        print('Imagen seleccionada: ${pickedFile.path}');
-        print('Formato: $extension');
+        return;
       }
-    } catch (e) {
-      print('Error al seleccionar imagen: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al seleccionar imagen: $e'),
-            backgroundColor: AppColors.naranjaOscuro,
-          ),
-        );
-      }
+
+      setState(() {
+        _imagenSeleccionada = File(pickedFile.path);
+      });
+
+      print('Imagen seleccionada: ${pickedFile.path}');
+      print('Formato: $extension');
+    }
+  } catch (e) {
+    print('Error al seleccionar imagen: $e');
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al seleccionar imagen: $e'),
+          backgroundColor: AppColors.naranjaOscuro,
+        ),
+      );
     }
   }
+}
+
 
   Future<void> _takePhotoWithCamera() async {
     try {

@@ -6,7 +6,9 @@ class AjustesScreen extends StatelessWidget {
 
   Future<void> _cerrarSesion(BuildContext context) async {
     await SessionManager.cerrarSesion(); // Elimina la sesión activa
-    Navigator.pushReplacementNamed(context, '/login'); // Redirige al login
+    if (context.mounted) {
+      Navigator.pushReplacementNamed(context, '/login'); // Redirige al login
+    }
   }
 
   @override

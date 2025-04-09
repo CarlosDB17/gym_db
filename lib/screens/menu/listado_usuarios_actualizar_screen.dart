@@ -10,7 +10,7 @@ class ListadoUsuariosActualizarScreen extends StatefulWidget {
   const ListadoUsuariosActualizarScreen({super.key});
 
   @override
-  _ListadoUsuariosActualizarScreenState createState() =>
+  State<ListadoUsuariosActualizarScreen> createState() =>
       _ListadoUsuariosActualizarScreenState();
 }
 
@@ -145,6 +145,7 @@ class _ListadoUsuariosActualizarScreenState
             : null,
       );
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Usuario actualizado correctamente.')),
       );

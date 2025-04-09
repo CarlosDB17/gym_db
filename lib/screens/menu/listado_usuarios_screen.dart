@@ -7,7 +7,7 @@ class ListadoUsuariosScreen extends StatefulWidget {
   const ListadoUsuariosScreen({super.key});
 
   @override
-  _ListadoUsuariosScreenState createState() => _ListadoUsuariosScreenState();
+  State<ListadoUsuariosScreen> createState() => _ListadoUsuariosScreenState();
 }
 
 class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
@@ -45,9 +45,11 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
         _totalUsuarios = data['total'];
       });
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     } finally {
       setState(() => _cargando = false);
     }
