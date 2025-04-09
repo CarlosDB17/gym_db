@@ -114,9 +114,30 @@ class _ListadoUsuariosActualizarScreenState
                   controlador: _fechaNacimientoController,
                   texto: 'Fecha de Nacimiento',
                   alTocar: () async {
+                    // Obtener la fecha actual del usuario del controlador
+                    final String fechaActual = _fechaNacimientoController.text;
+                    
+                    // Convertir la fecha en formato DD-MM-YYYY a un objeto DateTime
+                    DateTime fechaInicial = DateTime.now();
+                    if (fechaActual.isNotEmpty) {
+                      final List<String> partes = fechaActual.split('-');
+                      if (partes.length == 3) {
+                        try {
+                          fechaInicial = DateTime(
+                            int.parse(partes[2]), // año
+                            int.parse(partes[1]), // mes
+                            int.parse(partes[0]), // día
+                          );
+                        } catch (e) {
+                          // Si hay un error de parseo, usar la fecha actual
+                          print('Error al convertir la fecha: $e');
+                        }
+                      }
+                    }
+                    
                     final DateTime? fechaSeleccionada = await showDatePicker(
                       context: context,
-                      initialDate: DateTime.now(),
+                      initialDate: fechaInicial,
                       firstDate: DateTime(1900),
                       lastDate: DateTime.now(),
                     );
