@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/campo_texto_personalizado.dart';
+import '../../widgets/boton_verde_personalizado.dart';
+import '../../widgets/boton_naranja_personalizado.dart';
 // Importamos el modelo Usuario y el servicio
 import '../../models/usuario.dart';
 import '../../services/usuario_service.dart';
@@ -27,67 +29,17 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
   final UsuarioService _usuarioService = UsuarioService();
   final ImagePicker _picker = ImagePicker();
 
-Future<void> _selectImageFromGallery() async {
-  try {
-    final XFile? pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 80, // Reducir un poco la calidad para bajar el tamaño
-    );
-
-    if (pickedFile != null) {
-      final String extension = pickedFile.path.split('.').last.toLowerCase();
-      final List<String> formatosPermitidos = ['png', 'jpg', 'jpeg', 'heic', 'heif'];
-
-      if (!formatosPermitidos.contains(extension)) {
-        if (mounted) {
-          if (mounted) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Formato de imagen no permitido. Use PNG, JPG, JPEG, HEIC o HEIF.'),
-              backgroundColor: AppColors.naranjaOscuro,
-            ),
-          );
-          }
-          }
-        }
-                return;
-      }
-
-      setState(() {
-        _imagenSeleccionada = File(pickedFile.path);
-      });
-
-      print('Imagen seleccionada: ${pickedFile.path}');
-      print('Formato: $extension');
-    }
-  } catch (e) {
-    print('Error al seleccionar imagen: $e');
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al seleccionar imagen: $e'),
-          backgroundColor: AppColors.naranjaOscuro,
-        ),
-      );
-    }
-  }
-}
-
-
-  Future<void> _takePhotoWithCamera() async {
+  Future<void> _selectImageFromGallery() async {
     try {
       final XFile? pickedFile = await _picker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 80,
-        preferredCameraDevice: CameraDevice.rear,
+        source: ImageSource.gallery,
+        imageQuality: 80, // Reducir un poco la calidad para bajar el tamaño
       );
-      
+
       if (pickedFile != null) {
-        // Las fotos tomadas con la cámara normalmente son JPEG, pero verificamos igualmente
         final String extension = pickedFile.path.split('.').last.toLowerCase();
         final List<String> formatosPermitidos = ['png', 'jpg', 'jpeg', 'heic', 'heif'];
-        
+
         if (!formatosPermitidos.contains(extension)) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -99,11 +51,56 @@ Future<void> _selectImageFromGallery() async {
           }
           return;
         }
-        
+
         setState(() {
           _imagenSeleccionada = File(pickedFile.path);
         });
-        
+
+        print('Imagen seleccionada: ${pickedFile.path}');
+        print('Formato: $extension');
+      }
+    } catch (e) {
+      print('Error al seleccionar imagen: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al seleccionar imagen: $e'),
+            backgroundColor: AppColors.naranjaOscuro,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _takePhotoWithCamera() async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+        preferredCameraDevice: CameraDevice.rear,
+      );
+
+      if (pickedFile != null) {
+        // Las fotos tomadas con la cámara normalmente son JPEG, pero verificamos igualmente
+        final String extension = pickedFile.path.split('.').last.toLowerCase();
+        final List<String> formatosPermitidos = ['png', 'jpg', 'jpeg', 'heic', 'heif'];
+
+        if (!formatosPermitidos.contains(extension)) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Formato de imagen no permitido. Use PNG, JPG, JPEG, HEIC o HEIF.'),
+                backgroundColor: AppColors.naranjaOscuro,
+              ),
+            );
+          }
+          return;
+        }
+
+        setState(() {
+          _imagenSeleccionada = File(pickedFile.path);
+        });
+
         print('Foto tomada: ${pickedFile.path}');
         print('Formato: $extension');
       }
@@ -126,7 +123,6 @@ Future<void> _selectImageFromGallery() async {
     });
   }
 
-
   // Función para validar email
   bool _isValidEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
@@ -134,19 +130,19 @@ Future<void> _selectImageFromGallery() async {
 
   Future<void> _subirFotoUsuario(String documentoIdentidad) async {
     if (_imagenSeleccionada == null) return;
-    
+
     try {
       print('Iniciando subida de foto para usuario: $documentoIdentidad');
       // Pequeña pausa para asegurar que el registro se completó
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // Verificar si el usuario existe antes de subir la foto
       bool usuarioExiste = await _usuarioService.verificarUsuarioExistente(documentoIdentidad);
       if (!usuarioExiste) {
         print('Error: El usuario $documentoIdentidad no existe para subir la foto');
         throw Exception('El usuario no existe para subir la foto');
       }
-      
+
       await _usuarioService.subirFoto(documentoIdentidad, _imagenSeleccionada!);
       print('Foto subida correctamente para: $documentoIdentidad');
     } catch (e) {
@@ -168,14 +164,12 @@ Future<void> _selectImageFromGallery() async {
         documento.isEmpty ||
         fechaNacimientoStr.isEmpty) {
       if (mounted) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Por favor, completa todos los campos.'),
-              backgroundColor: AppColors.naranjaOscuro,
-            ),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Por favor, completa todos los campos.'),
+            backgroundColor: AppColors.naranjaOscuro,
+          ),
+        );
       }
       return;
     }
@@ -183,8 +177,8 @@ Future<void> _selectImageFromGallery() async {
     // Validar formato de email
     if (!_isValidEmail(email)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Por favor, ingresa un email válido.'),
+        const SnackBar(
+          content: Text('Por favor, ingresa un email válido.'),
           backgroundColor: AppColors.naranjaOscuro,
         ),
       );
@@ -202,7 +196,7 @@ Future<void> _selectImageFromGallery() async {
       if (fechaParts.length != 3) {
         throw Exception('Formato de fecha inválido');
       }
-      
+
       final fechaNacimiento = '${fechaParts[2]}-${fechaParts[1].padLeft(2, '0')}-${fechaParts[0].padLeft(2, '0')}';
       print('Fecha formateada para API: $fechaNacimiento');
 
@@ -210,8 +204,8 @@ Future<void> _selectImageFromGallery() async {
       bool usuarioExiste = await _usuarioService.verificarUsuarioExistente(documento);
       if (usuarioExiste) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Ya existe un usuario con ese documento de identidad.'),
+          const SnackBar(
+            content: Text('Ya existe un usuario con ese documento de identidad.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -229,12 +223,12 @@ Future<void> _selectImageFromGallery() async {
           documentoIdentidad: documento,
           fechaNacimiento: fechaNacimiento,
         );
-        
+
         print('Intentando registrar usuario con datos: ${usuario.toJson()}');
         Usuario usuarioRegistrado = await _usuarioService.registrarUsuario(usuario);
         String documentoRegistrado = usuarioRegistrado.documentoIdentidad;
         print('Usuario registrado exitosamente: $documentoRegistrado');
-        
+
         // Si hay foto seleccionada, la subimos y manejamos errores
         if (_imagenSeleccionada != null) {
           try {
@@ -248,9 +242,9 @@ Future<void> _selectImageFromGallery() async {
                 ),
               );
             }
-            
+
             await _subirFotoUsuario(documentoRegistrado);
-            
+
             // Solo si la foto se subió correctamente, mostramos éxito completo
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -259,19 +253,19 @@ Future<void> _selectImageFromGallery() async {
                   backgroundColor: AppColors.verdeVibrante,
                 ),
               );
-              
+
               // Limpiar el formulario SOLO si todo fue exitoso
               _limpiarFormulario();
             }
           } catch (fotoError) {
             print('Error al subir la foto: $fotoError');
-            
+
             // Como el usuario quería subir foto pero falló, eliminamos el usuario
             try {
               print('Eliminando usuario debido a fallo en subida de foto: $documentoRegistrado');
               await _usuarioService.eliminarUsuario(documentoRegistrado);
               print('Usuario eliminado tras fallar la subida de foto');
-              
+
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -285,21 +279,16 @@ Future<void> _selectImageFromGallery() async {
               }
             } catch (eliminarError) {
               print('Error al eliminar usuario: $eliminarError');
-              
+
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text(
+                  const SnackBar(
+                    content: Text(
                       'Error al subir la foto. El usuario fue creado pero sin foto. '
                       'Contacte al administrador.',
                     ),
                     backgroundColor: AppColors.naranjaOscuro,
-                    action: SnackBarAction(
-                      label: 'Cerrar',
-                      textColor: Colors.white,
-                      onPressed: () {},
-                    ),
-                    duration: const Duration(seconds: 10),
+                    duration: Duration(seconds: 10),
                   ),
                 );
               }
@@ -315,14 +304,14 @@ Future<void> _selectImageFromGallery() async {
                 backgroundColor: Colors.green,
               ),
             );
-            
+
             // Limpiar el formulario
             _limpiarFormulario();
           }
         }
       } catch (e) {
         print('Error al registrar usuario: $e');
-        
+
         // Verificar si el usuario se registró a pesar del error
         try {
           bool existe = await _usuarioService.verificarUsuarioExistente(documento);
@@ -335,7 +324,7 @@ Future<void> _selectImageFromGallery() async {
                   backgroundColor: Colors.green,
                 ),
               );
-              
+
               // Limpiar formulario
               _limpiarFormulario();
             }
@@ -344,7 +333,7 @@ Future<void> _selectImageFromGallery() async {
         } catch (_) {
           // Si hay error al verificar, continuamos con el manejo del error original
         }
-        
+
         // Mostrar error
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -374,7 +363,7 @@ Future<void> _selectImageFromGallery() async {
       }
     }
   }
-  
+
   // Método para limpiar el formulario
   void _limpiarFormulario() {
     _nombreController.clear();
@@ -457,59 +446,38 @@ Future<void> _selectImageFromGallery() async {
                         fit: BoxFit.cover,
                       ),
                       const SizedBox(height: 10),
-                      ElevatedButton(
+                      BotonNaranjaPersonalizado(
                         onPressed: _removeSelectedImage,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.naranjaOscuro,
-                        ),
-                        child: const Text('Eliminar foto'),
+                        texto: 'Eliminar foto',
                       ),
                     ],
                   )
                 else
                   Row(
                     children: [
-                      ElevatedButton.icon(
+                      BotonVerdePersonalizado(
                         onPressed: _selectImageFromGallery,
-                        icon: const Icon(Icons.photo_library),
-                        label: const Text('Seleccionar archivo'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.verdeOscuro,
-                          foregroundColor: AppColors.blanco,
-                        ),
+                        icono: Icons.photo_library,
+                        texto: 'Seleccionar archivo',
                       ),
                       const SizedBox(width: 10),
-                      ElevatedButton.icon(
+                      BotonVerdePersonalizado(
                         onPressed: _takePhotoWithCamera,
-                        icon: const Icon(Icons.camera_alt),
-                        label: const Text('Tomar foto'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.verdeOscuro,
-                          foregroundColor: AppColors.blanco,
-                        ),
+                        icono: Icons.camera_alt,
+                        texto: 'Tomar foto',
                       ),
                     ],
                   ),
                 const SizedBox(height: 30),
                 Center(
-                  child: ElevatedButton(
-                    onPressed: _estaCargando ? null : _registrarUsuario,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.naranjaBrillante,
-                      foregroundColor: AppColors.blanco,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 15,
-                        horizontal: 50,
-                      ),
-                      disabledBackgroundColor: Colors.grey,
+                  child: BotonNaranjaPersonalizado(
+                    onPressed: _registrarUsuario,
+                    texto: 'Registrarse',
+                    isLoading: _estaCargando,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 15,
+                      horizontal: 50,
                     ),
-                    child: _estaCargando 
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Text('Registrarse'),
                   ),
                 ),
               ],
@@ -518,7 +486,7 @@ Future<void> _selectImageFromGallery() async {
           // Indicador de carga que cubre toda la pantalla cuando está registrando
           if (_estaCargando)
             Container(
-              color: Colors.black.withValues(alpha: 0.3),
+              color: Colors.black.withOpacity(0.3),
               child: const Center(
                 child: CircularProgressIndicator(),
               ),

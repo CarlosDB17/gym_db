@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../models/usuario.dart';
 import '../../services/usuario_service.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/boton_verde_personalizado.dart';
+import '../../widgets/boton_naranja_personalizado.dart';
 
 class ListadoUsuariosScreen extends StatefulWidget {
   const ListadoUsuariosScreen({super.key});
@@ -14,7 +16,6 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
   final UsuarioService _usuarioService = UsuarioService();
   final TextEditingController _busquedaController = TextEditingController();
   List<Usuario> _usuarios = [];
-  //Usuario? _usuarioSeleccionado;
   int _paginaActual = 0;
   int _totalUsuarios = 0;
   final int _usuariosPorPagina = 4;
@@ -109,35 +110,17 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      ElevatedButton(
+                      BotonVerdePersonalizado(
                         onPressed: () => _cargarUsuarios(filtro: _busquedaController.text),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.verdeVibrante, // Verde vibrante
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20), // Bordes redondeados
-                          ),
-                        ),
-                        child: const Text(
-                          'Buscar',
-                          style: TextStyle(color: AppColors.blanco),
-                        ),
+                        texto: 'Buscar',
                       ),
                       const SizedBox(width: 8),
-                      ElevatedButton(
+                      BotonNaranjaPersonalizado(
                         onPressed: () {
                           _busquedaController.clear();
                           _cargarUsuarios();
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.naranjaBrillante, // Naranja brillante
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20), // Bordes redondeados
-                          ),
-                        ),
-                        child: const Text(
-                          'Limpiar',
-                          style: TextStyle(color: AppColors.blanco),
-                        ),
+                        texto: 'Limpiar',
                       ),
                     ],
                   ),
