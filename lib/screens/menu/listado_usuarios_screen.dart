@@ -20,6 +20,8 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
   int _totalUsuarios = 0;
   final int _usuariosPorPagina = 4;
   bool _cargando = false;
+  bool _busquedaRealizada = false;
+  String? _mensajeError;
 
   @override
   void initState() {
@@ -28,7 +30,11 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
   }
 
   Future<void> _cargarUsuarios({String? filtro}) async {
-    setState(() => _cargando = true);
+    setState(() {
+      _cargando = true;
+      _mensajeError = null; // Limpiamos mensaje de error anterior
+    });
+
     try {
       final data =
           filtro == null || filtro.isEmpty
@@ -44,6 +50,22 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
       setState(() {
         _usuarios = data['usuarios'];
         _totalUsuarios = data['total'];
+        _busquedaRealizada = filtro != null && filtro.isNotEmpty;
+        
+        // Capturar mensaje de error si existe
+        if (data.containsKey('mensaje_error')) {
+          _mensajeError = data['mensaje_error'];
+          
+          // Mostrar mensaje de error en SnackBar si no se encontraron usuarios
+          if (_usuarios.isEmpty && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(_mensajeError!),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
       });
     } catch (e) {
       if (mounted) {
@@ -119,20 +141,54 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                       ),
                       const SizedBox(width: 8),
                       BotonVerdePersonalizado(
-                        onPressed: () => _cargarUsuarios(filtro: _busquedaController.text),
+                        onPressed: () {
+                          if (_busquedaController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Escribe antes de realizar una búsqueda'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          } else {
+                            _cargarUsuarios(filtro: _busquedaController.text);
+                          }
+                        },
                         texto: 'Buscar',
                       ),
                       const SizedBox(width: 8),
                       BotonNaranjaPersonalizado(
                         onPressed: () {
-                          _busquedaController.clear();
-                          _cargarUsuarios();
+                          if (_busquedaRealizada) {
+                            _busquedaController.clear();
+                            setState(() {
+                              _busquedaRealizada = false;
+                            });
+                            _cargarUsuarios();
+                          }
                         },
                         texto: 'Limpiar',
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
+
+                  // Mostrar mensaje de error si no hay resultados
+                  if (_usuarios.isEmpty && _busquedaRealizada)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20.0),
+                      child: Center(
+                        child: Text(
+                          'Sin resultados',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 16,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+
                   Expanded(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,

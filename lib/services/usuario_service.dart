@@ -331,27 +331,78 @@ Future<void> eliminarFotoUsuario(String documentoIdentidad) async {
     }
   }
 
-
 // Buscar usuarios por valor con paginación
 Future<Map<String, dynamic>> buscarUsuariosPorValor(String valor, {int skip = 0, int limit = 3}) async {
-  final response = await http.get(
-    Uri.parse("$_baseUrl/buscar/$valor?skip=$skip&limit=$limit"),
-  );
+  try {
+    // Imprimir la URL completa para depuración
+    final url = "$_baseUrl/buscar/$valor?skip=$skip&limit=$limit";
+    print('Realizando petición a: $url');
+    
+    final response = await http.get(Uri.parse(url));
 
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-    List<Usuario> usuarios = List<Usuario>.from(data['usuarios'].map((u) => Usuario.fromJson(u)));
+    // Imprimir información detallada de la respuesta
+    print('Código de respuesta para búsqueda "$valor": ${response.statusCode}');
+    print('Cuerpo de respuesta: ${response.body}');
+    
+    // Si la respuesta es exitosa (200 OK)
+    if (response.statusCode == 200) {
+      try {
+        final data = jsonDecode(response.body);
+        
+        // Verificar estructura de datos completa
+        if (data is Map && data.containsKey('usuarios') && data.containsKey('total')) {
+          // Convertir los datos a objetos Usuario
+          try {
+            List<Usuario> usuarios = (data['usuarios'] as List)
+                .map((u) => Usuario.fromJson(u as Map<String, dynamic>))
+                .toList();
+            return {
+              'usuarios': usuarios,
+              'total': data['total'],
+            };
+          } catch (e) {
+            print('Error al convertir datos a objetos Usuario: $e');
+            return {'usuarios': <Usuario>[], 'total': 0};
+          }
+        } else {
+          print('Respuesta sin estructura esperada: $data');
+          return {'usuarios': <Usuario>[], 'total': 0};
+        }
+      } catch (e) {
+        print('Error al decodificar JSON: $e');
+        return {'usuarios': <Usuario>[], 'total': 0};
+      }
+    } 
+    // Si no se encontraron resultados (404 Not Found u otros códigos de error)
+    else {
+      print('No se encontraron usuarios para "$valor" - Código: ${response.statusCode}');
+      
+      // Intentar extraer el mensaje de error
+      String mensajeError = "No se encontraron usuarios";
+      try {
+        final errorData = jsonDecode(response.body);
+        if (errorData is Map && errorData.containsKey('detail')) {
+          mensajeError = errorData['detail'];
+        }
+      } catch (e) {
+        print('Error al decodificar mensaje de error: $e');
+      }
+      
+      // Devolver una lista vacía y el mensaje de error
+      return {
+        'usuarios': <Usuario>[],
+        'total': 0,
+        'mensaje_error': mensajeError
+      };
+    }
+  } catch (e) {
+    print('Excepción capturada en buscarUsuariosPorValor: $e');
+    // Devolver estructura válida incluso en caso de excepción
     return {
-      'usuarios': usuarios,
-      'total': data['total'],
-    };
-  } else if (response.statusCode == 404) {
-    return {
-      'usuarios': [],
+      'usuarios': <Usuario>[],
       'total': 0,
+      'mensaje_error': 'Error al realizar la búsqueda: $e'
     };
-  } else {
-    throw Exception('Error al buscar usuarios: ${response.body}');
   }
 }
 
