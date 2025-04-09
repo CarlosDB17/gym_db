@@ -174,8 +174,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
 
                   // Mostrar mensaje de error si no hay resultados
                   if (_usuarios.isEmpty && _busquedaRealizada)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20.0),
+                    const Expanded(
                       child: Center(
                         child: Text(
                           'Sin resultados',
@@ -187,184 +186,190 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                           textAlign: TextAlign.center,
                         ),
                       ),
-                    ),
+                    )
+                  // Si hay resultados o no se ha realizado búsqueda, mostrar la tabla y la paginación
+                  else if (_usuarios.isNotEmpty || !_busquedaRealizada) 
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: SingleChildScrollView(
+                                child: DataTable(
+                                  headingRowColor: WidgetStateProperty.all(
+                                    AppColors.verdeVibrante.withAlpha((0.2 * 255).toInt())
+                                  ),
+                                  columnSpacing: 20,
+                                  dataRowMinHeight: 60,
+                                  dataRowMaxHeight: 60,
+                                  headingTextStyle: const TextStyle(
+                                    color: AppColors.verdeOscuro,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  columns: const [
+                                    DataColumn(label: Text('Foto')),
+                                    DataColumn(label: Text('Nombre')),
+                                    DataColumn(label: Text('Email')),
+                                    DataColumn(label: Text('Documento de identidad')),
+                                    DataColumn(label: Text('Fecha de Nacimiento')),
+                                  ],
+                                  rows: _usuarios.map((usuario) {
+                                    return DataRow(
+                                      cells: [
+                                        DataCell(
+                                          usuario.foto != null
+                                              ? ClipOval(
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: Image.network(
+                                                      usuario.foto!,
+                                                      height: 50,
+                                                      width: 50,
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                                  ),
+                                                )
+                                              : ClipOval(
+                                                  child: Container(
+                                                    height: 50,
+                                                    width: 50,
+                                                    decoration: BoxDecoration(
+                                                      color: AppColors.naranjaBrillante,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: const Icon(
+                                                      Icons.person,
+                                                      color: AppColors.blanco,
+                                                      size: 30,
+                                                    ),
+                                                  ),
+                                                ),
+                                          onTap: () async {
+                                            final resultado = await Navigator.pushNamed(
+                                              context,
+                                              '/listado_usuarios_actualizar',
+                                              arguments: usuario,
+                                            );
 
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SingleChildScrollView(
-                        child: DataTable(
-                          headingRowColor: WidgetStateProperty.all(
-                        AppColors.verdeVibrante.withAlpha((0.2 * 255).toInt())
-                          ), // Fondo verde claro para encabezados
-                          columnSpacing: 20, // Espaciado entre columnas
-                          dataRowMinHeight: 60,
-                          dataRowMaxHeight: 60,
-                          headingTextStyle: const TextStyle(
-                            color: AppColors.verdeOscuro, // Texto de encabezados en verde oscuro
-                            fontWeight: FontWeight.bold,
-                          ),
-                          columns: const [
-                            DataColumn(label: Text('Foto')),
-                            DataColumn(label: Text('Nombre')),
-                            DataColumn(label: Text('Email')),
-                            DataColumn(label: Text('Documento de identidad')),
-                            DataColumn(label: Text('Fecha de Nacimiento')),
-                          ],
-                          rows: _usuarios.map((usuario) {
-                            return DataRow(
-                              cells: [
-                                DataCell(
-                                  usuario.foto != null
-                                      ? ClipOval(
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle, // Forma circular
-                                            ),
-                                            child: Image.network(
-                                              usuario.foto!,
-                                              height: 50,
-                                              width: 50,
-                                              fit: BoxFit.cover, // Ajustar la imagen al contenedor
-                                            ),
-                                          ),
-                                        )
-                                      : ClipOval(
-                                          child: Container(
-                                            height: 50,
-                                            width: 50,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.naranjaBrillante, // Fondo naranja brillante
-                                              shape: BoxShape.circle, // Forma circular
-                                            ),
-                                            child: const Icon(
-                                              Icons.person,
-                                              color: AppColors.blanco, // Ícono blanco
-                                              size: 30,
-                                            ),
-                                          ),
+                                            if (resultado == true) {
+                                              _cargarUsuarios();
+                                            }
+                                          },
                                         ),
-                                  onTap: () async {
-                                    final resultado = await Navigator.pushNamed(
-                                      context,
-                                      '/listado_usuarios_actualizar',
-                                      arguments: usuario,
+                                        DataCell(
+                                          Text(usuario.nombre),
+                                          onTap: () async {
+                                            final resultado = await Navigator.pushNamed(
+                                              context,
+                                              '/listado_usuarios_actualizar',
+                                              arguments: usuario,
+                                            );
+                                            if (resultado == true) {
+                                              _cargarUsuarios();
+                                            }
+                                          },
+                                        ),
+                                        DataCell(
+                                          Text(usuario.email),
+                                          onTap: () async {
+                                            final resultado = await Navigator.pushNamed(
+                                              context,
+                                              '/listado_usuarios_actualizar',
+                                              arguments: usuario,
+                                            );
+                                            if (resultado == true) {
+                                              _cargarUsuarios();
+                                            }
+                                          },
+                                        ),
+                                        DataCell(
+                                          Text(usuario.documentoIdentidad),
+                                          onTap: () async {
+                                            final resultado = await Navigator.pushNamed(
+                                              context,
+                                              '/listado_usuarios_actualizar',
+                                              arguments: usuario,
+                                            );
+                                            if (resultado == true) {
+                                              _cargarUsuarios();
+                                            }
+                                          },
+                                        ),
+                                        DataCell(
+                                          Text(_formatearFecha(usuario.fechaNacimiento)),
+                                          onTap: () async {
+                                            final resultado = await Navigator.pushNamed(
+                                              context,
+                                              '/listado_usuarios_actualizar',
+                                              arguments: usuario,
+                                            );
+                                            if (resultado == true) {
+                                              _cargarUsuarios();
+                                            }
+                                          },
+                                        ),
+                                      ],
                                     );
-                                      print('Resultado de la actualización: $resultado'); // Depuración
-
-                                    if (resultado == true) {
-                                          print('Recargando usuarios...');
-
-                                      _cargarUsuarios(); // Recargar la lista si hubo cambios
-                                    }
-                                  },
+                                  }).toList(),
                                 ),
-                                DataCell(
-                                  Text(usuario.nombre),
-                                  onTap: () async {
-                                    final resultado = await Navigator.pushNamed(
-                                      context,
-                                      '/listado_usuarios_actualizar',
-                                      arguments: usuario,
-                                    );
-                                    if (resultado == true) {
-                                      _cargarUsuarios(); // Recargar la lista si hubo cambios
-                                    }
-                                  },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Pulsa en un usuario para editarlo. Desliza para ver el resto de datos.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Solo mostrar la paginación si hay resultados
+                          if (_totalUsuarios > 0)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                IconButton(
+                                  onPressed: _paginaActual > 0
+                                      ? () {
+                                          setState(() => _paginaActual--);
+                                          _cargarUsuarios();
+                                        }
+                                      : null,
+                                  icon: Icon(
+                                    Icons.arrow_back,
+                                    color: _paginaActual > 0
+                                        ? AppColors.verdeOscuro
+                                        : Colors.grey,
+                                  ),
                                 ),
-                                DataCell(
-                                  Text(usuario.email),
-                                  onTap: () async {
-                                    final resultado = await Navigator.pushNamed(
-                                      context,
-                                      '/listado_usuarios_actualizar',
-                                      arguments: usuario,
-                                    );
-                                    if (resultado == true) {
-                                      _cargarUsuarios(); // Recargar la lista si hubo cambios
-                                    }
-                                  },
+                                Text(
+                                  'Página ${_paginaActual + 1} / ${(_totalUsuarios / _usuariosPorPagina).ceil() > 0 ? (_totalUsuarios / _usuariosPorPagina).ceil() : 1}',
+                                  style: const TextStyle(color: AppColors.verdeOscuro),
                                 ),
-                                DataCell(
-                                  Text(usuario.documentoIdentidad),
-                                  onTap: () async {
-                                    final resultado = await Navigator.pushNamed(
-                                      context,
-                                      '/listado_usuarios_actualizar',
-                                      arguments: usuario,
-                                    );
-                                    if (resultado == true) {
-                                      _cargarUsuarios(); // Recargar la lista si hubo cambios
-                                    }
-                                  },
-                                ),
-                                DataCell(
-                                  Text(_formatearFecha(usuario.fechaNacimiento)),
-                                  onTap: () async {
-                                    final resultado = await Navigator.pushNamed(
-                                      context,
-                                      '/listado_usuarios_actualizar',
-                                      arguments: usuario,
-                                    );
-                                    if (resultado == true) {
-                                      _cargarUsuarios(); // Recargar la lista si hubo cambios
-                                    }
-                                  },
+                                IconButton(
+                                  onPressed: (_paginaActual + 1) * _usuariosPorPagina < _totalUsuarios
+                                      ? () {
+                                          setState(() => _paginaActual++);
+                                          _cargarUsuarios();
+                                        }
+                                      : null,
+                                  icon: Icon(
+                                    Icons.arrow_forward,
+                                    color: (_paginaActual + 1) * _usuariosPorPagina < _totalUsuarios
+                                        ? AppColors.verdeOscuro
+                                        : Colors.grey,
+                                  ),
                                 ),
                               ],
-                            );
-                          }).toList(),
-                        ),
+                            ),
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Pulsa en un usuario para editarlo. Desliza para ver el resto de datos.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        onPressed: _paginaActual > 0
-                            ? () {
-                                setState(() => _paginaActual--);
-                                _cargarUsuarios();
-                              }
-                            : null,
-                        icon: Icon(
-                          Icons.arrow_back,
-                          color: _paginaActual > 0
-                              ? AppColors.verdeOscuro
-                              : Colors.grey, // Cambia a gris si no hay más páginas atrás
-                        ),
-                      ),
-                      Text(
-                        'Página ${_paginaActual + 1} / ${(_totalUsuarios / _usuariosPorPagina).ceil()}',
-                        style: const TextStyle(color: AppColors.verdeOscuro),
-                      ),
-                      IconButton(
-                        onPressed: (_paginaActual + 1) * _usuariosPorPagina < _totalUsuarios
-                            ? () {
-                                setState(() => _paginaActual++);
-                                _cargarUsuarios();
-                              }
-                            : null,
-                        icon: Icon(
-                          Icons.arrow_forward,
-                          color: (_paginaActual + 1) * _usuariosPorPagina < _totalUsuarios
-                              ? AppColors.verdeOscuro
-                              : Colors.grey, // Cambia a gris si no hay más páginas adelante
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
