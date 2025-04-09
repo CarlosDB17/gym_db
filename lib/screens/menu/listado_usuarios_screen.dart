@@ -151,82 +151,100 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                             return DataRow(
                               cells: [
                                 DataCell(
-                                    usuario.foto != null
+                                  usuario.foto != null
                                       ? ClipOval(
-                                        child: Container(
-                                        decoration: BoxDecoration(
-                                        
-                                          shape: BoxShape.circle, // Forma circular
-                                        ),
-                                        child: Image.network(
-                                          usuario.foto!,
-                                          height: 50,
-                                          width: 50,
-                                          fit: BoxFit.cover, // Ajustar la imagen al contenedor
-                                        ),
-                                        ),
-                                      )
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle, // Forma circular
+                                            ),
+                                            child: Image.network(
+                                              usuario.foto!,
+                                              height: 50,
+                                              width: 50,
+                                              fit: BoxFit.cover, // Ajustar la imagen al contenedor
+                                            ),
+                                          ),
+                                        )
                                       : ClipOval(
-                                        child: Container(
-                                        height: 50,
-                                        width: 50,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.naranjaBrillante, // Fondo naranja brillante
-                                          shape: BoxShape.circle, // Forma circular
+                                          child: Container(
+                                            height: 50,
+                                            width: 50,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.naranjaBrillante, // Fondo naranja brillante
+                                              shape: BoxShape.circle, // Forma circular
+                                            ),
+                                            child: const Icon(
+                                              Icons.person,
+                                              color: AppColors.blanco, // Ícono blanco
+                                              size: 30,
+                                            ),
+                                          ),
                                         ),
-                                        child: const Icon(
-                                          Icons.person,
-                                          color: AppColors.blanco, // Ícono blanco
-                                          size: 30,
-                                        ),
-                                        ),
-                                      ),
-                                  onTap: () {
-                                    Navigator.pushNamed(
+                                  onTap: () async {
+                                    final resultado = await Navigator.pushNamed(
                                       context,
                                       '/listado_usuarios_actualizar',
                                       arguments: usuario,
                                     );
+                                      print('Resultado de la actualización: $resultado'); // Depuración
+
+                                    if (resultado == true) {
+                                          print('Recargando usuarios...');
+
+                                      _cargarUsuarios(); // Recargar la lista si hubo cambios
+                                    }
                                   },
                                 ),
                                 DataCell(
                                   Text(usuario.nombre),
-                                  onTap: () {
-                                    Navigator.pushNamed(
+                                  onTap: () async {
+                                    final resultado = await Navigator.pushNamed(
                                       context,
                                       '/listado_usuarios_actualizar',
                                       arguments: usuario,
                                     );
+                                    if (resultado == true) {
+                                      _cargarUsuarios(); // Recargar la lista si hubo cambios
+                                    }
                                   },
                                 ),
                                 DataCell(
                                   Text(usuario.email),
-                                  onTap: () {
-                                    Navigator.pushNamed(
+                                  onTap: () async {
+                                    final resultado = await Navigator.pushNamed(
                                       context,
                                       '/listado_usuarios_actualizar',
                                       arguments: usuario,
                                     );
+                                    if (resultado == true) {
+                                      _cargarUsuarios(); // Recargar la lista si hubo cambios
+                                    }
                                   },
                                 ),
                                 DataCell(
                                   Text(usuario.documentoIdentidad),
-                                  onTap: () {
-                                    Navigator.pushNamed(
+                                  onTap: () async {
+                                    final resultado = await Navigator.pushNamed(
                                       context,
                                       '/listado_usuarios_actualizar',
                                       arguments: usuario,
                                     );
+                                    if (resultado == true) {
+                                      _cargarUsuarios(); // Recargar la lista si hubo cambios
+                                    }
                                   },
                                 ),
                                 DataCell(
                                   Text(usuario.fechaNacimiento),
-                                  onTap: () {
-                                    Navigator.pushNamed(
+                                  onTap: () async {
+                                    final resultado = await Navigator.pushNamed(
                                       context,
                                       '/listado_usuarios_actualizar',
                                       arguments: usuario,
                                     );
+                                    if (resultado == true) {
+                                      _cargarUsuarios(); // Recargar la lista si hubo cambios
+                                    }
                                   },
                                 ),
                               ],

@@ -164,7 +164,7 @@ class _ListadoUsuariosActualizarScreenState
 
   Future<void> _actualizarUsuario() async {
     setState(() => _estaCargando = true);
-    
+
     try {
       final String nuevoNombre = _nombreController.text.trim();
       final String nuevoEmail = _emailController.text.trim();
@@ -181,6 +181,25 @@ class _ListadoUsuariosActualizarScreenState
         return;
       }
 
+      // Verificar si se hicieron cambios
+      bool cambiosRealizados = nuevoNombre != _usuario!.nombre ||
+          nuevoEmail != _usuario!.email ||
+          _nuevaFoto != null ||
+          nuevaFechaNacimiento != _usuario!.fechaNacimiento ||
+          nuevoDocumentoIdentidad != _usuario!.documentoIdentidad;
+
+      if (!cambiosRealizados) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se han realizado cambios.'),
+            backgroundColor: Colors.grey,
+          ),
+        );
+        setState(() => _estaCargando = false);
+        return;
+      }
+
+      // Verificar si el nuevo documento de identidad ya existe
       if (nuevoDocumentoIdentidad != _usuario!.documentoIdentidad) {
         final existe = await _usuarioService
             .verificarUsuarioExistente(nuevoDocumentoIdentidad);
@@ -191,24 +210,47 @@ class _ListadoUsuariosActualizarScreenState
       }
 
       // Convertir formato de fecha según lo esperado por la API
-      // Asumiendo que el formato actual es dd/mm/yyyy y necesitamos yyyy-mm-dd
       String fechaFormateada = nuevaFechaNacimiento;
       if (nuevaFechaNacimiento.contains('/')) {
         final fechaParts = nuevaFechaNacimiento.split('/');
         if (fechaParts.length == 3) {
-          fechaFormateada = '${fechaParts[2]}-${fechaParts[1].padLeft(2, '0')}-${fechaParts[0].padLeft(2, '0')}';
+          fechaFormateada =
+              '${fechaParts[2]}-${fechaParts[1].padLeft(2, '0')}-${fechaParts[0].padLeft(2, '0')}';
         }
       }
 
-      final actualizado = await _usuarioService.actualizarUsuarioParcial(
+      // Crear un mapa con solo los campos que se van a actualizar
+      Map<String, dynamic> camposActualizados = {};
+
+      if (nuevoNombre != _usuario!.nombre) {
+        camposActualizados['nombre'] = nuevoNombre;
+      }
+
+      if (nuevoEmail != _usuario!.email) {
+        camposActualizados['email'] = nuevoEmail;
+      }
+
+      if (fechaFormateada != _usuario!.fechaNacimiento) {
+        camposActualizados['fechaNacimiento'] = fechaFormateada;
+      }
+
+      if (nuevoDocumentoIdentidad != _usuario!.documentoIdentidad) {
+        camposActualizados['documentoIdentidad'] = nuevoDocumentoIdentidad;
+      }
+
+      // Manejar la foto de manera especial
+      String? urlFoto;
+      if (_nuevaFoto != null) {
+        urlFoto = await _usuarioService.subirFoto(
+          _usuario!.documentoIdentidad, _nuevaFoto!);
+        camposActualizados['foto'] = urlFoto;
+      }
+
+      // Actualizar el usuario
+      // ignore: unused_local_variable
+      final actualizado = await _usuarioService.actualizarUsuario(
         _usuario!.documentoIdentidad,
-        nombre: nuevoNombre,
-        email: nuevoEmail,
-        fechaNacimiento: fechaFormateada,
-        foto: _nuevaFoto != null
-            ? await _usuarioService.subirFoto(
-                _usuario!.documentoIdentidad, _nuevaFoto!)
-            : null,
+        camposActualizados,
       );
 
       if (!mounted) return;
@@ -219,7 +261,7 @@ class _ListadoUsuariosActualizarScreenState
         ),
       );
 
-      Navigator.pop(context, actualizado);
+      Navigator.pop(context, true);
     } catch (e) {
       _mostrarMensajeError('Error al actualizar el usuario: $e');
     } finally {
@@ -309,6 +351,7 @@ class _ListadoUsuariosActualizarScreenState
       
       // Volver a la pantalla anterior y actualizar la lista
       Navigator.pop(context, true);
+      print('Usuario actualizado y regresando con true'); // Depuración
     } catch (e) {
       _mostrarMensajeError('Error al eliminar el usuario: $e');
     } finally {

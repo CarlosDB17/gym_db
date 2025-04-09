@@ -81,64 +81,78 @@ class UsuarioService {
     }
   }
   
-  // Actualizar usuario parcialmente (solo los campos proporcionados)
-  Future<Usuario> actualizarUsuarioParcial(String documentoIdentidad, {
-    String? nombre,
-    String? email,
-    String? fechaNacimiento,
-    String? foto,
-  }) async {
-    final updateData = Usuario.toUpdateJson(
-      nombre: nombre,
-      email: email,
-      fechaNacimiento: fechaNacimiento,
-      foto: foto,
-    );
-    
-    if (updateData.isEmpty) {
-      // No hay nada que actualizar
-      return buscarPorDocumentoExacto(documentoIdentidad);
-    }
-    
-    return actualizarUsuario(documentoIdentidad, updateData);
+// Actualizar usuario parcialmente (solo los campos proporcionados)
+Future<Usuario> actualizarUsuarioParcial(String documentoIdentidad, {
+  String? nombre,
+  String? email,
+  String? fechaNacimiento,
+  String? foto,
+}) async {
+  // Crear un mapa solo con los valores que no son nulos
+  final Map<String, dynamic> updateData = {};
+  
+  if (nombre != null) updateData['nombre'] = nombre;
+  if (email != null) updateData['email'] = email;
+  if (fechaNacimiento != null) updateData['fecha_nacimiento'] = fechaNacimiento;
+  if (foto != null) updateData['foto'] = foto;
+  
+  if (updateData.isEmpty) {
+    // No hay nada que actualizar
+    return buscarPorDocumentoExacto(documentoIdentidad);
   }
+  
+  // Realizar la actualización
+  final response = await http.patch(
+    Uri.parse("$_baseUrl/$documentoIdentidad"),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode(updateData),
+  );
+  if (response.statusCode == 200) {
+    // Después de actualizar correctamente, obtener el usuario completo actualizado
+    return await buscarPorDocumentoExacto(documentoIdentidad);
+  } else {
+    throw Exception('Error al actualizar usuario');
+  }
+}
 
-  // Actualizar usuario
-  Future<Usuario> actualizarUsuario(String documentoIdentidad, Map<String, dynamic> data) async {
-    // Verificar si el documentoIdentidad o email ya existen en otro usuario
-    if (data.containsKey('documento_identidad') || data.containsKey('email')) {
-      final nuevoDocumento = data['documento_identidad'];
-      final nuevoEmail = data['email'];
+// Actualizar usuario
+Future<Usuario> actualizarUsuario(String documentoIdentidad, Map<String, dynamic> data) async {
+  // Verificar si el documentoIdentidad o email ya existen en otro usuario
+  if (data.containsKey('documento_identidad') || data.containsKey('email')) {
+    final nuevoDocumento = data['documento_identidad'];
+    final nuevoEmail = data['email'];
 
-      if (nuevoDocumento != null && nuevoDocumento != documentoIdentidad) {
-        final existeDocumento = await verificarUsuarioExistente(nuevoDocumento);
-        if (existeDocumento) {
-          throw Exception('Ya existe un usuario con el documento de identidad proporcionado.');
+    if (nuevoDocumento != null && nuevoDocumento != documentoIdentidad) {
+      final existeDocumento = await verificarUsuarioExistente(nuevoDocumento);
+      if (existeDocumento) {
+        throw Exception('Ya existe un usuario con el documento de identidad proporcionado.');
+      }
+    }
+
+    if (nuevoEmail != null) {
+      final usuariosConEmail = await buscarUsuariosPorValor(nuevoEmail, skip: 0, limit: 1);
+      if (usuariosConEmail['total'] > 0) {
+        final usuarioEncontrado = usuariosConEmail['usuarios'][0];
+        if (usuarioEncontrado.documentoIdentidad != documentoIdentidad) {
+          throw ('Ya existe un usuario con el email proporcionado.');
         }
       }
-
-      if (nuevoEmail != null) {
-        final usuariosConEmail = await buscarUsuariosPorValor(nuevoEmail, skip: 0, limit: 1);
-        if (usuariosConEmail['total'] > 0) {
-          final usuarioEncontrado = usuariosConEmail['usuarios'][0];
-          if (usuarioEncontrado.documentoIdentidad != documentoIdentidad) {
-            throw ('Ya existe un usuario con el email proporcionado.'); // Cambiado a un simple String
-          }
-        }
-      }
-    }
-
-    final response = await http.patch(
-      Uri.parse("$_baseUrl/$documentoIdentidad"),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(data),
-    );
-    if (response.statusCode == 200) {
-      return Usuario.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception('Error al actualizar usuario');
     }
   }
+
+  final response = await http.patch(
+    Uri.parse("$_baseUrl/$documentoIdentidad"),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode(data),
+  );
+  if (response.statusCode == 200) {
+    // En lugar de intentar convertir directamente la respuesta parcial,
+    // obtenemos el usuario completo actualizado
+    return await buscarPorDocumentoExacto(documentoIdentidad);
+  } else {
+    throw Exception('Error al actualizar usuario');
+  }
+}
 
   // Eliminar usuario
   Future<void> eliminarUsuario(String documentoIdentidad) async {
