@@ -10,4 +10,5 @@ class AppColors {
   static const Color grisSuave = Color(0xFFEAEAEA);
   static const Color textoOscuro = Color(0xFF2D2D2D);
   static const Color sombra = Color(0x40000000);
+  static const Color rojoError = Color(0xFFFF0000);
 }

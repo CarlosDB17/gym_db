@@ -30,7 +30,7 @@ class _MenuScreenState extends State<MenuScreen> {
   final List<String> _titles = [
     'Registro de Usuarios',
     'Listado de Usuarios',
-    'Escanear QR',
+    'QR',
     'Importar/Exportar CSV',
     'Ajustes',
   ];
@@ -78,47 +78,45 @@ class _MenuScreenState extends State<MenuScreen> {
             child: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(15),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.15),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Image.asset(
-                            'assets/images/gym_logo.png',
-                            height: 30,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Text(
-                            _titles[_currentIndex],
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              overflow: TextOverflow.ellipsis,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 32), // Padding superior de 32
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center, // Centrar horizontalmente
+                    crossAxisAlignment: CrossAxisAlignment.start, // Alinear hacia arriba
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.15),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
+                          ],
+                        ),
+                        child: Image.asset(
+                          'assets/images/gym_logo.png',
+                          height: 30,
+                        ),
+                      ),
+                      const SizedBox(width: 16), // Espaciado entre la imagen y el texto
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8), // Ajustar el texto para alinearlo con el centro de la imagen
+                        child: Text(
+                          _titles[_currentIndex],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        // Icono de campana eliminado
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
