@@ -67,6 +67,26 @@ class _QrScreenState extends State<QrScreen> {
     }
   }
 
+  // Método para mostrar mensajes de error o éxito
+  void _mostrarMensaje(String mensaje, bool esError) {
+    setState(() {
+      this.mensaje = mensaje;
+      error = esError;
+      verificandoDatos = false;
+      mensajeVerificacion = '';
+    });
+  }
+
+  // Método para manejar errores
+  void _manejarError(String mensajeError) {
+    _mostrarMensaje(mensajeError, true);
+  }
+
+  // Método para manejar éxito
+  void _manejarExito(String mensajeExito) {
+    _mostrarMensaje(mensajeExito, false);
+  }
+
   // Procesa el código QR escaneado
   void procesarCodigoQR(String result) {
     debugPrint('Procesando código QR: $result');
@@ -119,16 +139,9 @@ class _QrScreenState extends State<QrScreen> {
           if (!mounted) return;
           
           if (existeUsuario) {
-            // El usuario ya existe
-            setState(() {
-              mensaje = "Este usuario ya ha sido registrado anteriormente";
-              error = true;
-              verificandoDatos = false;
-              mensajeVerificacion = '';
-            });
             debugPrint('Usuario ya registrado: ${scannedUserData.nombre}');
+            _manejarError("Este usuario ya ha sido registrado anteriormente");
           } else {
-            // Registrar al usuario usando el servicio
             setState(() {
               verificandoDatos = true;
               mensajeVerificacion = 'Registrando usuario...';
@@ -136,33 +149,15 @@ class _QrScreenState extends State<QrScreen> {
             
             _usuarioService.registrarUsuario(scannedUserData).then((_) {
               if (!mounted) return;
-              
-              setState(() {
-                mensaje = 'Usuario registrado correctamente';
-                error = false;
-                verificandoDatos = false;
-                mensajeVerificacion = '';
-              });
+              _manejarExito('Usuario registrado correctamente');
             }).catchError((e) {
               if (!mounted) return;
-              
-              setState(() {
-                mensaje = 'Error al registrar usuario: ${e.toString()}';
-                error = true;
-                verificandoDatos = false;
-                mensajeVerificacion = '';
-              });
+              _manejarError('Error al registrar usuario: ${e.toString()}');
             });
           }
         }).catchError((e) {
           if (!mounted) return;
-          
-          setState(() {
-            mensaje = 'Error al verificar usuario: ${e.toString()}';
-            error = true;
-            verificandoDatos = false;
-            mensajeVerificacion = '';
-          });
+          _manejarError('Error al verificar usuario: ${e.toString()}');
         });
       });
     } catch (e) {
