@@ -191,7 +191,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
 
     try {
       // Convertir formato de fecha según lo esperado por la API
-      // Asumiendo que el formato actual es dd/mm/yyyy y necesitamos yyyy-mm-dd
+      // formato actual es dd/mm/yyyy y necesitamos yyyy-mm-dd (para firebase)
       final fechaParts = fechaNacimientoStr.split('/');
       if (fechaParts.length != 3) {
         throw Exception('Formato de fecha inválido');
@@ -203,12 +203,14 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
       // Verificar si el usuario ya existe
       bool usuarioExiste = await _usuarioService.verificarUsuarioExistente(documento);
       if (usuarioExiste) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Ya existe un usuario con ese documento de identidad.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Ya existe un usuario con ese documento de identidad.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
         setState(() {
           _estaCargando = false;
         });
@@ -486,7 +488,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
           // Indicador de carga que cubre toda la pantalla cuando está registrando
           if (_estaCargando)
             Container(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               child: const Center(
                 child: CircularProgressIndicator(),
               ),
