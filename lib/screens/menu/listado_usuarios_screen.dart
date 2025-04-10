@@ -58,21 +58,12 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
           
           // Mostrar mensaje de error en SnackBar si no se encontraron usuarios
           if (_usuarios.isEmpty && mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(_mensajeError!),
-                backgroundColor: Colors.red,
-              ),
-            );
+            _mostrarSnackBar(_mensajeError!);
           }
         }
       });
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
+      _mostrarSnackBar('Error: $e');
     } finally {
       setState(() => _cargando = false);
     }
@@ -84,6 +75,77 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
       return '${partes[2]}-${partes[1]}-${partes[0]}';
     }
     return fecha; // Retorna la fecha original si no tiene el formato esperado
+  }
+
+  // Método para mostrar un SnackBar
+  void _mostrarSnackBar(String mensaje, {Color color = Colors.red}) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(mensaje),
+          backgroundColor: color,
+        ),
+      );
+    }
+  }
+
+  // Método para navegar y recargar usuarios si es necesario
+  Future<void> _navegarYRecargar(Usuario usuario) async {
+    final resultado = await Navigator.pushNamed(
+      context,
+      '/listado_usuarios_actualizar',
+      arguments: usuario,
+    );
+    if (resultado == true) {
+      _cargarUsuarios();
+    }
+  }
+
+  // Reemplazar lógica repetida en DataCell
+  DataCell _crearDataCell(String texto, Usuario usuario) {
+    return DataCell(
+      Text(texto),
+      onTap: () => _navegarYRecargar(usuario),
+    );
+  }
+
+  // Optimizar DataRow
+  DataRow _crearDataRow(Usuario usuario) {
+    return DataRow(
+      cells: [
+        DataCell(
+          usuario.foto != null
+              ? ClipOval(
+                  child: Image.network(
+                    usuario.foto!,
+                    height: 50,
+                    width: 50,
+                    fit: BoxFit.cover,
+                  ),
+                )
+              : ClipOval(
+                  child: Container(
+                    height: 50,
+                    width: 50,
+                    decoration: BoxDecoration(
+                      color: AppColors.naranjaBrillante,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.person,
+                      color: AppColors.blanco,
+                      size: 30,
+                    ),
+                  ),
+                ),
+          onTap: () => _navegarYRecargar(usuario),
+        ),
+        _crearDataCell(usuario.nombre, usuario),
+        _crearDataCell(usuario.email, usuario),
+        _crearDataCell(usuario.documentoIdentidad, usuario),
+        _crearDataCell(_formatearFecha(usuario.fechaNacimiento), usuario),
+      ],
+    );
   }
 
   @override
@@ -131,12 +193,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                       BotonVerdePersonalizado(
                         onPressed: () {
                           if (_busquedaController.text.trim().isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Escribe antes de realizar una búsqueda'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
+                            _mostrarSnackBar('Escribe antes de realizar una búsqueda');
                           } else {
                             _cargarUsuarios(filtro: _busquedaController.text);
                           }
@@ -202,106 +259,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                                     DataColumn(label: Text('Documento de identidad')),
                                     DataColumn(label: Text('Fecha de Nacimiento')),
                                   ],
-                                  rows: _usuarios.map((usuario) {
-                                    return DataRow(
-                                      cells: [
-                                        DataCell(
-                                          usuario.foto != null
-                                              ? ClipOval(
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    child: Image.network(
-                                                      usuario.foto!,
-                                                      height: 50,
-                                                      width: 50,
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                )
-                                              : ClipOval(
-                                                  child: Container(
-                                                    height: 50,
-                                                    width: 50,
-                                                    decoration: BoxDecoration(
-                                                      color: AppColors.naranjaBrillante,
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    child: const Icon(
-                                                      Icons.person,
-                                                      color: AppColors.blanco,
-                                                      size: 30,
-                                                    ),
-                                                  ),
-                                                ),
-                                          onTap: () async {
-                                            final resultado = await Navigator.pushNamed(
-                                              context,
-                                              '/listado_usuarios_actualizar',
-                                              arguments: usuario,
-                                            );
-
-                                            if (resultado == true) {
-                                              _cargarUsuarios();
-                                            }
-                                          },
-                                        ),
-                                        DataCell(
-                                          Text(usuario.nombre),
-                                          onTap: () async {
-                                            final resultado = await Navigator.pushNamed(
-                                              context,
-                                              '/listado_usuarios_actualizar',
-                                              arguments: usuario,
-                                            );
-                                            if (resultado == true) {
-                                              _cargarUsuarios();
-                                            }
-                                          },
-                                        ),
-                                        DataCell(
-                                          Text(usuario.email),
-                                          onTap: () async {
-                                            final resultado = await Navigator.pushNamed(
-                                              context,
-                                              '/listado_usuarios_actualizar',
-                                              arguments: usuario,
-                                            );
-                                            if (resultado == true) {
-                                              _cargarUsuarios();
-                                            }
-                                          },
-                                        ),
-                                        DataCell(
-                                          Text(usuario.documentoIdentidad),
-                                          onTap: () async {
-                                            final resultado = await Navigator.pushNamed(
-                                              context,
-                                              '/listado_usuarios_actualizar',
-                                              arguments: usuario,
-                                            );
-                                            if (resultado == true) {
-                                              _cargarUsuarios();
-                                            }
-                                          },
-                                        ),
-                                        DataCell(
-                                          Text(_formatearFecha(usuario.fechaNacimiento)),
-                                          onTap: () async {
-                                            final resultado = await Navigator.pushNamed(
-                                              context,
-                                              '/listado_usuarios_actualizar',
-                                              arguments: usuario,
-                                            );
-                                            if (resultado == true) {
-                                              _cargarUsuarios();
-                                            }
-                                          },
-                                        ),
-                                      ],
-                                    );
-                                  }).toList(),
+                                  rows: _usuarios.map(_crearDataRow).toList(),
                                 ),
                               ),
                             ),

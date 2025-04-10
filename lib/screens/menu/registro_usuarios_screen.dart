@@ -447,7 +447,9 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
                     ],
                   )
                 else
+                  // Centrar los botones de seleccionar archivo y tomar foto
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.center, // Centrar horizontalmente
                     children: [
                       BotonVerdePersonalizado(
                         onPressed: _selectImageFromGallery,
@@ -480,7 +482,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
           // Indicador de carga que cubre toda la pantalla cuando está registrando
           if (_estaCargando)
             Container(
-              color: Colors.black.withValues(alpha: 0.3),
+                color: Colors.black.withAlpha(76), 
               child: const Center(
                 child: CircularProgressIndicator(),
               ),

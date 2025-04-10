@@ -62,7 +62,7 @@ class _ListadoUsuariosActualizarScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GestureDetector(
-                  onTap: _seleccionarFoto,
+                  onTap: () => _manejarSeleccionFoto(ImageSource.gallery),
                   child: Center(
                     child: Stack(
                       children: [
@@ -209,14 +209,14 @@ Future<void> _actualizarUsuario() async {
         nuevoEmail.isEmpty ||
         nuevoDocumentoIdentidad.isEmpty ||
         nuevaFechaNacimientoFormateada.isEmpty) {
-      _mostrarMensajeError('Por favor, completa todos los campos.');
+      _mostrarSnackBar('Por favor, completa todos los campos.');
       setState(() => _estaCargando = false);
       return;
     }
 
     final RegExp regexDocumento = RegExp(r'^[a-zA-Z0-9]{6,15}$');
     if (!regexDocumento.hasMatch(nuevoDocumentoIdentidad)) {
-      _mostrarMensajeError(
+      _mostrarSnackBar(
           'El documento de identidad debe ser alfanumérico y tener entre 6 y 15 caracteres.');
       setState(() => _estaCargando = false);
       return;
@@ -269,7 +269,7 @@ Future<void> _actualizarUsuario() async {
 
     // Verificar que el mapa no esté vacío
     if (camposActualizados.isEmpty) {
-      _mostrarMensajeError('No se proporcionaron datos para actualizar.');
+      _mostrarSnackBar('No se proporcionaron datos para actualizar.');
       setState(() => _estaCargando = false);
       return;
     }
@@ -291,7 +291,7 @@ Future<void> _actualizarUsuario() async {
 
     Navigator.pop(context, true);
   } catch (e) {
-    _mostrarMensajeError('Error al actualizar el usuario: $e');
+    _mostrarSnackBar('Error al actualizar el usuario: $e');
   } finally {
     if (mounted) {
       setState(() => _estaCargando = false);
@@ -340,7 +340,7 @@ String _convertirFormatoFecha(String fechaFormateada) {
         ),
       );
     } catch (e) {
-      _mostrarMensajeError('Error al eliminar la foto: $e');
+      _mostrarSnackBar('Error al eliminar la foto: $e');
     } finally {
       if (mounted) {
         setState(() => _estaCargando = false);
@@ -390,7 +390,7 @@ String _convertirFormatoFecha(String fechaFormateada) {
       Navigator.pop(context, true);
       print('Usuario actualizado y regresando con true'); // Depuración
     } catch (e) {
-      _mostrarMensajeError('Error al eliminar el usuario: $e');
+      _mostrarSnackBar('Error al eliminar el usuario: $e');
     } finally {
       if (mounted) {
         setState(() => _estaCargando = false);
@@ -408,13 +408,24 @@ String _convertirFormatoFecha(String fechaFormateada) {
     }
   }
 
-  void _mostrarMensajeError(String mensaje) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje),
-        backgroundColor: AppColors.naranjaOscuro,
-      ),
-    );
+  void _mostrarSnackBar(String mensaje, {Color color = AppColors.naranjaOscuro}) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(mensaje),
+          backgroundColor: color,
+        ),
+      );
+    }
+  }
+
+  Future<void> _manejarSeleccionFoto(ImageSource source) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? imagen = await picker.pickImage(source: source);
+    if (imagen != null) {
+      setState(() {
+        _nuevaFoto = File(imagen.path);
+      });
+    }
   }
 }
