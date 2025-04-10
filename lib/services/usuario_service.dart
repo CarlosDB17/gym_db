@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:csv/csv.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../models/usuario.dart';
 
@@ -410,14 +412,26 @@ Future<Map<String, dynamic>> buscarUsuariosPorValor(String valor, {int skip = 0,
 // Importar múltiples usuarios desde un archivo CSV
 Future<void> importarUsuarios(List<Map<String, dynamic>> usuarios) async {
   try {
+    print('Iniciando importación de usuarios...');
+    print('Usuarios a importar: ${usuarios.length}');
+    print('URL de la solicitud: $_baseUrl/multiples');
+    
+    // Imprimir los datos de cada usuario
+    for (var usuario in usuarios) {
+      print('Datos del usuario: $usuario');
+    }
+
     final response = await http.post(
-      Uri.parse("$_baseUrl/importar"),
+      Uri.parse("$_baseUrl/multiples"),
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
       },
       body: jsonEncode({'usuarios': usuarios}),
     );
-    
+
+    print('Respuesta de la API: ${response.statusCode}');
+    print('Cuerpo de la respuesta: ${response.body}');
+
     if (response.statusCode != 200 && response.statusCode != 201) {
       var errorMessage = 'Error al importar usuarios';
       try {
@@ -432,13 +446,103 @@ Future<void> importarUsuarios(List<Map<String, dynamic>> usuarios) async {
           errorMessage = response.body;
         }
       }
+      print('Error al importar usuarios: $errorMessage (Código: ${response.statusCode})');
       throw Exception('$errorMessage (Código: ${response.statusCode})');
+    } else {
+      print('Importación de usuarios exitosa.');
     }
   } catch (e) {
     print('Excepción capturada: $e');
     rethrow;
   }
 }
+
+
+
+
+Future<void> importarUsuariosDesdeCSV() async {
+  try {
+    // Seleccionar el archivo CSV
+    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['csv']);
+    if (result == null) {
+      print('No se seleccionó ningún archivo');
+      return;
+    }
+
+    // Obtener la ruta del archivo seleccionado
+    File file = File(result.files.single.path!);
+
+    // Leer el contenido del archivo
+    String fileContent = await file.readAsString();
+    List<List<dynamic>> csvTable = CsvToListConverter().convert(fileContent);
+
+    // Convertir los datos CSV a una lista de usuarios (asumiendo que las columnas son: nombre, email, documento_identidad, fecha_nacimiento)
+    List<Map<String, dynamic>> usuarios = [];
+    for (var i = 1; i < csvTable.length; i++) { // Saltar el encabezado
+      var usuario = {
+        'nombre': csvTable[i][0],
+        'email': csvTable[i][1],
+        'documento_identidad': csvTable[i][2],
+        'fecha_nacimiento': csvTable[i][3], // Asegúrate de formatear correctamente si es necesario
+        'foto': null, // Si no tienes foto, asigna null
+      };
+      usuarios.add(usuario);
+    }
+
+    print('Usuarios a importar: ${usuarios.length}');
+    for (var usuario in usuarios) {
+      print('Datos del usuario: $usuario');
+    }
+
+    // Ahora enviar los usuarios a la API
+    await enviarUsuariosAlaAPI(usuarios);
+  } catch (e) {
+    print('Error al leer el archivo CSV: $e');
+  }
+}
+
+Future<void> enviarUsuariosAlaAPI(List<Map<String, dynamic>> usuarios) async {
+  try {
+    print('Iniciando importación de usuarios...');
+    print('URL de la solicitud: $_baseUrl/multiples');
+
+    // Enviar los usuarios directamente sin envolverlos en un objeto
+    final response = await http.post(
+      Uri.parse("$_baseUrl/multiples"),
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: jsonEncode(usuarios), // Enviar directamente la lista de usuarios
+    );
+
+    print('Respuesta de la API: ${response.statusCode}');
+    print('Cuerpo de la respuesta: ${response.body}');
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      var errorMessage = 'Error al importar usuarios';
+      try {
+        final errorBody = jsonDecode(response.body);
+        if (errorBody is Map && errorBody.containsKey('detail')) {
+          errorMessage = errorBody['detail'];
+        } else if (errorBody is Map && errorBody.containsKey('message')) {
+          errorMessage = errorBody['message'];
+        }
+      } catch (_) {
+        if (response.body.isNotEmpty) {
+          errorMessage = response.body;
+        }
+      }
+      print('Error al importar usuarios: $errorMessage (Código: ${response.statusCode})');
+      throw Exception('$errorMessage (Código: ${response.statusCode})');
+    } else {
+      print('Importación de usuarios exitosa.');
+    }
+  } catch (e) {
+    print('Excepción capturada: $e');
+    rethrow;
+  }
+}
+
 
 
 }

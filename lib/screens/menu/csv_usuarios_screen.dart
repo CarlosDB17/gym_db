@@ -120,7 +120,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 20.0),
                   child: ElevatedButton(
-                    onPressed: _importarUsuarios,
+                    onPressed: _importarUsuariosDesdeCSV,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       backgroundColor: Colors.blue,
@@ -294,14 +294,10 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
     return true;
   }
 
-  // Importar usuarios
-  void _importarUsuarios() async {
-    if (!_validarUsuarios()) {
-      return;
-    }
-
+  // Importar usuarios desde CSV
+  void _importarUsuariosDesdeCSV() async {
     try {
-      await _usuarioService.importarUsuarios(usuarios);
+      await _usuarioService.importarUsuariosDesdeCSV();
       _mostrarSnackBar('Usuarios importados con éxito.');
       setState(() {
         usuarios = [];
