@@ -7,8 +7,6 @@ import 'csv_usuarios_screen.dart';
 import 'ajustes_screen.dart';
 import '../../theme/app_colors.dart';
 
-
-
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
 
@@ -31,9 +29,38 @@ class _MenuScreenState extends State<MenuScreen> {
     'Registro de Usuarios',
     'Listado de Usuarios',
     'QR',
-    'Importar/Exportar CSV',
+    'Importar desde CSV',
     'Ajustes',
   ];
+
+  // Mostrar diálogo para confirmar la salida de la aplicación
+  void _mostrarDialogoSalida() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Salir de la aplicación?'),
+        content: const Text('¿Estás seguro que deseas salir de la aplicación?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancelar', style: TextStyle(color: AppColors.textoOscuro)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              // Salir de la aplicación
+              SystemNavigator.pop();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.naranjaBrillante,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Salir', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,144 +70,153 @@ class _MenuScreenState extends State<MenuScreen> {
       statusBarIconBrightness: Brightness.light,
     ));
 
-    return Scaffold(
-      backgroundColor: AppColors.fondoClaro,
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        toolbarHeight: 0,
-        systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-        ),
-      ),
-      body: Stack(
-        children: [
-          // Fondo superior
-          Container(
-            height: 180,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppColors.verdeVibrante,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.sombra.withValues(alpha: 0.15),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 32), // Padding superior de 32
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center, // Centrar horizontalmente
-                    crossAxisAlignment: CrossAxisAlignment.start, // Alinear hacia arriba
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.15),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Image.asset(
-                          'assets/images/gym_logo.png',
-                          height: 30,
-                        ),
-                      ),
-                      const SizedBox(width: 16), // Espaciado entre la imagen y el texto
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8), // Ajustar el texto para alinearlo con el centro de la imagen
-                        child: Text(
-                          _titles[_currentIndex],
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+    return PopScope(
+      canPop: false,
+      // ignore: deprecated_member_use
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          _mostrarDialogoSalida();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.fondoClaro,
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          toolbarHeight: 0,
+          systemOverlayStyle: const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
           ),
-          
-          // Contenido principal
-          Padding(
-            padding: const EdgeInsets.only(
-              top: 130,
-              bottom: 0,
-            ),
-            child: Container(
+        ),
+        body: Stack(
+          children: [
+            // Fondo superior
+            Container(
+              height: 180,
+              width: double.infinity,
               decoration: BoxDecoration(
-                color: AppColors.fondoClaro,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(30),
+                color: AppColors.verdeVibrante,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.sombra.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, -4),
+                    color: AppColors.sombra.withValues(alpha: 0.15),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
                   ),
                 ],
               ),
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(30),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 32), // Padding superior de 32
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center, // Centrar horizontalmente
+                      crossAxisAlignment: CrossAxisAlignment.start, // Alinear hacia arriba
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Image.asset(
+                            'assets/images/gym_logo.png',
+                            height: 30,
+                          ),
+                        ),
+                        const SizedBox(width: 16), // Espaciado entre la imagen y el texto
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8), // Ajustar el texto para alinearlo con el centro de la imagen
+                          child: Text(
+                            _titles[_currentIndex],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                child: _screens[_currentIndex],
               ),
             ),
-          ),
-        ],
-      ),
-      
-      // Menú de navegación
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(25),
-            topRight: Radius.circular(25),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.sombra.withValues(alpha: 0.08),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
+            
+            // Contenido principal
+            Padding(
+              padding: const EdgeInsets.only(
+                top: 130,
+                bottom: 0,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.fondoClaro,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(30),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.sombra.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, -4),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(30),
+                  ),
+                  child: _screens[_currentIndex],
+                ),
+              ),
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
-          child: SafeArea(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavButton(0, Icons.person_add_rounded, 'Registro'),
-                _buildNavButton(1, Icons.format_list_bulleted_rounded, 'Listado'),
-                _buildNavButton(2, Icons.qr_code_scanner_rounded, 'QR'),
-                _buildNavButton(3, Icons.file_upload_outlined, 'CSV'),
-                _buildNavButton(4, Icons.settings_rounded, 'Ajustes'),
-              ],
+        
+        // Menú de navegación
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(25),
+              topRight: Radius.circular(25),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.sombra.withValues(alpha: 0.08),
+                blurRadius: 10,
+                offset: const Offset(0, -5),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+            child: SafeArea(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavButton(0, Icons.person_add_rounded, 'Registro'),
+                  _buildNavButton(1, Icons.format_list_bulleted_rounded, 'Listado'),
+                  _buildNavButton(2, Icons.qr_code_scanner_rounded, 'QR'),
+                  _buildNavButton(3, Icons.file_upload_outlined, 'CSV'),
+                  _buildNavButton(4, Icons.settings_rounded, 'Ajustes'),
+                ],
+              ),
             ),
           ),
         ),
