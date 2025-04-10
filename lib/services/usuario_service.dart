@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+
 import '../models/usuario.dart';
 
 class UsuarioService {
@@ -406,4 +407,42 @@ Future<Map<String, dynamic>> buscarUsuariosPorValor(String valor, {int skip = 0,
   }
 }
 
+// Importar múltiples usuarios desde un archivo CSV
+Future<void> importarUsuarios(List<Map<String, dynamic>> usuarios) async {
+  try {
+    final response = await http.post(
+      Uri.parse("$_baseUrl/importar"),
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: jsonEncode({'usuarios': usuarios}),
+    );
+    
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      var errorMessage = 'Error al importar usuarios';
+      try {
+        final errorBody = jsonDecode(response.body);
+        if (errorBody is Map && errorBody.containsKey('detail')) {
+          errorMessage = errorBody['detail'];
+        } else if (errorBody is Map && errorBody.containsKey('message')) {
+          errorMessage = errorBody['message'];
+        }
+      } catch (_) {
+        if (response.body.isNotEmpty) {
+          errorMessage = response.body;
+        }
+      }
+      throw Exception('$errorMessage (Código: ${response.statusCode})');
+    }
+  } catch (e) {
+    print('Excepción capturada: $e');
+    rethrow;
+  }
 }
+
+
+}
+
+
+
+
