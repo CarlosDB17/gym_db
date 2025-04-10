@@ -23,7 +23,7 @@ void main() async {
     ),
   );
 
-  // Verificar si la sesión está activa
+  // verificar si la sesión está activa
   final bool sesionActiva = await SessionManager.verificarSesionActiva();
 
   runApp(MyApp(sesionActiva: sesionActiva));
@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.naranjaBrillante),
       ),
-      // Define la ruta inicial según el estado de la sesión
+      //  la ruta inicial según el estado de la sesión
       initialRoute: sesionActiva ? AppRoutes.menu : AppRoutes.login,
       onGenerateRoute: AppRoutes.generateRoute,
     );

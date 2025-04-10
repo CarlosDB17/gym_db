@@ -155,7 +155,7 @@ class _MenuScreenState extends State<MenuScreen> {
         ],
       ),
       
-      // Menú de navegación con todos los iconos iguales
+      // Menú de navegación
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,

@@ -89,19 +89,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false, // Quitar la flecha de volver atrás
-        title: const Text(
-          'Listado de Usuarios',
-          style: TextStyle(
-            color: AppColors.verdeVibrante, // Título en verde vibrante
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: AppColors.blanco, // Fondo blanco
-        iconTheme: const IconThemeData(color: AppColors.verdeOscuro),
-        elevation: 0,
-      ),
+
       body: _cargando
           ? const Center(
               child: CircularProgressIndicator(

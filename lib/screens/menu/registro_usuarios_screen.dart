@@ -387,14 +387,6 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Registro',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.verdeOscuro,
-                  ),
-                ),
                 const SizedBox(height: 20),
                 CampoTextoPersonalizado(
                   controlador: _nombreController,
