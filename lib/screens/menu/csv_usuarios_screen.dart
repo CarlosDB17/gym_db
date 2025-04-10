@@ -6,6 +6,7 @@ import 'package:csv/csv.dart';
 import '../../services/usuario_service.dart';
 import '../../widgets/boton_naranja_personalizado.dart';
 import '../../widgets/boton_verde_personalizado.dart';
+import '../../widgets/tabla_personalizada.dart';
 import '../../theme/app_colors.dart';
 
 class CsvUsuariosScreen extends StatefulWidget {
@@ -22,8 +23,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
 
   // Variables para paginación
   int paginaActual = 0;
-  int limitePorPagina =
-      4; // Cambiado a 4 para coincidir con ListadoUsuariosScreen
+  int limitePorPagina = 3;
   bool _cargando = false;
 
   @override
@@ -39,27 +39,28 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 20.0),
-                    // Boton para seleccionar archivo
+                    // Selector de archivo
                     Center(
                       child: BotonNaranjaPersonalizado(
                         onPressed: _selectFile,
                         texto: 'Seleccionar Archivo',
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
-                          vertical: 12,
+                          vertical: 22,
                         ),
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(
-                        top: 30,
-                      ), // Añade padding por arriba de 10
-                      child: const Text(
-                        'Recuerda que debe ser un .csv separado por comas',
-                        style: TextStyle(
-                          fontStyle: FontStyle.italic,
-                          color: Colors.grey,
+                      padding: const EdgeInsets.only(top: 30),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          'Recuerda que debe ser un .csv separado por comas.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     ),
@@ -68,103 +69,19 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
 
                     // Tabla de usuarios
                     if (usuariosPaginados.isNotEmpty)
-                      Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: SingleChildScrollView(
-                                child: DataTable(
-                                  headingRowColor: WidgetStateProperty.all(
-                                    AppColors.verdeVibrante.withAlpha(
-                                      (0.2 * 255).toInt(),
-                                    ),
-                                  ),
-                                  columnSpacing: 20,
-                                  dataRowMinHeight: 60,
-                                  dataRowMaxHeight: 60,
-                                  headingTextStyle: const TextStyle(
-                                    color: AppColors.verdeOscuro,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  columns: const [
-                                    DataColumn(label: Text('Nombre')),
-                                    DataColumn(label: Text('Email')),
-                                    DataColumn(
-                                      label: Text('Documento de identidad'),
-                                    ),
-                                    DataColumn(
-                                      label: Text('Fecha de Nacimiento'),
-                                    ),
-                                  ],
-                                  rows:
-                                      usuariosPaginados
-                                          .map(
-                                            (usuario) => _crearDataRow(usuario),
-                                          )
-                                          .toList(),
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Desliza para ver el resto de datos.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontStyle: FontStyle.italic,
-                              color: Colors.grey,
-                            ),
-                          ),
-
-                          // Controles de paginación
-                          if (usuarios.length > limitePorPagina)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 16.0,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  IconButton(
-                                    onPressed:
-                                        paginaActual > 0
-                                            ? () => _cambiarPagina(-1)
-                                            : null,
-                                    icon: Icon(
-                                      Icons.arrow_back,
-                                      color:
-                                          paginaActual > 0
-                                              ? AppColors.verdeOscuro
-                                              : Colors.grey,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Página ${paginaActual + 1} / ${_getTotalPaginas() > 0 ? _getTotalPaginas() : 1}',
-                                    style: const TextStyle(
-                                      color: AppColors.verdeOscuro,
-                                    ),
-                                  ),
-                                  IconButton(
-                                    onPressed:
-                                        (paginaActual + 1) < _getTotalPaginas()
-                                            ? () => _cambiarPagina(1)
-                                            : null,
-                                    icon: Icon(
-                                      Icons.arrow_forward,
-                                      color:
-                                          (paginaActual + 1) <
-                                                  _getTotalPaginas()
-                                              ? AppColors.verdeOscuro
-                                              : Colors.grey,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                      TablaPersonalizada<Map<String, dynamic>>(
+                        columnas: const [
+                          DataColumn(label: Text('Nombre')),
+                          DataColumn(label: Text('Email')),
+                          DataColumn(label: Text('Documento de identidad')),
+                          DataColumn(label: Text('Fecha de Nacimiento')),
                         ],
+                        datos: usuariosPaginados,
+                        crearFila: _crearDataRow,
+                        paginaActual: paginaActual,
+                        totalPaginas: _getTotalPaginas(),
+                        cambiarPagina: _cambiarPagina,
+                        mensajeAyuda: 'Desliza para ver el resto de datos.',
                       ),
 
                     // Botón de importación
@@ -192,17 +109,12 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
   DataRow _crearDataRow(Map<String, dynamic> usuario) {
     return DataRow(
       cells: [
-        _crearDataCell(usuario['nombre'] ?? ''),
-        _crearDataCell(usuario['email'] ?? ''),
-        _crearDataCell(usuario['documento_identidad'] ?? ''),
-        _crearDataCell(_formatFechaMostrar(usuario['fecha_nacimiento'] ?? '')),
+        DataCell(Text(usuario['nombre'] ?? '')),
+        DataCell(Text(usuario['email'] ?? '')),
+        DataCell(Text(usuario['documento_identidad'] ?? '')),
+        DataCell(Text(_formatFechaMostrar(usuario['fecha_nacimiento'] ?? ''))),
       ],
     );
-  }
-
-  // Método para crear celdas de datos
-  DataCell _crearDataCell(String texto) {
-    return DataCell(Text(texto));
   }
 
   // Seleccionar archivo CSV
@@ -338,7 +250,9 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
 
   // Obtener el total de páginas
   int _getTotalPaginas() {
-    return (usuarios.length / limitePorPagina).ceil();
+    return (usuarios.length / limitePorPagina).ceil() > 0
+        ? (usuarios.length / limitePorPagina).ceil()
+        : 1;
   }
 
   // Validar todos los usuarios

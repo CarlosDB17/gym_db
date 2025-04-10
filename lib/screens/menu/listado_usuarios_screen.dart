@@ -4,6 +4,7 @@ import '../../services/usuario_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/boton_verde_personalizado.dart';
 import '../../widgets/boton_naranja_personalizado.dart';
+import '../../widgets/tabla_personalizada.dart';
 
 class ListadoUsuariosScreen extends StatefulWidget {
   const ListadoUsuariosScreen({super.key});
@@ -101,15 +102,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
     }
   }
 
-  // Reemplazar lógica repetida en DataCell
-  DataCell _crearDataCell(String texto, Usuario usuario) {
-    return DataCell(
-      Text(texto),
-      onTap: () => _navegarYRecargar(usuario),
-    );
-  }
-
-  // Optimizar DataRow
+  // Método para crear filas de datos
   DataRow _crearDataRow(Usuario usuario) {
     return DataRow(
       cells: [
@@ -140,185 +133,136 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                 ),
           onTap: () => _navegarYRecargar(usuario),
         ),
-        _crearDataCell(usuario.nombre, usuario),
-        _crearDataCell(usuario.email, usuario),
-        _crearDataCell(usuario.documentoIdentidad, usuario),
-        _crearDataCell(_formatearFecha(usuario.fechaNacimiento), usuario),
+        DataCell(Text(usuario.nombre), onTap: () => _navegarYRecargar(usuario)),
+        DataCell(Text(usuario.email), onTap: () => _navegarYRecargar(usuario)),
+        DataCell(Text(usuario.documentoIdentidad), onTap: () => _navegarYRecargar(usuario)),
+        DataCell(Text(_formatearFecha(usuario.fechaNacimiento)), onTap: () => _navegarYRecargar(usuario)),
       ],
     );
+  }
+
+  // Cambiar página
+  void _cambiarPagina(int direccion) {
+    setState(() => _paginaActual += direccion);
+    _cargarUsuarios(
+      filtro: _busquedaRealizada ? _busquedaController.text : null
+    );
+  }
+
+  // Obtener total de páginas
+  int _getTotalPaginas() {
+    return (_totalUsuarios / _usuariosPorPagina).ceil() > 0 
+            ? (_totalUsuarios / _usuariosPorPagina).ceil() 
+            : 1;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
-      body: _cargando
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.verdeOscuro, // Indicador de carga en verde oscuro
-              ),
-            )
-          : Padding(
-              padding: const EdgeInsets.all(16.0), // Padding general
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _busquedaController,
-                          decoration: InputDecoration(
-                            labelText: 'Buscar usuario',
-                            labelStyle: const TextStyle(color: Colors.grey),
-                            prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                            filled: true,
-                            
-                            fillColor: const Color(0xFFF5F5F5), // Fondo claro
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30), // Bordes redondeados
-                              borderSide: const BorderSide(color: AppColors.verdeVibrante, width: 2), // Borde verde vibrante
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30), // Bordes redondeados
-                              borderSide: const BorderSide(color: AppColors.verdeVibrante, width: 2), // Borde verde vibrante
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30), // Bordes redondeados
-                              borderSide: const BorderSide(color: AppColors.verdeVibrante, width: 2), // Borde verde vibrante
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      BotonVerdePersonalizado(
-                        onPressed: () {
-                          if (_busquedaController.text.trim().isEmpty) {
-                            _mostrarSnackBar('Escribe antes de realizar una búsqueda');
-                          } else {
-                            _cargarUsuarios(filtro: _busquedaController.text);
-                          }
-                        },
-                        texto: 'Buscar',
-                      ),
-                      const SizedBox(width: 8),
-                      BotonNaranjaPersonalizado(
-                        onPressed: () {
-                          if (_busquedaRealizada) {
-                            _busquedaController.clear();
-                            setState(() {
-                              _busquedaRealizada = false;
-                            });
-                            _cargarUsuarios();
-                          }
-                        },
-                        texto: 'Limpiar',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Mostrar mensaje de error si no hay resultados
-                  if (_usuarios.isEmpty && _busquedaRealizada)
-                    const Expanded(
-                      child: Center(
-                        child: Text(
-                          'Sin resultados',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 16,
-                            fontStyle: FontStyle.italic,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    )
-                  // Si hay resultados o no se ha realizado búsqueda, mostrar la tabla y la paginación
-                  else if (_usuarios.isNotEmpty || !_busquedaRealizada) 
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: SingleChildScrollView(
-                                child: DataTable(
-                                  headingRowColor: WidgetStateProperty.all(
-                                    AppColors.verdeVibrante.withAlpha((0.2 * 255).toInt())
-                                  ),
-                                  columnSpacing: 20,
-                                  dataRowMinHeight: 60,
-                                  dataRowMaxHeight: 60,
-                                  headingTextStyle: const TextStyle(
-                                    color: AppColors.verdeOscuro,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  columns: const [
-                                    DataColumn(label: Text('Foto')),
-                                    DataColumn(label: Text('Nombre')),
-                                    DataColumn(label: Text('Email')),
-                                    DataColumn(label: Text('Documento de identidad')),
-                                    DataColumn(label: Text('Fecha de Nacimiento')),
-                                  ],
-                                  rows: _usuarios.map(_crearDataRow).toList(),
-                                ),
+      body: SafeArea(
+        child: _cargando
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.verdeOscuro,
+                ),
+              )
+            : Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _busquedaController,
+                            decoration: InputDecoration(
+                              labelText: 'Buscar usuario',
+                              labelStyle: const TextStyle(color: Colors.grey),
+                              prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                              filled: true,
+                              fillColor: const Color(0xFFF5F5F5),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                borderSide: const BorderSide(color: AppColors.verdeVibrante, width: 2),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                borderSide: const BorderSide(color: AppColors.verdeVibrante, width: 2),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                borderSide: const BorderSide(color: AppColors.verdeVibrante, width: 2),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Pulsa en un usuario para editarlo. Desliza para ver el resto de datos.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontStyle: FontStyle.italic,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Solo mostrar la paginación si hay resultados
-                          if (_totalUsuarios > 0)
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                IconButton(
-                                  onPressed: _paginaActual > 0
-                                      ? () {
-                                          setState(() => _paginaActual--);
-                                          _cargarUsuarios();
-                                        }
-                                      : null,
-                                  icon: Icon(
-                                    Icons.arrow_back,
-                                    color: _paginaActual > 0
-                                        ? AppColors.verdeOscuro
-                                        : Colors.grey,
-                                  ),
-                                ),
-                                Text(
-                                  'Página ${_paginaActual + 1} / ${(_totalUsuarios / _usuariosPorPagina).ceil() > 0 ? (_totalUsuarios / _usuariosPorPagina).ceil() : 1}',
-                                  style: const TextStyle(color: AppColors.verdeOscuro),
-                                ),
-                                IconButton(
-                                  onPressed: (_paginaActual + 1) * _usuariosPorPagina < _totalUsuarios
-                                      ? () {
-                                          setState(() => _paginaActual++);
-                                          _cargarUsuarios();
-                                        }
-                                      : null,
-                                  icon: Icon(
-                                    Icons.arrow_forward,
-                                    color: (_paginaActual + 1) * _usuariosPorPagina < _totalUsuarios
-                                        ? AppColors.verdeOscuro
-                                        : Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 8),
+                        BotonVerdePersonalizado(
+                          onPressed: () {
+                            if (_busquedaController.text.trim().isEmpty) {
+                              _mostrarSnackBar('Escribe antes de realizar una búsqueda');
+                            } else {
+                              _cargarUsuarios(filtro: _busquedaController.text);
+                            }
+                          },
+                          texto: 'Buscar',
+                        ),
+                        const SizedBox(width: 8),
+                        BotonNaranjaPersonalizado(
+                          onPressed: () {
+                            if (_busquedaRealizada) {
+                              _busquedaController.clear();
+                              setState(() {
+                                _busquedaRealizada = false;
+                              });
+                              _cargarUsuarios();
+                            }
+                          },
+                          texto: 'Limpiar',
+                        ),
+                      ],
                     ),
-                ],
+                    const SizedBox(height: 16),
+
+                    // Mostrar mensaje de error si no hay resultados
+                    if (_usuarios.isEmpty && _busquedaRealizada)
+                      const Expanded(
+                        child: Center(
+                          child: Text(
+                            'Sin resultados',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 16,
+                              fontStyle: FontStyle.italic,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
+                    // Si hay resultados o no se ha realizado búsqueda, mostrar la tabla
+                    else if (_usuarios.isNotEmpty || !_busquedaRealizada) 
+                      Expanded(
+                        child: TablaPersonalizada<Usuario>(
+                          columnas: const [
+                            DataColumn(label: Text('Foto')),
+                            DataColumn(label: Text('Nombre')),
+                            DataColumn(label: Text('Email')),
+                            DataColumn(label: Text('Documento de identidad')),
+                            DataColumn(label: Text('Fecha de Nacimiento')),
+                          ],
+                          datos: _usuarios,
+                          crearFila: _crearDataRow,
+                          paginaActual: _paginaActual,
+                          totalPaginas: _getTotalPaginas(),
+                          cambiarPagina: _cambiarPagina,
+                          mostrarPaginacion: _totalUsuarios > _usuariosPorPagina,
+                          mensajeAyuda: 'Pulsa en un usuario para editarlo. Desliza para ver el resto de datos.',
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 }
