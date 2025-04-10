@@ -120,7 +120,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 20.0),
                   child: ElevatedButton(
-                    onPressed: _importarUsuariosDesdeCSV,
+                    onPressed: _confirmarImportacion,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       backgroundColor: Colors.blue,
@@ -294,14 +294,18 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
     return true;
   }
 
-  // Importar usuarios desde CSV
-  void _importarUsuariosDesdeCSV() async {
+  // Nuevo método para confirmar la importación de usuarios
+  Future<void> _confirmarImportacion() async {
+    if (!_validarUsuarios()) {
+      return; // Detener si la validación falla
+    }
+
     try {
-      await _usuarioService.importarUsuariosDesdeCSV();
-      _mostrarSnackBar('Usuarios importados con éxito.');
+      await _usuarioService.enviarUsuariosAlaAPI(usuarios);
+      _mostrarSnackBar('Usuarios importados exitosamente.');
       setState(() {
-        usuarios = [];
-        usuariosPaginados = [];
+        usuarios.clear();
+        usuariosPaginados.clear();
       });
     } catch (e) {
       _mostrarSnackBar('Error al importar usuarios: $e');

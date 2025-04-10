@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:csv/csv.dart';
-import 'package:file_picker/file_picker.dart';
+
 
 import '../models/usuario.dart';
 
@@ -457,49 +456,7 @@ Future<void> importarUsuarios(List<Map<String, dynamic>> usuarios) async {
   }
 }
 
-
-
-
-Future<void> importarUsuariosDesdeCSV() async {
-  try {
-    // Seleccionar el archivo CSV
-    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['csv']);
-    if (result == null) {
-      print('No se seleccionó ningún archivo');
-      return;
-    }
-
-    // Obtener la ruta del archivo seleccionado
-    File file = File(result.files.single.path!);
-
-    // Leer el contenido del archivo
-    String fileContent = await file.readAsString();
-    List<List<dynamic>> csvTable = CsvToListConverter().convert(fileContent);
-
-    // Convertir los datos CSV a una lista de usuarios (asumiendo que las columnas son: nombre, email, documento_identidad, fecha_nacimiento)
-    List<Map<String, dynamic>> usuarios = [];
-    for (var i = 1; i < csvTable.length; i++) { // Saltar el encabezado
-      var usuario = {
-        'nombre': csvTable[i][0],
-        'email': csvTable[i][1],
-        'documento_identidad': csvTable[i][2],
-        'fecha_nacimiento': csvTable[i][3], // Asegúrate de formatear correctamente si es necesario
-        'foto': null, // Si no tienes foto, asigna null
-      };
-      usuarios.add(usuario);
-    }
-
-    print('Usuarios a importar: ${usuarios.length}');
-    for (var usuario in usuarios) {
-      print('Datos del usuario: $usuario');
-    }
-
-    // Ahora enviar los usuarios a la API
-    await enviarUsuariosAlaAPI(usuarios);
-  } catch (e) {
-    print('Error al leer el archivo CSV: $e');
-  }
-}
+// Eliminado el método importarUsuariosDesdeCSV para moverlo a csv_usuarios_screen.dart
 
 Future<void> enviarUsuariosAlaAPI(List<Map<String, dynamic>> usuarios) async {
   try {
