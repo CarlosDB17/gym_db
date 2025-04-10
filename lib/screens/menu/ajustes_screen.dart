@@ -1,30 +1,26 @@
 import 'package:flutter/material.dart';
-import '../../utils/session_manager.dart'; // Importa SessionManager
+import '../../utils/session_manager.dart'; 
+import '../../widgets/boton_naranja_personalizado.dart'; 
 
 class AjustesScreen extends StatelessWidget {
   const AjustesScreen({super.key});
 
   Future<void> _cerrarSesion(BuildContext context) async {
-    await SessionManager.cerrarSesion(); // Elimina la sesión activa
+    await SessionManager.cerrarSesion(); // elimina la sesion activa
     if (context.mounted) {
-      Navigator.pushReplacementNamed(context, '/login'); // Redirige al login
+      Navigator.pushReplacementNamed(context, '/login'); // redirige al login
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-appBar: AppBar(
-  title: const Text('Ajustes'),
-  automaticallyImplyLeading: false, // Desactiva la flecha de retroceso
-),
       body: Center(
-        child: ElevatedButton(
+        child: BotonNaranjaPersonalizado(
           onPressed: () => _cerrarSesion(context),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red, // Botón de color rojo
-          ),
-          child: const Text('Cerrar sesión'),
+          texto: 'Cerrar sesión',
+          icono: Icons.logout, 
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
         ),
       ),
     );
