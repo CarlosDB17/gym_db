@@ -62,7 +62,7 @@ class _ListadoUsuariosActualizarScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GestureDetector(
-                  onTap: () => _manejarSeleccionFoto(ImageSource.gallery),
+                  onTap: _seleccionarFoto,
                   child: Center(
                     child: Stack(
                       children: [
@@ -339,6 +339,7 @@ String _convertirFormatoFecha(String fechaFormateada) {
           backgroundColor: AppColors.verdeVibrante,
         ),
       );
+      Navigator.pop(context, true);
     } catch (e) {
       _mostrarSnackBar('Error al eliminar la foto: $e');
     } finally {
@@ -419,6 +420,7 @@ String _convertirFormatoFecha(String fechaFormateada) {
     }
   }
 
+  // ignore: unused_element (si se usa, en el on tap del boton)
   Future<void> _manejarSeleccionFoto(ImageSource source) async {
     final ImagePicker picker = ImagePicker();
     final XFile? imagen = await picker.pickImage(source: source);
