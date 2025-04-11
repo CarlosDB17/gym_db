@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../utils/session_manager.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/campo_texto_personalizado.dart';
@@ -16,7 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController controladorCorreo = TextEditingController();
   final TextEditingController controladorContrasena = TextEditingController();
   final FirebaseAuth autenticacion = FirebaseAuth.instance;
-  bool contrasenaVisible = false; // controla la visibilidad de la contrasena
+  bool contrasenaVisible = false; // controla la visibilidad de la contraseña
 
   Future<void> iniciarSesionCorreoContrasena() async {
     final correo = controladorCorreo.text.trim();
@@ -35,14 +36,45 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await autenticacion.signInWithEmailAndPassword(
         email: correo, password: contrasena);
+
+      // Después de iniciar sesión, verificar o crear documento en Firestore
+      await _verificarYAsignarRol();
+
       await SessionManager.guardarSesionActiva();
       if (mounted) {
-      Navigator.pushReplacementNamed(context, '/menu');
+        Navigator.pushReplacementNamed(context, '/menu');
       }
     } on FirebaseAuthException catch (e) {
       manejarErrorAutenticacion(e);
     } catch (e) {
       mostrarMensajeError('Ocurrió un error inesperado. Inténtalo de nuevo.');
+    }
+  }
+
+  Future<void> _verificarYAsignarRol() async {
+    try {
+      // Obtener el usuario actual
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        String userId = user.uid;
+
+        // Verificar si el documento del usuario existe en Firestore
+        DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+
+        if (!snapshot.exists) {
+          // Si no existe, crear un documento con rol 'user' por defecto
+          await FirebaseFirestore.instance.collection('users').doc(userId).set({
+            'email': user.email,
+            'role': 'user', // Rol por defecto
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+          print('Documento del usuario creado con rol: user');
+        } else {
+          print('Usuario ya existe en Firestore.');
+        }
+      }
+    } catch (e) {
+      print('Error al verificar o asignar rol: $e');
     }
   }
 
@@ -58,6 +90,10 @@ class _LoginScreenState extends State<LoginScreen> {
         idToken: googleAuth.idToken,
       );
       await autenticacion.signInWithCredential(credential);
+
+      // Después de iniciar sesión con Google, verificar o crear documento en Firestore
+      await _verificarYAsignarRol();
+
       await SessionManager.guardarSesionActiva();
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/menu');

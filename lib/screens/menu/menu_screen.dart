@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'registro_usuarios_screen.dart';
 import 'listado_usuarios_screen.dart';
 import 'qr_screen.dart';
 import 'csv_usuarios_screen.dart';
 import 'ajustes_screen.dart';
 import '../../theme/app_colors.dart';
+import '../../services/usuario_service.dart';
 
 // pantalla principal del menu
 class MenuScreen extends StatefulWidget {
@@ -18,6 +20,7 @@ class MenuScreen extends StatefulWidget {
 class _MenuScreenState extends State<MenuScreen> {
   int _currentIndex = 0;
   
+  // Lista de pantallas disponibles
   final List<Widget> _screens = [
     const RegistroUsuariosScreen(),
     const ListadoUsuariosScreen(),
@@ -26,6 +29,7 @@ class _MenuScreenState extends State<MenuScreen> {
     const AjustesScreen(),
   ];
 
+  // Títulos de las pantallas
   final List<String> _titles = [
     'Registro de usuarios',
     'Listado de usuarios',
@@ -33,6 +37,38 @@ class _MenuScreenState extends State<MenuScreen> {
     'Importar desde CSV',
     'Ajustes',
   ];
+
+  // Esta variable se debe establecer según el rol del usuario
+  String userRole = 'user'; // Valor predeterminado
+
+  @override
+  void initState() {
+    super.initState();
+    _obtenerRolUsuario();
+  }
+
+  // Método para obtener el rol del usuario
+  Future<void> _obtenerRolUsuario() async {
+    try {
+      // Obtener el usuario autenticado
+      User? usuarioActual = FirebaseAuth.instance.currentUser;
+
+      if (usuarioActual != null && usuarioActual.email != null) {
+        // Obtener el rol del usuario desde Firestore
+        String? rol = await UsuarioService().obtenerRolUsuarioPorEmail(usuarioActual.email!);
+
+        if (rol != null) {
+          setState(() {
+            userRole = rol;
+          });
+        }
+      } else {
+        print('No se encontró un usuario autenticado o el email es nulo.');
+      }
+    } catch (e) {
+      print('Error al obtener el rol del usuario: $e');
+    }
+  }
 
   // dialogo para confirmar la salida de la aplicacion
   void _mostrarDialogoSalida() {
@@ -63,9 +99,28 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
+
+  // Filtra las opciones según el rol del usuario
+  List<Widget> getMenuItems() {
+    if (userRole == 'admin') {
+      return [
+        _buildNavButton(0, Icons.person_add_rounded, 'Registro'),
+        _buildNavButton(1, Icons.format_list_bulleted_rounded, 'Listado'),
+        _buildNavButton(2, Icons.qr_code_scanner_rounded, 'QR'),
+        _buildNavButton(3, Icons.file_upload_outlined, 'CSV'),
+        _buildNavButton(4, Icons.settings_rounded, 'Ajustes'),
+      ];
+    } else {
+      return [
+        _buildNavButton(0, Icons.person_add_rounded, 'Registro'),
+        _buildNavButton(4, Icons.settings_rounded, 'Ajustes'),
+      ];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // conf de la barra de estado
+    // Configuración de la barra de estado
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
@@ -93,7 +148,7 @@ class _MenuScreenState extends State<MenuScreen> {
         ),
         body: Stack(
           children: [
-            // fondo superior
+            // Fondo superior
             Container(
               height: 180,
               width: double.infinity,
@@ -158,18 +213,13 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
             ),
             
-            // contenido principal
+            // Contenido principal
             Padding(
-              padding: const EdgeInsets.only(
-                top: 130,
-                bottom: 0,
-              ),
+              padding: const EdgeInsets.only(top: 130, bottom: 0),
               child: Container(
                 decoration: BoxDecoration(
                   color: AppColors.fondoClaro,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(30),
-                  ),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.sombra.withValues(alpha: 0.1),
@@ -179,9 +229,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(30),
-                  ),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
                   child: _screens[_currentIndex],
                 ),
               ),
@@ -189,14 +237,11 @@ class _MenuScreenState extends State<MenuScreen> {
           ],
         ),
         
-        // menu de navegacion
+        // Menú de navegación
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(25),
-              topRight: Radius.circular(25),
-            ),
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(25), topRight: Radius.circular(25)),
             boxShadow: [
               BoxShadow(
                 color: AppColors.sombra.withValues(alpha: 0.08),
@@ -210,13 +255,7 @@ class _MenuScreenState extends State<MenuScreen> {
             child: SafeArea(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildNavButton(0, Icons.person_add_rounded, 'Registro'),
-                  _buildNavButton(1, Icons.format_list_bulleted_rounded, 'Listado'),
-                  _buildNavButton(2, Icons.qr_code_scanner_rounded, 'QR'),
-                  _buildNavButton(3, Icons.file_upload_outlined, 'CSV'),
-                  _buildNavButton(4, Icons.settings_rounded, 'Ajustes'),
-                ],
+                children: getMenuItems(), // Usa el menú filtrado por rol
               ),
             ),
           ),

@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/usuario.dart';
 
@@ -31,6 +32,34 @@ class UsuarioService {
       throw Exception('Error al obtener usuarios');
     }
   }
+
+
+// Método para obtener el rol del usuario desde Firestore
+  Future<String?> obtenerRolUsuarioPorEmail(String email) async {
+    try {
+      // Verifica si el usuario está autenticado
+      var usuarioActual = FirebaseAuth.instance.currentUser;
+
+      if (usuarioActual == null) {
+        throw Exception('No hay usuario autenticado');
+      }
+
+      // Busca el documento del usuario en la colección 'users' usando el UID
+      var docUsuario = await FirebaseFirestore.instance.collection('users').doc(usuarioActual.uid).get();
+
+      if (docUsuario.exists) {
+        // Retorna el rol del usuario desde Firestore
+        return docUsuario.data()?['role'] ?? 'user'; // 'user' es el valor por defecto si no tiene rol
+      } else {
+        throw Exception('Usuario no encontrado en la base de datos');
+      }
+    } catch (e) {
+      print('Error al obtener rol de usuario: $e');
+      return null;
+    }
+  }
+
+
 
   // registrar usuario
   Future<Usuario> registrarUsuario(Usuario usuario) async {
