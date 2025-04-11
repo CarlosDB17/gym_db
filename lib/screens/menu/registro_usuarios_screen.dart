@@ -5,7 +5,6 @@ import '../../theme/app_colors.dart';
 import '../../widgets/campo_texto_personalizado.dart';
 import '../../widgets/boton_verde_personalizado.dart';
 import '../../widgets/boton_naranja_personalizado.dart';
-// Importamos el modelo Usuario y el servicio
 import '../../models/usuario.dart';
 import '../../services/usuario_service.dart';
 
@@ -23,9 +22,9 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
   final TextEditingController _fechaNacimientoController =
       TextEditingController();
   File? _imagenSeleccionada;
-  bool _estaCargando = false; // Añadimos variable para controlar el estado de carga
+  bool _estaCargando = false; 
 
-  // Instanciamos el servicio de usuarios
+
   final UsuarioService _usuarioService = UsuarioService();
   final ImagePicker _picker = ImagePicker();
 
@@ -33,7 +32,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
     try {
       final XFile? pickedFile = await _picker.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 80, // Reducir un poco la calidad para bajar el tamaño
+        imageQuality: 80, // se reduce un poco la calidad para bajar el tamaño
       );
 
       if (pickedFile != null) {
@@ -81,7 +80,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
       );
 
       if (pickedFile != null) {
-        // Las fotos tomadas con la cámara normalmente son JPEG, pero verificamos igualmente
+        // verificar formato foto
         final String extension = pickedFile.path.split('.').last.toLowerCase();
         final List<String> formatosPermitidos = ['png', 'jpg', 'jpeg', 'heic', 'heif'];
 
@@ -123,7 +122,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
     });
   }
 
-  // Función para validar email
+  // funcion para validar email
   bool _isValidEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
@@ -133,10 +132,10 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
 
     try {
       print('Iniciando subida de foto para usuario: $documentoIdentidad');
-      // Pequeña pausa para asegurar que el registro se completó
+      // pausa para asegurar que el registro se completo
       await Future.delayed(const Duration(milliseconds: 500));
 
-      // Verificar si el usuario existe antes de subir la foto
+      // verificar si el usuario existe antes de subir la foto
       bool usuarioExiste = await _usuarioService.verificarUsuarioExistente(documentoIdentidad);
       if (!usuarioExiste) {
         print('Error: El usuario $documentoIdentidad no existe para subir la foto');
@@ -190,7 +189,6 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
     });
 
     try {
-      // Convertir formato de fecha según lo esperado por la API
       // formato actual es dd/mm/yyyy y necesitamos yyyy-mm-dd (para firebase)
       final fechaParts = fechaNacimientoStr.split('/');
       if (fechaParts.length != 3) {
@@ -200,7 +198,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
       final fechaNacimiento = '${fechaParts[2]}-${fechaParts[1].padLeft(2, '0')}-${fechaParts[0].padLeft(2, '0')}';
       print('Fecha formateada para API: $fechaNacimiento');
 
-      // Verificar si el usuario ya existe
+      // verifico si el usuario ya existe
       bool usuarioExiste = await _usuarioService.verificarUsuarioExistente(documento);
       if (usuarioExiste) {
         if (mounted) {
@@ -231,10 +229,10 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
         String documentoRegistrado = usuarioRegistrado.documentoIdentidad;
         print('Usuario registrado exitosamente: $documentoRegistrado');
 
-        // Si hay foto seleccionada, la subimos y manejamos errores
+        // si hay foto seleccionada, la subimos y maanejo erroress
         if (_imagenSeleccionada != null) {
           try {
-            // Mostrar mensaje de que se está subiendo la foto
+            // mensaje de que se esta subiendo la foto
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -247,7 +245,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
 
             await _subirFotoUsuario(documentoRegistrado);
 
-            // Solo si la foto se subió correctamente, mostramos éxito completo
+            // registro con foto correcto
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -256,13 +254,13 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
                 ),
               );
 
-              // Limpiar el formulario SOLO si todo fue exitoso
               _limpiarFormulario();
             }
           } catch (fotoError) {
             print('Error al subir la foto: $fotoError');
 
-            // Como el usuario quería subir foto pero falló, eliminamos el usuario
+
+            //si selecciona foto pero hay error subiendo la foto, eliminamos el usuario
             try {
               print('Eliminando usuario debido a fallo en subida de foto: $documentoRegistrado');
               await _usuarioService.eliminarUsuario(documentoRegistrado);
@@ -287,7 +285,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
                   const SnackBar(
                     content: Text(
                       'Error al subir la foto. El usuario fue creado pero sin foto. '
-                      'Contacte al administrador.',
+                      'Contacte con el administrador Carlos.',
                     ),
                     backgroundColor: AppColors.naranjaOscuro,
                     duration: Duration(seconds: 10),
@@ -295,10 +293,9 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
                 );
               }
             }
-            return; // Salimos para no limpiar el formulario si hubo error
+            return; 
           }
         } else {
-          // Si no hay foto seleccionada, solo mostramos éxito del registro
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -306,15 +303,13 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
                 backgroundColor: Colors.green,
               ),
             );
-
-            // Limpiar el formulario
             _limpiarFormulario();
           }
         }
       } catch (e) {
         print('Error al registrar usuario: $e');
 
-        // Verificar si el usuario se registró a pesar del error
+        // verifico si el usuario se registró a pesar del error
         try {
           bool existe = await _usuarioService.verificarUsuarioExistente(documento);
           if (existe) {
@@ -327,16 +322,23 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
                 ),
               );
 
-              // Limpiar formulario
               _limpiarFormulario();
             }
             return;
           }
         } catch (_) {
-          // Si hay error al verificar, continuamos con el manejo del error original
+          print('Error al verificar si el usuario existe tras error de registro');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Error al verificar el registro del usuario'),
+                backgroundColor: AppColors.naranjaOscuro,
+              ),
+            );
+          }
         }
 
-        // Mostrar error
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -353,7 +355,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
           SnackBar(
             content: Text('Error al registrar: ${e.toString()}'),
             backgroundColor: AppColors.naranjaOscuro,
-            duration: const Duration(seconds: 8), // Mostrar por más tiempo
+            duration: const Duration(seconds: 8), 
           ),
         );
       }
@@ -366,7 +368,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
     }
   }
 
-  // Método para limpiar el formulario
+
   void _limpiarFormulario() {
     _nombreController.clear();
     _emailController.clear();
@@ -447,9 +449,9 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
                     ],
                   )
                 else
-                  // Centrar los botones de seleccionar archivo y tomar foto
+                  //botones de seleccionar archivo y tomar foto
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center, // Centrar horizontalmente
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       BotonVerdePersonalizado(
                         onPressed: _selectImageFromGallery,
@@ -479,7 +481,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
               ],
             ),
           ),
-          // Indicador de carga que cubre toda la pantalla cuando está registrando
+          // indicador de carga que cubre toda la pantalla cuando esta registrando
           if (_estaCargando)
             Container(
                 color: Colors.black.withAlpha(76), 

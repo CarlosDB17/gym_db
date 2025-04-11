@@ -13,20 +13,19 @@ class QrScreen extends StatefulWidget {
 }
 
 class _QrScreenState extends State<QrScreen> {
-  // Controlador para el escáner
+  // controlador para el escaner
   MobileScannerController cameraController = MobileScannerController(
     detectionSpeed: DetectionSpeed.normal,
     facing: CameraFacing.back,
     formats: [BarcodeFormat.qrCode],
   );
 
-  // Controlador para el scroll
+  // controlador para el scroll
   final ScrollController _scrollController = ScrollController();
 
-  // Servicio de usuario
+  // servicio de usuario
   final UsuarioService _usuarioService = UsuarioService();
 
-  // Variables para controlar el estado
   bool scannerEnabled = true;
   bool leyendoQR = false;
   bool mostrarResultado = false;
@@ -34,26 +33,21 @@ class _QrScreenState extends State<QrScreen> {
   bool procesando = false;
   bool error = false;
   bool mostrarMensajeQRInvalido = false;
-
-  // Mensajes
   String? mensaje;
   String mensajeVerificacion = '';
   String mensajeQRInvalido = '';
-
-  // Datos del usuario
   Usuario? userData;
-
-  // Último código procesado para evitar duplicados
   String? ultimoCodigoProcesado;
+
 
   @override
   void dispose() {
     cameraController.dispose();
-    _scrollController.dispose(); // Liberar el controlador de scroll
+    _scrollController.dispose(); 
     super.dispose();
   }
 
-  // Verifica si el QR tiene el formato correcto
+  // verifica si el qr tiene el formato correcto
   bool esCodigoQRValido(String codigo) {
     try {
       final data = jsonDecode(codigo);
@@ -67,7 +61,7 @@ class _QrScreenState extends State<QrScreen> {
     }
   }
 
-  // Método para mostrar mensajes de error o éxito
+  // metodo para mostrar mensajes de error o exito
   void _mostrarMensaje(String mensaje, bool esError) {
     setState(() {
       this.mensaje = mensaje;
@@ -77,21 +71,19 @@ class _QrScreenState extends State<QrScreen> {
     });
   }
 
-  // Método para manejar errores
   void _manejarError(String mensajeError) {
     _mostrarMensaje(mensajeError, true);
   }
 
-  // Método para manejar éxito
   void _manejarExito(String mensajeExito) {
     _mostrarMensaje(mensajeExito, false);
   }
 
-  // Procesa el código QR escaneado
+  // procesa el codigo qr escaneado
   void procesarCodigoQR(String result) {
-    debugPrint('Procesando código QR: $result');
+    debugPrint('procesando codigo qr: $result');
     
-    // Pausar el escáner temporalmente
+    // pausar el escaner temporalmente
     setState(() {
       scannerEnabled = false;
     });
@@ -99,7 +91,6 @@ class _QrScreenState extends State<QrScreen> {
     try {
       final Map<String, dynamic> scannedData = jsonDecode(result);
       
-      // Crear un objeto Usuario desde los datos del QR
       final Usuario scannedUserData = Usuario(
         nombre: scannedData['nombre'],
         email: scannedData['email'],
@@ -112,10 +103,10 @@ class _QrScreenState extends State<QrScreen> {
         mostrarResultado = true;
         leyendoQR = false;
         verificandoDatos = true;
-        mensajeVerificacion = 'Comprobando datos del QR...';
+        mensajeVerificacion = 'comprobando datos del qr...';
       });
 
-      // Desplazar hacia abajo para mostrar los datos del usuario
+      // desplazar hacia abajo para mostrar los datos del usuario
       Future.delayed(const Duration(milliseconds: 300), () {
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
@@ -126,45 +117,45 @@ class _QrScreenState extends State<QrScreen> {
         }
       });
 
-      // Pequeña pausa para mostrar "Comprobando datos del QR..."
+      // pequeña pausa para mostrar  mensaje
       Future.delayed(const Duration(milliseconds: 800), () {
         if (!mounted) return;
         
         setState(() {
-          mensajeVerificacion = 'Verificando si el usuario ya está registrado...';
+          mensajeVerificacion = 'verificando si el usuario ya esta registrado...';
         });
         
-        // Verificar si el usuario ya existe usando el servicio de usuario
+        // verificar si el usuario ya existe usando el servicio de usuario
         _usuarioService.verificarUsuarioExistente(scannedUserData.documentoIdentidad).then((existeUsuario) {
           if (!mounted) return;
           
           if (existeUsuario) {
-            debugPrint('Usuario ya registrado: ${scannedUserData.nombre}');
-            _manejarError("Este usuario ya ha sido registrado anteriormente");
+            debugPrint('usuario ya registrado: ${scannedUserData.nombre}');
+            _manejarError("este usuario ya ha sido registrado anteriormente");
           } else {
             setState(() {
               verificandoDatos = true;
-              mensajeVerificacion = 'Registrando usuario...';
+              mensajeVerificacion = 'registrando usuario...';
             });
             
             _usuarioService.registrarUsuario(scannedUserData).then((_) {
               if (!mounted) return;
-              _manejarExito('Usuario registrado correctamente');
+              _manejarExito('usuario registrado correctamente');
             }).catchError((e) {
               if (!mounted) return;
-              _manejarError('Error al registrar usuario: ${e.toString()}');
+              _manejarError('error al registrar usuario: ${e.toString()}');
             });
           }
         }).catchError((e) {
           if (!mounted) return;
-          _manejarError('Error al verificar usuario: ${e.toString()}');
+          _manejarError('error al verificar usuario: ${e.toString()}');
         });
       });
     } catch (e) {
-      // QR no válido
-      debugPrint('Error al procesar el QR: $e');
+      // qr no valido
+      debugPrint('error al procesar el qr: $e');
       setState(() {
-        mensaje = 'El QR no es válido';
+        mensaje = 'el qr no es valido';
         error = true;
         mostrarResultado = true;
         leyendoQR = false;
@@ -174,7 +165,7 @@ class _QrScreenState extends State<QrScreen> {
     }
   }
 
-  // Reanudar el escáner para escanear otro código
+  // reanudar el escaner para escanear otro codigo
   void reanudarEscaner() {
     setState(() {
       scannerEnabled = true;
@@ -190,7 +181,7 @@ class _QrScreenState extends State<QrScreen> {
     });
   }
 
-  // Widget para mostrar cuando se está leyendo un QR
+  // widget para mostrar cuando se esta leyendo un qr
   Widget _buildReadingOverlay() {
     return Container(
       color: Colors.black.withAlpha(179), // 0.7 * 255 = 179
@@ -201,7 +192,7 @@ class _QrScreenState extends State<QrScreen> {
             const CircularProgressIndicator(color: Colors.white),
             const SizedBox(height: 16),
             const Text(
-              'Leyendo QR...',
+              'leyendo qr...',
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
           ],
@@ -210,7 +201,7 @@ class _QrScreenState extends State<QrScreen> {
     );
   }
 
-  // Widget para mostrar cuando el escáner está en pausa
+  // widget para mostrar cuando el escaner esta en pausa
   Widget _buildPausedOverlay() {
     return Container(
       color: Colors.black.withAlpha(179), // 0.7 * 255 = 179
@@ -219,7 +210,7 @@ class _QrScreenState extends State<QrScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'Escáner en pausa',
+              'escaner en pausa',
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
             const SizedBox(height: 16),
@@ -229,7 +220,7 @@ class _QrScreenState extends State<QrScreen> {
                 backgroundColor: AppColors.naranjaBrillante,
                 foregroundColor: AppColors.blanco,
               ),
-              child: const Text('Reanudar'),
+              child: const Text('reanudar'),
             ),
           ],
         ),
@@ -237,17 +228,17 @@ class _QrScreenState extends State<QrScreen> {
     );
   }
 
-  // Formatea la fecha al formato dd-mm-yyyy
+  // formatea la fecha al formato dd-mm-yyyy
   String _formatearFecha(String fecha) {
     try {
       final DateTime parsedDate = DateTime.parse(fecha);
       return '${parsedDate.day.toString().padLeft(2, '0')}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.year}';
     } catch (e) {
-      return 'Formato inválido';
+      return 'formato invalido';
     }
   }
 
-  // Widget para mostrar los resultados del escaneo
+  // widget para mostrar los resultados del escaneo
   Widget _buildResultadoWidget() {
     return Container(
       width: double.infinity,
@@ -269,20 +260,20 @@ class _QrScreenState extends State<QrScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Datos del Usuario',
+            'datos del usuario',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.verdeVibrante),
             textAlign: TextAlign.center,
             
           ),
           const SizedBox(height: 16),
-          _buildUserDataField('Nombre:', userData?.nombre ?? 'No disponible'),
-          _buildUserDataField('Email:', userData?.email ?? 'No disponible'),
-          _buildUserDataField('Documento:', userData?.documentoIdentidad ?? 'No disponible'),
+          _buildUserDataField('nombre:', userData?.nombre ?? 'no disponible'),
+          _buildUserDataField('email:', userData?.email ?? 'no disponible'),
+          _buildUserDataField('documento:', userData?.documentoIdentidad ?? 'no disponible'),
           _buildUserDataField(
-            'Fecha de nacimiento:',
+            'fecha de nacimiento:',
             userData?.fechaNacimiento != null
                 ? _formatearFecha(userData!.fechaNacimiento)
-                : 'No disponible',
+                : 'no disponible',
           ),
           
           if (verificandoDatos)
@@ -311,16 +302,17 @@ class _QrScreenState extends State<QrScreen> {
               margin: const EdgeInsets.symmetric(vertical: 16),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: error ? AppColors.rojoError.withAlpha(26) : AppColors.verdeVibrante.withAlpha(26), // Cambiar a rojo si hay error
+                //cambio a rojo si hay error
+                color: error ? AppColors.rojoError.withAlpha(26) : AppColors.verdeVibrante.withAlpha(26), 
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: error ? AppColors.rojoError : AppColors.verdeVibrante, // Cambiar a rojo si hay error
+                  color: error ? AppColors.rojoError : AppColors.verdeVibrante, 
                 ),
               ),
               child: Text(
                 mensaje!,
                 style: TextStyle(
-                  color: error ? AppColors.rojoError : AppColors.verdeVibrante, // Cambiar a rojo si hay error
+                  color: error ? AppColors.rojoError : AppColors.verdeVibrante, 
                   fontSize: 16,
                 ),
               ),
@@ -336,7 +328,7 @@ class _QrScreenState extends State<QrScreen> {
                 foregroundColor: AppColors.blanco,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              child: const Text('Escanear otro código'),
+              child: const Text('escanear otro codigo'),
             ),
           ),
         ],
@@ -344,7 +336,7 @@ class _QrScreenState extends State<QrScreen> {
     );
   }
 
-  // Widget auxiliar para mostrar un campo de datos de usuario
+  // widget auxiliar para mostrar un campo de datos de usuario
   Widget _buildUserDataField(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -356,7 +348,7 @@ class _QrScreenState extends State<QrScreen> {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black, // Cambiar color a negro
+              color: Colors.black, 
             ),
           ),
           const SizedBox(width: 8),
@@ -377,14 +369,13 @@ class _QrScreenState extends State<QrScreen> {
       backgroundColor: Colors.grey.shade100,
       body: SafeArea(
         child: SingleChildScrollView(
-          controller: _scrollController, // Vincular el controlador de scroll
+          controller: _scrollController, 
           child: Column(
             children: [
               Container(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    // Scanner container
                     Container(
                       height: 300,
                       width: 300,
@@ -441,7 +432,6 @@ class _QrScreenState extends State<QrScreen> {
                               },
                             ),
                           
-                          // QR frame indicators
                           Center(
                             child: Container(
                               width: 200,
@@ -453,16 +443,14 @@ class _QrScreenState extends State<QrScreen> {
                             ),
                           ),
                           
-                          // Reading overlay
                           if (leyendoQR) _buildReadingOverlay(),
                           
-                          // Paused overlay
                           if (!scannerEnabled && !mostrarResultado) _buildPausedOverlay(),
                         ],
                       ),
                     ),
 
-                    // Texto debajo de la cámara
+                    // texto debajo camara qr
                     if (!mostrarResultado)
                       const SizedBox(height: 16),
                     if (!mostrarResultado)
@@ -472,7 +460,7 @@ class _QrScreenState extends State<QrScreen> {
                         textAlign: TextAlign.center,
                       ),
 
-                    // QR invalid message
+                    // qr invalido 
                     if (mostrarMensajeQRInvalido)
                       Container(
                         margin: const EdgeInsets.only(top: 16),
@@ -488,7 +476,6 @@ class _QrScreenState extends State<QrScreen> {
                         ),
                       ),
                       
-                    // Resultados
                     if (mostrarResultado) _buildResultadoWidget(),
                   ],
                 ),

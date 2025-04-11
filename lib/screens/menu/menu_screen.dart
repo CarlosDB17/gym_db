@@ -7,6 +7,7 @@ import 'csv_usuarios_screen.dart';
 import 'ajustes_screen.dart';
 import '../../theme/app_colors.dart';
 
+// pantalla principal del menu
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
 
@@ -26,25 +27,25 @@ class _MenuScreenState extends State<MenuScreen> {
   ];
 
   final List<String> _titles = [
-    'Registro de Usuarios',
-    'Listado de Usuarios',
-    'QR',
-    'Importar desde CSV',
-    'Ajustes',
+    'registro de usuarios',
+    'listado de usuarios',
+    'qr',
+    'importar desde csv',
+    'ajustes',
   ];
 
-  // Mostrar diálogo para confirmar la salida de la aplicación
+  // dialogo para confirmar la salida de la aplicacion
   void _mostrarDialogoSalida() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('¿Salir de la aplicación?'),
-        content: const Text('¿Estás seguro que deseas salir de la aplicación?'),
+        title: const Text('¿salir de la aplicacion?'),
+        content: const Text('¿estas seguro que deseas salir de la aplicacion?'),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancelar', style: TextStyle(color: AppColors.textoOscuro)),
+            child: Text('cancelar', style: TextStyle(color: AppColors.textoOscuro)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -55,7 +56,7 @@ class _MenuScreenState extends State<MenuScreen> {
               backgroundColor: AppColors.naranjaBrillante,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: const Text('Salir', style: TextStyle(color: Colors.white)),
+            child: const Text('salir', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -64,7 +65,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Configuración de la barra de estado
+    // conf de la barra de estado
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
@@ -92,7 +93,7 @@ class _MenuScreenState extends State<MenuScreen> {
         ),
         body: Stack(
           children: [
-            // Fondo superior
+            // fondo superior
             Container(
               height: 180,
               width: double.infinity,
@@ -114,10 +115,10 @@ class _MenuScreenState extends State<MenuScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 32), // Padding superior de 32
+                    padding: const EdgeInsets.only(top: 32), 
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center, // Centrar horizontalmente
-                      crossAxisAlignment: CrossAxisAlignment.start, // Alinear hacia arriba
+                      mainAxisAlignment: MainAxisAlignment.center, 
+                      crossAxisAlignment: CrossAxisAlignment.start, 
                       children: [
                         Container(
                           padding: const EdgeInsets.all(8),
@@ -137,9 +138,9 @@ class _MenuScreenState extends State<MenuScreen> {
                             height: 30,
                           ),
                         ),
-                        const SizedBox(width: 16), // Espaciado entre la imagen y el texto
+                        const SizedBox(width: 16), // espacio entre la imagen y el texto
                         Padding(
-                          padding: const EdgeInsets.only(top: 8), // Ajustar el texto para alinearlo con el centro de la imagen
+                          padding: const EdgeInsets.only(top: 8), 
                           child: Text(
                             _titles[_currentIndex],
                             style: const TextStyle(
@@ -157,7 +158,7 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
             ),
             
-            // Contenido principal
+            // contenido principal
             Padding(
               padding: const EdgeInsets.only(
                 top: 130,
@@ -188,7 +189,7 @@ class _MenuScreenState extends State<MenuScreen> {
           ],
         ),
         
-        // Menú de navegación
+        // menu de navegacion
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -210,11 +211,11 @@ class _MenuScreenState extends State<MenuScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildNavButton(0, Icons.person_add_rounded, 'Registro'),
-                  _buildNavButton(1, Icons.format_list_bulleted_rounded, 'Listado'),
-                  _buildNavButton(2, Icons.qr_code_scanner_rounded, 'QR'),
-                  _buildNavButton(3, Icons.file_upload_outlined, 'CSV'),
-                  _buildNavButton(4, Icons.settings_rounded, 'Ajustes'),
+                  _buildNavButton(0, Icons.person_add_rounded, 'registro'),
+                  _buildNavButton(1, Icons.format_list_bulleted_rounded, 'listado'),
+                  _buildNavButton(2, Icons.qr_code_scanner_rounded, 'qr'),
+                  _buildNavButton(3, Icons.file_upload_outlined, 'csv'),
+                  _buildNavButton(4, Icons.settings_rounded, 'ajustes'),
                 ],
               ),
             ),

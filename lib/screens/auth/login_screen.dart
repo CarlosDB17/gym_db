@@ -16,7 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController controladorCorreo = TextEditingController();
   final TextEditingController controladorContrasena = TextEditingController();
   final FirebaseAuth autenticacion = FirebaseAuth.instance;
-  bool contrasenaVisible = false; // Controla la visibilidad de la contraseña
+  bool contrasenaVisible = false; // controla la visibilidad de la contrasena
 
   Future<void> iniciarSesionCorreoContrasena() async {
     final correo = controladorCorreo.text.trim();
@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
       SnackBar(
         content: Text(message),
         backgroundColor:
-            AppColors.naranjaOscuro, // Cambia el color del fondo del SnackBar
+            AppColors.naranjaOscuro, // cambia el color del fondo del SnackBar
       ),
     );
   }
@@ -121,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controlador: controladorContrasena,
                   texto: 'Contraseña',
                   esContrasena: true,
-                  textoOculto: !contrasenaVisible, // Controla la visibilidad
+                  textoOculto: !contrasenaVisible, // controla la visibilidad
                   alternarVisibilidadContrasena: () {
                     setState(() {
                       contrasenaVisible = !contrasenaVisible;

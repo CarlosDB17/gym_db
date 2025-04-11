@@ -7,13 +7,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 void main() async {
-  // Cargar las variables de entorno
   await dotenv.load(fileName: "config.env");
   //print('API Key: ${dotenv.env['FIREBASE_API_KEY']}');
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicializar Firebase con las variables de entorno
+  // configuracion de firebase
   await Firebase.initializeApp(
     options: FirebaseOptions(
       apiKey: dotenv.env['FIREBASE_API_KEY']!,
@@ -23,7 +22,7 @@ void main() async {
     ),
   );
 
-  // verificar si la sesión está activa
+  // verifico si la sesion esta activa
   final bool sesionActiva = await SessionManager.verificarSesionActiva();
 
   runApp(MyApp(sesionActiva: sesionActiva));

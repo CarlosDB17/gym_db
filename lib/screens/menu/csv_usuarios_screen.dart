@@ -21,7 +21,6 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
   List<Map<String, dynamic>> usuarios = [];
   List<Map<String, dynamic>> usuariosPaginados = [];
 
-  // Variables para paginación
   int paginaActual = 0;
   int limitePorPagina = 3;
   bool _cargando = false;
@@ -39,7 +38,6 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Selector de archivo
                     Center(
                       child: BotonNaranjaPersonalizado(
                         onPressed: _selectFile,
@@ -67,7 +65,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
 
                     const SizedBox(height: 20.0),
 
-                    // Tabla de usuarios
+                    // tabla
                     if (usuariosPaginados.isNotEmpty)
                       TablaPersonalizada<Map<String, dynamic>>(
                         columnas: const [
@@ -84,7 +82,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
                         mensajeAyuda: 'Desliza para ver el resto de datos.',
                       ),
 
-                    // Botón de importación
+                    // boton confirmar importacion
                     if (usuarios.isNotEmpty)
                       Center(
                         child: Padding(
@@ -105,7 +103,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
     );
   }
 
-  // Método para crear filas de datos
+  // metodo para crear las filas con los datos del csv
   DataRow _crearDataRow(Map<String, dynamic> usuario) {
     return DataRow(
       cells: [
@@ -117,7 +115,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
     );
   }
 
-  // Seleccionar archivo CSV
+  // seleccionar archivo csv
   Future<void> _selectFile() async {
     setState(() {
       _cargando = true;
@@ -142,37 +140,36 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
     }
   }
 
-  // Procesar archivo CSV
+  // procesar archivo csv
   Future<void> _procesarArchivoCsv(File file) async {
     try {
       final input = file.readAsStringSync();
       final List<List<dynamic>> rowsAsListOfValues = const CsvToListConverter()
           .convert(input);
 
-      // Obtener encabezados del CSV (primera fila)
+      // obtener encabezados del csv (primera fila)
       final headers = rowsAsListOfValues[0];
 
-      // Convertir filas a lista de mapas
+      // convertir filas a lista de mapas
       List<Map<String, dynamic>> data = [];
       for (int i = 1; i < rowsAsListOfValues.length; i++) {
         Map<String, dynamic> row = {};
         for (int j = 0; j < headers.length; j++) {
-          String headerKey = headers[j].toString().trim();
-          // Asegúrate de que los encabezados coinciden con las claves esperadas
-          if (headerKey == 'nombre' ||
-              headerKey == 'email' ||
-              headerKey == 'documento_identidad' ||
-              headerKey == 'fecha_nacimiento') {
-            row[headerKey] = rowsAsListOfValues[i][j].toString().trim();
+          String encabezado = headers[j].toString().trim();
+          if (encabezado == 'nombre' ||
+              encabezado == 'email' ||
+              encabezado == 'documento_identidad' ||
+              encabezado == 'fecha_nacimiento') {
+            row[encabezado] = rowsAsListOfValues[i][j].toString().trim();
           }
         }
 
-        // Formatear la fecha al formato esperado por la API
+        // formatear la fecha al formato esperado por la api
         if (row.containsKey('fecha_nacimiento')) {
           row['fecha_nacimiento'] = _formatFecha(row['fecha_nacimiento']);
         }
 
-        // Solo agregar usuarios válidos
+        // solo agregar usuarios validos
         if (_validarUsuario(row)) {
           data.add(row);
         }
@@ -180,7 +177,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
 
       setState(() {
         usuarios = data;
-        paginaActual = 0; // Reiniciar a la primera página
+        paginaActual = 0; // reinicio a la primera pagina
         _actualizarUsuariosPaginados();
       });
 
@@ -192,7 +189,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
     }
   }
 
-  // Validar un usuario individual
+  // validar cada user
   bool _validarUsuario(Map<String, dynamic> usuario) {
     return usuario.containsKey('nombre') &&
         usuario['nombre'].isNotEmpty &&
@@ -204,7 +201,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
         usuario['fecha_nacimiento'].isNotEmpty;
   }
 
-  // Formatear la fecha al formato yyyy-mm-dd para la API
+  // metodo para formatear al formato yyyy-mm-dd para la api
   String _formatFecha(String fecha) {
     try {
       DateTime date = DateTime.parse(fecha);
@@ -215,21 +212,21 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
     }
   }
 
-  // Formatear la fecha para mostrar en la tabla (dd-mm-yyyy)
+  // metodo para formatear la fecha para mostrar en la tabla (dd-mm-yyyy)
   String _formatFechaMostrar(String fecha) {
     try {
       final partes = fecha.split('-');
       if (partes.length == 3) {
         return '${partes[2]}-${partes[1]}-${partes[0]}';
       }
-      return fecha; // Retorna la fecha original si no tiene el formato esperado
+      return fecha; // devuelve la fecha original si no tiene el formato esperado
     } catch (e) {
       print('Fecha inválida para mostrar: $fecha');
       return '';
     }
   }
 
-  // Actualizar los usuarios paginados
+  // actualizar los usuarios paginados
   void _actualizarUsuariosPaginados() {
     final inicio = paginaActual * limitePorPagina;
     final fin =
@@ -240,7 +237,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
     usuariosPaginados = usuarios.sublist(inicio, fin);
   }
 
-  // Cambiar de página
+  // metodo para cambiar de pagina
   void _cambiarPagina(int direccion) {
     setState(() {
       paginaActual += direccion;
@@ -248,14 +245,14 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
     });
   }
 
-  // Obtener el total de páginas
+  // metodo para obtener el total de paginas
   int _getTotalPaginas() {
     return (usuarios.length / limitePorPagina).ceil() > 0
         ? (usuarios.length / limitePorPagina).ceil()
         : 1;
   }
 
-  // Validar todos los usuarios
+  // metodo para validar todos los usuarios
   bool _validarUsuarios() {
     for (var usuario in usuarios) {
       if (!_validarUsuario(usuario)) {
@@ -268,7 +265,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
     return true;
   }
 
-  // Método para confirmar la importación de usuarios
+  // metodo para confirmar la importacion de usuarios
   Future<void> _confirmarImportacion() async {
     setState(() {
       _cargando = true;
@@ -278,7 +275,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
       setState(() {
         _cargando = false;
       });
-      return; // Detener si la validación falla
+      return; // lo detengo si la validacion falla
     }
 
     try {
@@ -300,7 +297,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
     }
   }
 
-  // Mostrar mensajes
+  // metodo para mostrar mensajes
   void _mostrarSnackBar(String mensaje, {Color color = Colors.red}) {
     ScaffoldMessenger.of(
       context,

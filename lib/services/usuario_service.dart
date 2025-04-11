@@ -10,7 +10,7 @@ class UsuarioService {
   //final String _baseUrl = "http://192.168.1.38:8000/usuarios";
   final String _baseUrl = "https://pf25-carlos-db-v6-302016834907.europe-west1.run.app/usuarios";
 
-  // Obtener usuarios con paginación
+  // obtener usuarios con paginacion
   Future<Map<String, dynamic>> obtenerUsuarios(int skip, int limit) async {
     final response = await http.get(
       Uri.parse("$_baseUrl?skip=$skip&limit=$limit"),
@@ -32,7 +32,7 @@ class UsuarioService {
     }
   }
 
-  // Registrar usuario
+  // registrar usuario
   Future<Usuario> registrarUsuario(Usuario usuario) async {
     try {
       print('Intentando registrar usuario: ${usuario.toJson()}');
@@ -84,7 +84,7 @@ class UsuarioService {
     }
   }
   
-// Actualizar usuario parcialmente (solo los campos proporcionados)
+// actualizar usuario parcialmente (solo los campos proporcionados)
 Future<Usuario> actualizarUsuarioParcial(String documentoIdentidad, {
   String? nombre,
   String? email,
@@ -118,7 +118,7 @@ Future<Usuario> actualizarUsuarioParcial(String documentoIdentidad, {
   }
 }
 
-// Actualizar usuario
+// actualizar usuario
 Future<Usuario> actualizarUsuario(String documentoIdentidad, Map<String, dynamic> data) async {
   print('Iniciando actualización del usuario...');
   print('Documento actual: $documentoIdentidad');
@@ -232,7 +232,7 @@ Future<Usuario> actualizarUsuario(String documentoIdentidad, Map<String, dynamic
   }
 }
 
-  // Eliminar usuario
+  // eliminar usuario
   Future<void> eliminarUsuario(String documentoIdentidad) async {
     final response = await http.delete(Uri.parse("$_baseUrl/$documentoIdentidad"));
     if (response.statusCode != 200) {
@@ -240,7 +240,7 @@ Future<Usuario> actualizarUsuario(String documentoIdentidad, Map<String, dynamic
     }
   }
 
-  // Subir foto
+  // subir foto
 Future<String> subirFoto(String documentoIdentidad, File foto) async {
   try {
     // Verificar si el archivo existe
@@ -293,7 +293,7 @@ Future<String> subirFoto(String documentoIdentidad, File foto) async {
   }
 }
 
-// Eliminar foto
+// eliminar foto
 Future<void> eliminarFotoUsuario(String documentoIdentidad) async {
   final response = await http.delete(Uri.parse("$_baseUrl/$documentoIdentidad/foto"));
   if (response.statusCode != 200) {
@@ -301,7 +301,7 @@ Future<void> eliminarFotoUsuario(String documentoIdentidad) async {
   }
 }
 
-  // Obtener foto
+  // obtener foto
   Future<String> obtenerFoto(String documentoIdentidad) async {
     final response = await http.get(Uri.parse("$_baseUrl/$documentoIdentidad/foto"));
     if (response.statusCode == 200) {
@@ -311,7 +311,7 @@ Future<void> eliminarFotoUsuario(String documentoIdentidad) async {
     }
   }
 
-  // Buscar por documento exacto
+  // buscar por documento exacto
   Future<Usuario> buscarPorDocumentoExacto(String documentoIdentidad) async {
     final response = await http.get(Uri.parse("$_baseUrl/documento-exacto/$documentoIdentidad"));
     if (response.statusCode == 200) {
@@ -321,7 +321,7 @@ Future<void> eliminarFotoUsuario(String documentoIdentidad) async {
     }
   }
 
-  // Verificar si el usuario existe
+  // verificar si el usuario existe
   Future<bool> verificarUsuarioExistente(String documentoIdentidad) async {
     final response = await http.get(Uri.parse("$_baseUrl/$documentoIdentidad/"));
     if (response.statusCode == 200) {
@@ -333,7 +333,7 @@ Future<void> eliminarFotoUsuario(String documentoIdentidad) async {
     }
   }
 
-// Buscar usuarios por valor con paginación
+// buscar usuarios por valor con paginacion
 Future<Map<String, dynamic>> buscarUsuariosPorValor(String valor, {int skip = 0, int limit = 3}) async {
   try {
     // Imprimir la URL completa para depuración
@@ -408,7 +408,7 @@ Future<Map<String, dynamic>> buscarUsuariosPorValor(String valor, {int skip = 0,
   }
 }
 
-// Importar múltiples usuarios desde un archivo CSV
+// importar multiples usuarios desde un archivo csv
 Future<void> importarUsuarios(List<Map<String, dynamic>> usuarios) async {
   try {
     print('Iniciando importación de usuarios...');

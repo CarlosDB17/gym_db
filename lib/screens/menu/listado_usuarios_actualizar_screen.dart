@@ -36,7 +36,7 @@ class _ListadoUsuariosActualizarScreenState
     if (partes.length == 3) {
       return '${partes[2]}-${partes[1]}-${partes[0]}';
     }
-    return fecha; // Retorna la fecha original si no tiene el formato esperado
+    return fecha; // devuelve la fecha original si no tiene el formato esperado
   }
 
   @override
@@ -114,10 +114,10 @@ class _ListadoUsuariosActualizarScreenState
                   controlador: _fechaNacimientoController,
                   texto: 'Fecha de Nacimiento',
                   alTocar: () async {
-                    // Obtener la fecha actual del usuario del controlador
+                    // obtener la fecha actual del usuario del controlador
                     final String fechaActual = _fechaNacimientoController.text;
                     
-                    // Convertir la fecha en formato DD-MM-YYYY a un objeto DateTime
+                    // convertir la fecha en formato DD-MM-YYYY a un objeto DateTime
                     DateTime fechaInicial = DateTime.now();
                     if (fechaActual.isNotEmpty) {
                       final List<String> partes = fechaActual.split('-');
@@ -129,7 +129,7 @@ class _ListadoUsuariosActualizarScreenState
                             int.parse(partes[0]), // día
                           );
                         } catch (e) {
-                          // Si hay un error de parseo, usar la fecha actual
+                          // si hay un error de parseo, usar la fecha actual
                           print('Error al convertir la fecha: $e');
                         }
                       }
@@ -202,7 +202,7 @@ Future<void> _actualizarUsuario() async {
     final String nuevaFechaNacimientoFormateada =
         _fechaNacimientoController.text.trim();
         
-    // Convertir la fecha formateada al formato original para comparar correctamente
+    // convertir la fecha formateada al formato original para comparar correctamente
     final String nuevaFechaNacimiento = _convertirFormatoFecha(nuevaFechaNacimientoFormateada);
 
     if (nuevoNombre.isEmpty ||
@@ -222,7 +222,7 @@ Future<void> _actualizarUsuario() async {
       return;
     }
 
-    // Verificar si se hicieron cambios
+    // verificar si se hicieron cambios
     bool cambiosRealizados = nuevoNombre != _usuario!.nombre ||
         nuevoEmail != _usuario!.email ||
         _nuevaFoto != null ||
@@ -240,7 +240,7 @@ Future<void> _actualizarUsuario() async {
       return;
     }
 
-    // Crear un mapa con solo los campos que se van a actualizar
+    // crear un mapa con solo los campos que se van a actualizar
     Map<String, dynamic> camposActualizados = {};
 
     if (nuevoNombre != _usuario!.nombre) {
@@ -256,10 +256,10 @@ Future<void> _actualizarUsuario() async {
     }
 
     if (nuevoDocumentoIdentidad != _usuario!.documentoIdentidad) {
-      camposActualizados['documento_identidad'] = nuevoDocumentoIdentidad; // Cambiar a snake_case
+      camposActualizados['documento_identidad'] = nuevoDocumentoIdentidad; // cambiar a snake_case
     }
 
-    // Manejar la foto de manera especial
+    // manejar la foto de manera especial
     String? urlFoto;
     if (_nuevaFoto != null) {
       urlFoto = await _usuarioService.subirFoto(
@@ -267,17 +267,17 @@ Future<void> _actualizarUsuario() async {
       camposActualizados['foto'] = urlFoto;
     }
 
-    // Verificar que el mapa no esté vacío
+    // verificar que el mapa no esté vacío
     if (camposActualizados.isEmpty) {
       _mostrarSnackBar('No se proporcionaron datos para actualizar.');
       setState(() => _estaCargando = false);
       return;
     }
 
-    // Actualizar el usuario
+    // actualizar el usuario
     await _usuarioService.actualizarUsuario(
-      _usuario!.documentoIdentidad, // Documento actual
-      camposActualizados, // Campos actualizados, incluyendo el nuevo documento
+      _usuario!.documentoIdentidad, // documento actual
+      camposActualizados, // campos actualizados, incluyendo el nuevo documento
     );
 
     print('Campos actualizados antes de enviar: $camposActualizados');
@@ -299,7 +299,7 @@ Future<void> _actualizarUsuario() async {
   }
 }
 
-// Añadir este método para convertir del formato mostrado (DD-MM-YYYY) al formato almacenado (YYYY-MM-DD)
+// añadir este método para convertir del formato mostrado (DD-MM-YYYY) al formato almacenado (YYYY-MM-DD)
 String _convertirFormatoFecha(String fechaFormateada) {
   final partes = fechaFormateada.split('-');
   if (partes.length == 3) {
@@ -313,12 +313,12 @@ String _convertirFormatoFecha(String fechaFormateada) {
     
     try {
       if (_nuevaFoto != null) {
-        // Solo eliminar la nueva foto seleccionada sin llamar a la API
+        // solo eliminar la nueva foto seleccionada sin llamar a la API
         setState(() {
           _nuevaFoto = null;
         });
       } else if (_usuario!.foto != null) {
-        // Eliminar foto del servidor
+        // eliminar foto del servidor
         await _usuarioService.eliminarFotoUsuario(_usuario!.documentoIdentidad);
         setState(() {
           _usuario = Usuario(
@@ -387,9 +387,9 @@ String _convertirFormatoFecha(String fechaFormateada) {
         ),
       );
       
-      // Volver a la pantalla anterior y actualizar la lista
+      // volver a la pantalla anterior y actualizar la lista
       Navigator.pop(context, true);
-      print('Usuario actualizado y regresando con true'); // Depuración
+      print('Usuario actualizado y regresando con true'); // depuración
     } catch (e) {
       _mostrarSnackBar('Error al eliminar el usuario: $e');
     } finally {

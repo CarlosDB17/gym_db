@@ -8,8 +8,8 @@ class CampoTextoPersonalizado extends StatelessWidget {
   final bool soloLectura;
   final Widget? iconoSufijo;
   final VoidCallback? alTocar;
-  final bool? textoOculto; // Propiedad para manejar visibilidad
-  final VoidCallback? alternarVisibilidadContrasena; // Propiedad para alternar visibilidad
+  final bool? textoOculto; 
+  final VoidCallback? alternarVisibilidadContrasena; 
 
   const CampoTextoPersonalizado({
     super.key,
