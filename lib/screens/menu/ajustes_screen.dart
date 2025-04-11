@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../utils/session_manager.dart'; 
-import '../../widgets/boton_naranja_personalizado.dart'; 
 import '../../services/usuario_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -54,7 +53,7 @@ class _AjustesScreenState extends State<AjustesScreen> {
               leading: const Icon(Icons.admin_panel_settings),
               title: const Text('Administrar roles'),
               onTap: () {
-                Navigator.pushNamed(context, '/admin_roles');
+                Navigator.pushNamed(context, '/administrar_roles');
               },
             ),
           ListTile(
