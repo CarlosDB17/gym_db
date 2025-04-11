@@ -28,6 +28,8 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+          backgroundColor: Colors.white,
+
       body: _cargando
           ? const Center(
               child: CircularProgressIndicator(color: AppColors.verdeOscuro),

@@ -8,6 +8,7 @@ import 'csv_usuarios_screen.dart';
 import 'ajustes_screen.dart';
 import '../../theme/app_colors.dart';
 import '../../services/usuario_service.dart';
+import '../../widgets/ventana_emergente_salida.dart';
 
 // pantalla principal del menu
 class MenuScreen extends StatefulWidget {
@@ -72,33 +73,8 @@ class _MenuScreenState extends State<MenuScreen> {
 
   // dialogo para confirmar la salida de la aplicacion
   void _mostrarDialogoSalida() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('¿salir de la aplicacion?'),
-        content: const Text('¿estas seguro que deseas salir de la aplicacion?'),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('cancelar', style: TextStyle(color: AppColors.textoOscuro)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Salir de la aplicación
-              SystemNavigator.pop();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.naranjaBrillante,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text('salir', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
+    VentanaEmergenteSalida.mostrarSalirApp(context);
   }
-
 
   // Filtra las opciones según el rol del usuario
   List<Widget> getMenuItems() {

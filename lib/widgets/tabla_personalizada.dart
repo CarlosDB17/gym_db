@@ -34,19 +34,28 @@ class TablaPersonalizada<T> extends StatelessWidget {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SingleChildScrollView(
-                child: DataTable(
-                  headingRowColor: WidgetStateProperty.all(
-                    AppColors.verdeVibrante.withAlpha((0.2 * 255).toInt())
+                child: Theme(
+                  // Aplicar un tema personalizado para ocultar los checkboxes
+                  data: Theme.of(context).copyWith(
+                    dataTableTheme: DataTableThemeData(
+                      checkboxHorizontalMargin: 0, // Elimina el espacio para los checkboxes
+                    ),
                   ),
-                  columnSpacing: 20,
-                  dataRowMinHeight: 60,
-                  dataRowMaxHeight: 60,
-                  headingTextStyle: const TextStyle(
-                    color: AppColors.verdeOscuro,
-                    fontWeight: FontWeight.bold,
+                  child: DataTable(
+                    headingRowColor: WidgetStateProperty.all(
+                      AppColors.verdeVibrante.withAlpha((0.2 * 255).toInt())
+                    ),
+                    columnSpacing: 20,
+                    dataRowMinHeight: 60,
+                    dataRowMaxHeight: 60,
+                    headingTextStyle: const TextStyle(
+                      color: AppColors.verdeOscuro,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    showCheckboxColumn: false, // Ocultar la columna de checkboxes
+                    columns: columnas,
+                    rows: datos.map((item) => crearFila(item)).toList(),
                   ),
-                  columns: columnas,
-                  rows: datos.map((item) => crearFila(item)).toList(),
                 ),
               ),
             ),

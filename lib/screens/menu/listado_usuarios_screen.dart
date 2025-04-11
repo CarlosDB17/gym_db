@@ -159,6 +159,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+          backgroundColor: Colors.white,
       body: SafeArea(
         child: _cargando
             ? const Center(

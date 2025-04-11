@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../utils/session_manager.dart'; 
 import '../../services/usuario_service.dart';
+import '../../widgets/ventana_emergente_salida.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AjustesScreen extends StatefulWidget {
@@ -36,16 +37,21 @@ class _AjustesScreenState extends State<AjustesScreen> {
   }
 
   Future<void> _cerrarSesion(BuildContext context) async {
-    await SessionManager.cerrarSesion();
-    if (context.mounted) {
-      Navigator.pushReplacementNamed(context, '/login');
-    }
+    VentanaEmergenteSalida.mostrarCerrarSesion(
+      context: context, 
+      onCerrarSesion: () async {
+        await SessionManager.cerrarSesion();
+        if (context.mounted) {
+          Navigator.pushReplacementNamed(context, '/login');
+        }
+      }
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
+    backgroundColor: Colors.white,
       body: ListView(
         children: [
           if (userRole == 'admin')

@@ -381,104 +381,114 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Obtener el tamaño de la pantalla
+    final screenHeight = MediaQuery.of(context).size.height;
+    
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                CampoTextoPersonalizado(
-                  controlador: _nombreController,
-                  texto: 'Nombre',
-                ),
-                const SizedBox(height: 20),
-                CampoTextoPersonalizado(
-                  controlador: _emailController,
-                  texto: 'Email',
-                ),
-                const SizedBox(height: 20),
-                CampoTextoPersonalizado(
-                  controlador: _documentoController,
-                  texto: 'Documento de identidad',
-                  iconoSufijo: const Icon(Icons.perm_identity, color: AppColors.verdeOscuro),
-                ),
-                const SizedBox(height: 20),
-                CampoTextoPersonalizado(
-                  controlador: _fechaNacimientoController,
-                  texto: 'Fecha de Nacimiento',
-                  soloLectura: true,
-                  iconoSufijo: const Icon(Icons.calendar_today, color: AppColors.verdeOscuro),
-                  alTocar: () async {
-                    final DateTime? fechaSeleccionada = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime.now(),
-                    );
-                    if (fechaSeleccionada != null) {
-                      setState(() {
-                        _fechaNacimientoController.text =
-                            '${fechaSeleccionada.day}/${fechaSeleccionada.month}/${fechaSeleccionada.year}';
-                      });
-                    }
-                  },
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Foto',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-                if (_imagenSeleccionada != null)
-                  Column(
-                    children: [
-                      Image.file(
-                        _imagenSeleccionada!,
-                        height: 150,
-                        width: 150,
-                        fit: BoxFit.cover,
-                      ),
-                      const SizedBox(height: 10),
-                      BotonNaranjaPersonalizado(
-                        onPressed: _removeSelectedImage,
-                        texto: 'Eliminar foto',
-                      ),
-                    ],
-                  )
-                else
-                  //botones de seleccionar archivo y tomar foto
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      BotonVerdePersonalizado(
-                        onPressed: _selectImageFromGallery,
-                        icono: Icons.photo_library,
-                        texto: 'Seleccionar archivo',
-                      ),
-                      const SizedBox(width: 10),
-                      BotonVerdePersonalizado(
-                        onPressed: _takePhotoWithCamera,
-                        icono: Icons.camera_alt,
-                        texto: 'Tomar foto',
-                      ),
-                    ],
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: screenHeight - 32, // Altura de pantalla menos el padding
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  CampoTextoPersonalizado(
+                    controlador: _nombreController,
+                    texto: 'Nombre',
                   ),
-                const SizedBox(height: 30),
-                Center(
-                  child: BotonNaranjaPersonalizado(
-                    onPressed: _registrarUsuario,
-                    texto: 'Registrarse',
-                    isLoading: _estaCargando,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 15,
-                      horizontal: 50,
+                  const SizedBox(height: 20),
+                  CampoTextoPersonalizado(
+                    controlador: _emailController,
+                    texto: 'Email',
+                  ),
+                  const SizedBox(height: 20),
+                  CampoTextoPersonalizado(
+                    controlador: _documentoController,
+                    texto: 'Documento de identidad',
+                    iconoSufijo: const Icon(Icons.perm_identity, color: AppColors.verdeOscuro),
+                  ),
+                  const SizedBox(height: 20),
+                  CampoTextoPersonalizado(
+                    controlador: _fechaNacimientoController,
+                    texto: 'Fecha de Nacimiento',
+                    soloLectura: true,
+                    iconoSufijo: const Icon(Icons.calendar_today, color: AppColors.verdeOscuro),
+                    alTocar: () async {
+                      final DateTime? fechaSeleccionada = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+                      if (fechaSeleccionada != null) {
+                        setState(() {
+                          _fechaNacimientoController.text =
+                              '${fechaSeleccionada.day}/${fechaSeleccionada.month}/${fechaSeleccionada.year}';
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Foto',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  if (_imagenSeleccionada != null)
+                    Column(
+                      children: [
+                        Image.file(
+                          _imagenSeleccionada!,
+                          height: 150,
+                          width: 150,
+                          fit: BoxFit.cover,
+                        ),
+                        const SizedBox(height: 10),
+                        BotonNaranjaPersonalizado(
+                          onPressed: _removeSelectedImage,
+                          texto: 'Eliminar foto',
+                        ),
+                      ],
+                    )
+                  else
+                    //botones de seleccionar archivo y tomar foto
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        BotonVerdePersonalizado(
+                          onPressed: _selectImageFromGallery,
+                          icono: Icons.photo_library,
+                          texto: 'Seleccionar archivo',
+                        ),
+                        const SizedBox(width: 10),
+                        BotonVerdePersonalizado(
+                          onPressed: _takePhotoWithCamera,
+                          icono: Icons.camera_alt,
+                          texto: 'Tomar foto',
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 30),
+                  Center(
+                    child: BotonNaranjaPersonalizado(
+                      onPressed: _registrarUsuario,
+                      texto: 'Registrarse',
+                      isLoading: _estaCargando,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 15,
+                        horizontal: 50,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 50), // Añade espacio extra al final
+                ],
+              ),
             ),
           ),
           // indicador de carga que cubre toda la pantalla cuando esta registrando
