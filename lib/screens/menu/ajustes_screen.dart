@@ -37,9 +37,13 @@ class _AjustesScreenState extends State<AjustesScreen> {
   }
 
   Future<void> _cerrarSesion(BuildContext context) async {
-    VentanaEmergenteSalida.mostrarCerrarSesion(
-      context: context, 
-      onCerrarSesion: () async {
+    VentanaEmergenteSalida.mostrar(
+      context: context,
+      titulo: '¿Cerrar sesión?',
+      subtitulo: '¿Estás seguro que deseas cerrar tu sesión?',
+      botonAfirmativo: 'Cerrar sesión',
+      botonNegativo: 'Cancelar',
+      onAccion: () async {
         await SessionManager.cerrarSesion();
         if (context.mounted) {
           Navigator.pushReplacementNamed(context, '/login');

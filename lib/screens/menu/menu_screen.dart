@@ -73,7 +73,16 @@ class _MenuScreenState extends State<MenuScreen> {
 
   // dialogo para confirmar la salida de la aplicacion
   void _mostrarDialogoSalida() {
-    VentanaEmergenteSalida.mostrarSalirApp(context);
+    VentanaEmergenteSalida.mostrar(
+      context: context,
+      titulo: '¿Salir de la aplicación?',
+      subtitulo: '¿Estás seguro que deseas salir de la aplicación?',
+      botonAfirmativo: 'Salir',
+      botonNegativo: 'Cancelar',
+      onAccion: () {
+        SystemNavigator.pop();
+      },
+    );
   }
 
   // Filtra las opciones según el rol del usuario

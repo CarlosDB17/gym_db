@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 
 class VentanaEmergenteSalida extends StatelessWidget {
@@ -40,35 +39,6 @@ class VentanaEmergenteSalida extends StatelessWidget {
         onAccion: onAccion,
         colorBotonAfirmativo: colorBotonAfirmativo,
       ),
-    );
-  }
-
-  /// Método para mostrar diálogo específico para salir de la aplicación
-  static Future<bool?> mostrarSalirApp(BuildContext context) {
-    return mostrar(
-      context: context,
-      titulo: '¿Salir de la aplicación?',
-      subtitulo: '¿Estás seguro que deseas salir de la aplicación?',
-      botonAfirmativo: 'Salir',
-      botonNegativo: 'Cancelar',
-      onAccion: () {
-        SystemNavigator.pop();
-      },
-    );
-  }
-
-  /// Método para mostrar diálogo específico para cerrar sesión
-  static Future<bool?> mostrarCerrarSesion({
-    required BuildContext context,
-    required VoidCallback onCerrarSesion,
-  }) {
-    return mostrar(
-      context: context,
-      titulo: '¿Cerrar sesión?',
-      subtitulo: '¿Estás seguro que deseas cerrar tu sesión?',
-      botonAfirmativo: 'Cerrar sesión',
-      botonNegativo: 'Cancelar',
-      onAccion: onCerrarSesion,
     );
   }
 
