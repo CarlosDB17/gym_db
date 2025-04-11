@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../services/usuario_service.dart';
 
 class AdministrarRolesActualizarScreen extends StatefulWidget {
   const AdministrarRolesActualizarScreen({super.key});
@@ -9,7 +9,7 @@ class AdministrarRolesActualizarScreen extends StatefulWidget {
 }
 
 class _AdministrarRolesActualizarScreenState extends State<AdministrarRolesActualizarScreen> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final UsuarioService _usuarioService = UsuarioService();
   final TextEditingController _rolController = TextEditingController();
   Map<String, dynamic>? _usuario;
   bool _estaCargando = false;
@@ -79,7 +79,8 @@ class _AdministrarRolesActualizarScreenState extends State<AdministrarRolesActua
         return;
       }
 
-      await _firestore.collection('users').doc(_usuario!['id']).update({'role': nuevoRol});
+      // Usando el método del servicio en lugar de acceder directamente a Firestore
+      await _usuarioService.actualizarRolUsuario(_usuario!['id'], nuevoRol);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

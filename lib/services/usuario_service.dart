@@ -10,6 +10,7 @@ class UsuarioService {
 
   //final String _baseUrl = "http://192.168.1.38:8000/usuarios";
   final String _baseUrl = "https://pf25-carlos-db-v6-302016834907.europe-west1.run.app/usuarios";
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // obtener usuarios con paginacion
   Future<Map<String, dynamic>> obtenerUsuarios(int skip, int limit) async {
@@ -60,6 +61,38 @@ class UsuarioService {
   }
 
 
+
+// Método para cargar todos los usuarios de Firestore
+Future<List<Map<String, dynamic>>> cargarUsuariosFirestore() async {
+  try {
+    final snapshot = await _firestore.collection('users').get();
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      return {
+        'email': data['email'] ?? '',
+        'role': data['role'] ?? 'user',
+        'id': doc.id,
+      };
+    }).toList();
+  } catch (e) {
+    print('Error al cargar usuarios: $e');
+    throw Exception('Error al cargar usuarios: $e');
+  }
+}
+
+// Método para actualizar el rol de un usuario en Firestore
+Future<void> actualizarRolUsuario(String userId, String nuevoRol) async {
+  try {
+    if (nuevoRol.isEmpty) {
+      throw Exception('El rol no puede estar vacío');
+    }
+
+    await _firestore.collection('users').doc(userId).update({'role': nuevoRol});
+  } catch (e) {
+    print('Error al actualizar el rol: $e');
+    throw Exception('Error al actualizar el rol: $e');
+  }
+}
 
   // registrar usuario
   Future<Usuario> registrarUsuario(Usuario usuario) async {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../services/usuario_service.dart';
 
 class AdministrarRolesScreen extends StatefulWidget {
   const AdministrarRolesScreen({super.key});
@@ -10,7 +10,7 @@ class AdministrarRolesScreen extends StatefulWidget {
 }
 
 class _AdministrarRolesScreenState extends State<AdministrarRolesScreen> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final UsuarioService _usuarioService = UsuarioService();
   List<Map<String, dynamic>> _usuarios = [];
   bool _cargando = true;
 
@@ -33,17 +33,8 @@ class _AdministrarRolesScreenState extends State<AdministrarRolesScreen> {
   Future<void> _cargarUsuarios() async {
     setState(() => _cargando = true);
     try {
-      final snapshot = await _firestore.collection('users').get();
-      setState(() {
-        _usuarios = snapshot.docs.map((doc) {
-          final data = doc.data();
-          return {
-            'email': data['email'] ?? '',
-            'role': data['role'] ?? 'user',
-            'id': doc.id,
-          };
-        }).toList();
-      });
+      // Usando el método del servicio en lugar de acceder directamente a Firestore
+      _usuarios = await _usuarioService.cargarUsuariosFirestore();
     } catch (e) {
       print('Error al cargar usuarios: $e');
     } finally {
