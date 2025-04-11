@@ -27,11 +27,11 @@ class _MenuScreenState extends State<MenuScreen> {
   ];
 
   final List<String> _titles = [
-    'registro de usuarios',
-    'listado de usuarios',
-    'qr',
-    'importar desde csv',
-    'ajustes',
+    'Registro de usuarios',
+    'Listado de usuarios',
+    'QR',
+    'Importar desde CSV',
+    'Ajustes',
   ];
 
   // dialogo para confirmar la salida de la aplicacion
@@ -211,11 +211,11 @@ class _MenuScreenState extends State<MenuScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildNavButton(0, Icons.person_add_rounded, 'registro'),
-                  _buildNavButton(1, Icons.format_list_bulleted_rounded, 'listado'),
-                  _buildNavButton(2, Icons.qr_code_scanner_rounded, 'qr'),
-                  _buildNavButton(3, Icons.file_upload_outlined, 'csv'),
-                  _buildNavButton(4, Icons.settings_rounded, 'ajustes'),
+                  _buildNavButton(0, Icons.person_add_rounded, 'Registro'),
+                  _buildNavButton(1, Icons.format_list_bulleted_rounded, 'Listado'),
+                  _buildNavButton(2, Icons.qr_code_scanner_rounded, 'QR'),
+                  _buildNavButton(3, Icons.file_upload_outlined, 'CSV'),
+                  _buildNavButton(4, Icons.settings_rounded, 'Ajustes'),
                 ],
               ),
             ),

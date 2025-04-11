@@ -28,78 +28,117 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:
-          _cargando
-              ? const Center(
-                child: CircularProgressIndicator(color: AppColors.verdeOscuro),
-              )
-              : SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+      body: _cargando
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.verdeOscuro),
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Si no hay usuarios cargados, centrar el botón y el texto en la pantalla
+                  if (usuarios.isEmpty)
                     Center(
-                      child: BotonNaranjaPersonalizado(
-                        onPressed: _selectFile,
-                        texto: 'Seleccionar Archivo',
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 22,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 30),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: Text(
-                          'Recuerda que debe ser un .csv separado por comas.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20.0),
-
-                    // tabla
-                    if (usuariosPaginados.isNotEmpty)
-                      TablaPersonalizada<Map<String, dynamic>>(
-                        columnas: const [
-                          DataColumn(label: Text('Nombre')),
-                          DataColumn(label: Text('Email')),
-                          DataColumn(label: Text('Documento de identidad')),
-                          DataColumn(label: Text('Fecha de Nacimiento')),
-                        ],
-                        datos: usuariosPaginados,
-                        crearFila: _crearDataRow,
-                        paginaActual: paginaActual,
-                        totalPaginas: _getTotalPaginas(),
-                        cambiarPagina: _cambiarPagina,
-                        mensajeAyuda: 'Desliza para ver el resto de datos.',
-                      ),
-
-                    // boton confirmar importacion
-                    if (usuarios.isNotEmpty)
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 20.0),
-                          child: BotonVerdePersonalizado(
-                            onPressed: _confirmarImportacion,
-                            texto: 'Confirmar Importación',
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Añadir espacio para centrar verticalmente
+                          SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                          
+                          BotonNaranjaPersonalizado(
+                            onPressed: _selectFile,
+                            texto: 'Seleccionar Archivo',
                             padding: const EdgeInsets.symmetric(
                               horizontal: 20,
-                              vertical: 12,
+                              vertical: 22,
+                            ),
+                          ),
+                          
+                          Padding(
+                            padding: const EdgeInsets.only(top: 30),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: Text(
+                                'Recuerda que debe ser un .csv separado por comas.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontStyle: FontStyle.italic,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    // Si hay usuarios cargados, mostrar el botón en la parte superior
+                    Column(
+                      children: [
+                        Center(
+                          child: BotonNaranjaPersonalizado(
+                            onPressed: _selectFile,
+                            texto: 'Seleccionar Archivo',
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 22,
                             ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
+                        
+                        Padding(
+                          padding: const EdgeInsets.only(top: 30),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              'Recuerda que debe ser un .csv separado por comas.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontStyle: FontStyle.italic,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 20.0),
+                        
+                        // Tabla de usuarios
+                        TablaPersonalizada<Map<String, dynamic>>(
+                          columnas: const [
+                            DataColumn(label: Text('Nombre')),
+                            DataColumn(label: Text('Email')),
+                            DataColumn(label: Text('Documento de identidad')),
+                            DataColumn(label: Text('Fecha de Nacimiento')),
+                          ],
+                          datos: usuariosPaginados,
+                          crearFila: _crearDataRow,
+                          paginaActual: paginaActual,
+                          totalPaginas: _getTotalPaginas(),
+                          cambiarPagina: _cambiarPagina,
+                          mensajeAyuda: 'Desliza para ver el resto de datos.',
+                        ),
+                        
+                        // Botón de confirmar importación
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 20.0),
+                            child: BotonVerdePersonalizado(
+                              onPressed: _confirmarImportacion,
+                              texto: 'Confirmar Importación',
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
               ),
+            ),
     );
   }
 
