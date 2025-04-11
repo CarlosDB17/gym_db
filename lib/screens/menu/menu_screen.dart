@@ -110,6 +110,12 @@ class _MenuScreenState extends State<MenuScreen> {
         _buildNavButton(3, Icons.file_upload_outlined, 'CSV'),
         _buildNavButton(4, Icons.settings_rounded, 'Ajustes'),
       ];
+    } else if (userRole == 'ListAdmin') {
+      return [
+        _buildNavButton(0, Icons.person_add_rounded, 'Registro'),
+        _buildNavButton(1, Icons.format_list_bulleted_rounded, 'Listado'),
+        _buildNavButton(4, Icons.settings_rounded, 'Ajustes'),
+      ];
     } else {
       return [
         _buildNavButton(0, Icons.person_add_rounded, 'Registro'),
