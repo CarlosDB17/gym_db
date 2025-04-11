@@ -81,7 +81,7 @@ class _QrScreenState extends State<QrScreen> {
 
   // procesa el codigo qr escaneado
   void procesarCodigoQR(String result) {
-    debugPrint('procesando codigo qr: $result');
+    debugPrint('Procesando codigo qr: $result');
     
     // pausar el escaner temporalmente
     setState(() {
@@ -103,7 +103,7 @@ class _QrScreenState extends State<QrScreen> {
         mostrarResultado = true;
         leyendoQR = false;
         verificandoDatos = true;
-        mensajeVerificacion = 'comprobando datos del qr...';
+        mensajeVerificacion = 'Comprobando datos del qr...';
       });
 
       // desplazar hacia abajo para mostrar los datos del usuario
@@ -122,7 +122,7 @@ class _QrScreenState extends State<QrScreen> {
         if (!mounted) return;
         
         setState(() {
-          mensajeVerificacion = 'verificando si el usuario ya esta registrado...';
+          mensajeVerificacion = 'Verificando si el usuario ya esta registrado...';
         });
         
         // verificar si el usuario ya existe usando el servicio de usuario
@@ -130,32 +130,32 @@ class _QrScreenState extends State<QrScreen> {
           if (!mounted) return;
           
           if (existeUsuario) {
-            debugPrint('usuario ya registrado: ${scannedUserData.nombre}');
-            _manejarError("este usuario ya ha sido registrado anteriormente");
+            debugPrint('Usuario ya registrado: ${scannedUserData.nombre}');
+            _manejarError("Este usuario ya ha sido registrado anteriormente");
           } else {
             setState(() {
               verificandoDatos = true;
-              mensajeVerificacion = 'registrando usuario...';
+              mensajeVerificacion = 'Registrando usuario...';
             });
             
             _usuarioService.registrarUsuario(scannedUserData).then((_) {
               if (!mounted) return;
-              _manejarExito('usuario registrado correctamente');
+              _manejarExito('Usuario registrado correctamente');
             }).catchError((e) {
               if (!mounted) return;
-              _manejarError('error al registrar usuario: ${e.toString()}');
+              _manejarError('Error al registrar usuario: ${e.toString()}');
             });
           }
         }).catchError((e) {
           if (!mounted) return;
-          _manejarError('error al verificar usuario: ${e.toString()}');
+          _manejarError('Error al verificar usuario: ${e.toString()}');
         });
       });
     } catch (e) {
       // qr no valido
-      debugPrint('error al procesar el qr: $e');
+      debugPrint('Error al procesar el qr: $e');
       setState(() {
-        mensaje = 'el qr no es valido';
+        mensaje = 'El QR no es valido';
         error = true;
         mostrarResultado = true;
         leyendoQR = false;
@@ -192,7 +192,7 @@ class _QrScreenState extends State<QrScreen> {
             const CircularProgressIndicator(color: Colors.white),
             const SizedBox(height: 16),
             const Text(
-              'leyendo qr...',
+              'Leyendo qr...',
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
           ],
@@ -210,7 +210,7 @@ class _QrScreenState extends State<QrScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'escaner en pausa',
+              'Escaner en pausa',
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
             const SizedBox(height: 16),
@@ -220,7 +220,7 @@ class _QrScreenState extends State<QrScreen> {
                 backgroundColor: AppColors.naranjaBrillante,
                 foregroundColor: AppColors.blanco,
               ),
-              child: const Text('reanudar'),
+              child: const Text('Reanudar'),
             ),
           ],
         ),
@@ -234,7 +234,7 @@ class _QrScreenState extends State<QrScreen> {
       final DateTime parsedDate = DateTime.parse(fecha);
       return '${parsedDate.day.toString().padLeft(2, '0')}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.year}';
     } catch (e) {
-      return 'formato invalido';
+      return 'Formato invalido';
     }
   }
 
@@ -260,20 +260,20 @@ class _QrScreenState extends State<QrScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'datos del usuario',
+            'Datos del usuario',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.verdeVibrante),
             textAlign: TextAlign.center,
             
           ),
           const SizedBox(height: 16),
-          _buildUserDataField('nombre:', userData?.nombre ?? 'no disponible'),
-          _buildUserDataField('email:', userData?.email ?? 'no disponible'),
-          _buildUserDataField('documento:', userData?.documentoIdentidad ?? 'no disponible'),
+          _buildUserDataField('Nombre:', userData?.nombre ?? 'no disponible'),
+          _buildUserDataField('Email:', userData?.email ?? 'no disponible'),
+          _buildUserDataField('Documento:', userData?.documentoIdentidad ?? 'No disponible'),
           _buildUserDataField(
-            'fecha de nacimiento:',
+            'Fecha de nacimiento:',
             userData?.fechaNacimiento != null
                 ? _formatearFecha(userData!.fechaNacimiento)
-                : 'no disponible',
+                : 'No disponible',
           ),
           
           if (verificandoDatos)
