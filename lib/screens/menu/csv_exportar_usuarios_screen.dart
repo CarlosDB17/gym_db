@@ -28,6 +28,7 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
   int _totalUsuarios = 0;
   String? _csvData;
   String? _nombreArchivo;
+  List<Usuario> _usuarios = []; // Lista para almacenar los usuarios recuperados
 
   @override
   Widget build(BuildContext context) {
@@ -110,6 +111,56 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
                                   fontSize: 16,
                                 ),
                               ),
+                            
+                            // Mostrar la lista de usuarios con sus fotos si hay datos cargados
+                            if (_usuarios.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 20.0),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey[300]!),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  margin: const EdgeInsets.symmetric(vertical: 10),
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    itemCount: _usuarios.length > 5 ? 5 : _usuarios.length,
+                                    itemBuilder: (context, index) {
+                                      final usuario = _usuarios[index];
+                                      return ListTile(
+                                        leading: ClipOval(
+                                          child: usuario.foto != null
+                                              ? Image.network(
+                                                  usuario.foto!,
+                                                  height: 50,
+                                                  width: 50,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) => 
+                                                    _avatarPorDefecto(),
+                                                )
+                                              : _avatarPorDefecto(),
+                                        ),
+                                        title: Text(usuario.nombre),
+                                        subtitle: Text(usuario.email),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            
+                            if (_usuarios.length > 5)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  'Mostrando 5 de ${_usuarios.length} usuarios',
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            
                             const SizedBox(height: 10),
                             // Mostrar botón para copiar al portapapeles si hay datos
                             if (_csvData != null && _csvData!.isNotEmpty)
@@ -157,6 +208,23 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
     );
   }
 
+  // Widget para mostrar avatar por defecto cuando no hay foto
+  Widget _avatarPorDefecto() {
+    return Container(
+      height: 50,
+      width: 50,
+      decoration: BoxDecoration(
+        color: AppColors.naranjaBrillante,
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.person,
+        color: AppColors.blanco,
+        size: 30,
+      ),
+    );
+  }
+
   Future<void> _exportarUsuarios() async {
     setState(() {
       _cargando = true;
@@ -164,6 +232,7 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
       _exito = false;
       _csvData = null;
       _nombreArchivo = null;
+      _usuarios = []; // Limpiar la lista de usuarios
     });
 
     try {
@@ -171,6 +240,11 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
       final resultado = await _usuarioService.obtenerUsuarios(0, 9999999999);
       final List<Usuario> usuarios = resultado['usuarios'];
       final int totalUsuarios = resultado['total'];
+
+      // Guardar la lista de usuarios para mostrarla en la interfaz
+      setState(() {
+        _usuarios = usuarios;
+      });
 
       // Generar el archivo CSV
       final String csvData = _generarCSV(usuarios);
@@ -209,24 +283,42 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
   String _generarCSV(List<Usuario> usuarios) {
     StringBuffer csvContent = StringBuffer();
     
-    // Añadir la cabecera en una sola celda (A1)
-    csvContent.writeln('nombre,email,documento_identidad,fecha_nacimiento,foto');
+    print('===== INICIO GENERACIÓN CSV =====');
+    print('Generando CSV para ${usuarios.length} usuarios');
     
-    // Añadir los datos de cada usuario en una sola celda por fila (A2, A3, etc.)
+    // Añadir la cabecera en una línea separada
+    csvContent.writeln('nombre,email,documento_identidad,fecha_nacimiento,foto');
+    print('Encabezados CSV: nombre,email,documento_identidad,fecha_nacimiento,foto');
+    
+    // Añadir los datos de cada usuario en líneas separadas
     for (var usuario in usuarios) {
-      // Crear la línea con todos los campos unidos por comas
-      String fila = '${usuario.nombre},${usuario.email},${usuario.documentoIdentidad},${usuario.fechaNacimiento}';
+      // Manejar posibles comas en los campos
+      String nombre = usuario.nombre.contains(',') ? '"${usuario.nombre}"' : usuario.nombre;
+      String email = usuario.email.contains(',') ? '"${usuario.email}"' : usuario.email;
+      String docId = usuario.documentoIdentidad;
+      String fecha = usuario.fechaNacimiento;
       
-      // Añadir foto solo si existe
+      // Construir la fila con los campos adecuadamente escapados
+      String fila = '$nombre,$email,$docId,$fecha,';
+      
+      // Añadir foto solo si existe, en caso contrario añadir "null"
       if (usuario.foto != null && usuario.foto!.isNotEmpty) {
-        fila += ',${usuario.foto}';
+        String foto = usuario.foto!.contains(',') ? '"${usuario.foto}"' : usuario.foto!;
+        fila += foto;
+      } else {
+        fila += 'null';
       }
       
-      // Añadir la línea completa al CSV
+      // Añadir la línea completa al CSV (asegurándonos que cada usuario esté en una nueva línea)
       csvContent.writeln(fila);
+      print('Fila añadida: $fila');
     }
     
-    return csvContent.toString();
+    final csvString = csvContent.toString();
+    print('Primeros 200 caracteres del CSV generado: ${csvString.length > 200 ? csvString.substring(0, 200) + '...' : csvString}');
+    print('===== FIN GENERACIÓN CSV =====');
+    
+    return csvString;
   }
 
   Future<void> _guardarArchivo(String csvData) async {

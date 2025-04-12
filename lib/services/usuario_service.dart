@@ -8,8 +8,8 @@ import '../models/usuario.dart';
 
 class UsuarioService {
 
-  //final String _baseUrl = "http://192.168.1.38:8000/usuarios";
-  final String _baseUrl = "https://pf25-carlos-db-v6-302016834907.europe-west1.run.app/usuarios";
+  final String _baseUrl = "http://192.168.1.38:8000/usuarios";
+  //final String _baseUrl = "https://pf25-carlos-db-v6-302016834907.europe-west1.run.app/usuarios";
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // obtener usuarios con paginacion
@@ -525,13 +525,39 @@ Future<void> enviarUsuariosAlaAPI(List<Map<String, dynamic>> usuarios) async {
     print('Iniciando importación de usuarios...');
     print('URL de la solicitud: $_baseUrl/multiples');
 
-    // Enviar los usuarios directamente sin envolverlos en un objeto
+    // Asegurar que cada usuario tenga los campos correctamente formateados
+    List<Map<String, dynamic>> usuariosFormateados = usuarios.map((usuario) {
+      // Convertir las claves a snake_case si es necesario
+      Map<String, dynamic> usuarioFormateado = {};
+      usuario.forEach((key, value) {
+        String formattedKey = key;
+        if (!key.contains('_')) {
+          // Convertir camelCase a snake_case solo si no tiene guiones bajos
+          formattedKey = key.replaceAllMapped(
+              RegExp(r'[A-Z]'), (match) => '_${match.group(0)!.toLowerCase()}');
+        }
+        usuarioFormateado[formattedKey] = value;
+      });
+      
+      // Asegurarse de que el campo foto esté incluido correctamente
+      // Verificar si la foto existe y no es nula antes de verificar si está vacía
+      if (usuario.containsKey('foto') && usuario['foto'] != null && usuario['foto'].isNotEmpty) {
+        usuarioFormateado['foto'] = usuario['foto'];
+      } else {
+        // Si no hay foto o es nula, establecerla explícitamente como null
+        usuarioFormateado['foto'] = null;
+      }
+      
+      return usuarioFormateado;
+    }).toList();
+
+    // Enviar los usuarios formateados a la API
     final response = await http.post(
       Uri.parse("$_baseUrl/multiples"),
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
       },
-      body: jsonEncode(usuarios), // Enviar directamente la lista de usuarios
+      body: jsonEncode(usuariosFormateados),
     );
 
     print('Respuesta de la API: ${response.statusCode}');

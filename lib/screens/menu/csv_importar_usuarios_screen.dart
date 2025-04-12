@@ -139,6 +139,7 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
                             // Tabla de usuarios
                             TablaPersonalizada<Map<String, dynamic>>(
                               columnas: const [
+                                DataColumn(label: Text('Foto')),
                                 DataColumn(label: Text('Nombre')),
                                 DataColumn(label: Text('Email')),
                                 DataColumn(label: Text('Documento de identidad')),
@@ -177,10 +178,40 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
     );
   }
 
+  // Widget para mostrar avatar por defecto cuando no hay foto
+  Widget _avatarPorDefecto() {
+    return Container(
+      height: 50,
+      width: 50,
+      decoration: BoxDecoration(
+        color: AppColors.naranjaBrillante,
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.person,
+        color: Colors.white,
+        size: 30,
+      ),
+    );
+  }
+
   // metodo para crear las filas con los datos del csv
   DataRow _crearDataRow(Map<String, dynamic> usuario) {
     return DataRow(
       cells: [
+        DataCell(
+          (usuario['foto'] != null && usuario['foto'].toString().isNotEmpty)
+              ? ClipOval(
+                  child: Image.network(
+                    usuario['foto'],
+                    height: 50,
+                    width: 50,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => _avatarPorDefecto(),
+                  ),
+                )
+              : _avatarPorDefecto(),
+        ),
         DataCell(Text(usuario['nombre'] ?? '')),
         DataCell(Text(usuario['email'] ?? '')),
         DataCell(Text(usuario['documento_identidad'] ?? '')),
@@ -229,18 +260,29 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
       for (int i = 1; i < rowsAsListOfValues.length; i++) {
         Map<String, dynamic> row = {};
         for (int j = 0; j < headers.length; j++) {
-          String encabezado = headers[j].toString().trim();
-          if (encabezado == 'nombre' ||
-              encabezado == 'email' ||
-              encabezado == 'documento_identidad' ||
-              encabezado == 'fecha_nacimiento') {
-            row[encabezado] = rowsAsListOfValues[i][j].toString().trim();
+          // Verificar que no estemos accediendo fuera del rango de la fila
+          if (j < rowsAsListOfValues[i].length) {
+            String encabezado = headers[j].toString().trim();
+            if (encabezado == 'nombre' ||
+                encabezado == 'email' ||
+                encabezado == 'documento_identidad' ||
+                encabezado == 'fecha_nacimiento' ||
+                encabezado == 'foto') {  // Añadido soporte para columna de foto
+              row[encabezado] = rowsAsListOfValues[i][j].toString().trim();
+            }
           }
         }
 
         // formatear la fecha al formato esperado por la api
         if (row.containsKey('fecha_nacimiento')) {
           row['fecha_nacimiento'] = _formatFecha(row['fecha_nacimiento']);
+        }
+
+        // Incluir el campo foto en los datos del usuario
+        if (!row.containsKey('foto')) {
+          row['foto'] = null; // Campo vacío si no existe
+        } else if (row['foto'] == 'null' || row['foto'].isEmpty) {
+          row['foto'] = null; // Convertir "null" en null real
         }
 
         // solo agregar usuarios validos
@@ -266,12 +308,16 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
   // validar cada user
   bool _validarUsuario(Map<String, dynamic> usuario) {
     return usuario.containsKey('nombre') &&
+        usuario['nombre'] != null &&
         usuario['nombre'].isNotEmpty &&
         usuario.containsKey('email') &&
+        usuario['email'] != null &&
         usuario['email'].isNotEmpty &&
         usuario.containsKey('documento_identidad') &&
+        usuario['documento_identidad'] != null &&
         usuario['documento_identidad'].isNotEmpty &&
         usuario.containsKey('fecha_nacimiento') &&
+        usuario['fecha_nacimiento'] != null &&
         usuario['fecha_nacimiento'].isNotEmpty;
   }
 
@@ -287,7 +333,10 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
   }
 
   // metodo para formatear la fecha para mostrar en la tabla (dd-mm-yyyy)
+  
   String _formatFechaMostrar(String fecha) {
+
+    
     try {
       final partes = fecha.split('-');
       if (partes.length == 3) {
