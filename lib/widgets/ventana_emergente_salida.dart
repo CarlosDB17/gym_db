@@ -10,14 +10,14 @@ class VentanaEmergenteSalida extends StatelessWidget {
   final Color colorBotonAfirmativo;
 
   const VentanaEmergenteSalida({
-    Key? key,
+    super.key,
     required this.titulo,
     required this.subtitulo,
     this.botonAfirmativo = 'Aceptar',
     this.botonNegativo = 'Cancelar',
     required this.onAccion,
     this.colorBotonAfirmativo = AppColors.naranjaBrillante,
-  }) : super(key: key);
+  });
 
   /// Método estático para mostrar el diálogo personalizado
   static Future<bool?> mostrar({
