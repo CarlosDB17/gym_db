@@ -84,11 +84,11 @@ class Encabezado extends StatelessWidget {
         
         // boton para volver atras si hace falta
         if (mostrarBotonAtras)
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 10,
+            Positioned(
+            top: MediaQuery.of(context).padding.top + 25,
             left: 10,
             child: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              icon: const Icon(Icons.keyboard_arrow_left_rounded, color: Colors.white, size: 40),
               onPressed: onAtrasPressed ?? () => Navigator.of(context).pop(),
             ),
           ),

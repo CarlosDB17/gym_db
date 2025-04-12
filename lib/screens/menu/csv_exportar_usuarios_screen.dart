@@ -67,7 +67,7 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 10),
                             const Text(
                               '(Pendiente de implementar)',
                               style: TextStyle(
