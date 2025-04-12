@@ -7,6 +7,7 @@ import '../../services/usuario_service.dart';
 import '../../widgets/boton_naranja_personalizado.dart';
 import '../../widgets/boton_verde_personalizado.dart';
 import '../../widgets/tabla_personalizada.dart';
+import '../../widgets/encabezado_personalizado.dart';
 import '../../theme/app_colors.dart';
 
 class CsvImportarUsuariosScreen extends StatefulWidget {
@@ -28,119 +29,154 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-          backgroundColor: Colors.white,
-
-      body: _cargando
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.verdeOscuro),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Si no hay usuarios cargados, centrar el botón y el texto en la pantalla
-                  if (usuarios.isEmpty)
-                    Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Añadir espacio para centrar verticalmente
-                          SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-                          
-                          BotonNaranjaPersonalizado(
-                            onPressed: _selectFile,
-                            texto: 'Seleccionar Archivo',
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 22,
-                            ),
-                          ),
-                          
-                          Padding(
-                            padding: const EdgeInsets.only(top: 30),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: Text(
-                                'Recuerda que debe ser un .csv separado por comas.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontStyle: FontStyle.italic,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  else
-                    // Si hay usuarios cargados, mostrar el botón en la parte superior
-                    Column(
-                      children: [
-                        Center(
-                          child: BotonNaranjaPersonalizado(
-                            onPressed: _selectFile,
-                            texto: 'Seleccionar Archivo',
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 22,
-                            ),
-                          ),
-                        ),
-                        
-                        Padding(
-                          padding: const EdgeInsets.only(top: 30),
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: Text(
-                              'Recuerda que debe ser un .csv separado por comas.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontStyle: FontStyle.italic,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 20.0),
-                        
-                        // Tabla de usuarios
-                        TablaPersonalizada<Map<String, dynamic>>(
-                          columnas: const [
-                            DataColumn(label: Text('Nombre')),
-                            DataColumn(label: Text('Email')),
-                            DataColumn(label: Text('Documento de identidad')),
-                            DataColumn(label: Text('Fecha de Nacimiento')),
-                          ],
-                          datos: usuariosPaginados,
-                          crearFila: _crearDataRow,
-                          paginaActual: paginaActual,
-                          totalPaginas: _getTotalPaginas(),
-                          cambiarPagina: _cambiarPagina,
-                          mensajeAyuda: 'Desliza para ver el resto de datos.',
-                        ),
-                        
-                        // Botón de confirmar importación
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 20.0),
-                            child: BotonVerdePersonalizado(
-                              onPressed: _confirmarImportacion,
-                              texto: 'Confirmar Importación',
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 12,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+      backgroundColor: AppColors.fondoClaro,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        toolbarHeight: 0,
+      ),
+      body: Stack(
+        children: [
+          // Encabezado reutilizable
+          const Encabezado(
+            titulo: 'Importar desde CSV',
+            mostrarBotonAtras: true,
+          ),
+          
+          // Contenido principal
+          Padding(
+            padding: const EdgeInsets.only(top: 130),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha((0.1 * 255).toInt()),
+                    blurRadius: 8,
+                    offset: const Offset(0, -4),
+                  ),
                 ],
               ),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+                child: _cargando
+                  ? const Center(
+                      child: CircularProgressIndicator(color: AppColors.verdeOscuro),
+                    )
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Si no hay usuarios cargados, centrar el botón y el texto en la pantalla
+                          if (usuarios.isEmpty)
+                            Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  // Añadir espacio para centrar verticalmente
+                                  SizedBox(height: MediaQuery.of(context).size.height * 0.15),
+                                  
+                                  BotonNaranjaPersonalizado(
+                                    onPressed: _selectFile,
+                                    texto: 'Seleccionar Archivo',
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 22,
+                                    ),
+                                  ),
+                                  
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 30),
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      child: Text(
+                                        'Recuerda que debe ser un .csv separado por comas.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontStyle: FontStyle.italic,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            // Si hay usuarios cargados, mostrar el botón en la parte superior
+                            Column(
+                              children: [
+                                Center(
+                                  child: BotonNaranjaPersonalizado(
+                                    onPressed: _selectFile,
+                                    texto: 'Seleccionar Archivo',
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 22,
+                                    ),
+                                  ),
+                                ),
+                                
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 30),
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    child: Text(
+                                      'Recuerda que debe ser un .csv separado por comas.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontStyle: FontStyle.italic,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                
+                                const SizedBox(height: 20.0),
+                                
+                                // Tabla de usuarios
+                                TablaPersonalizada<Map<String, dynamic>>(
+                                  columnas: const [
+                                    DataColumn(label: Text('Nombre')),
+                                    DataColumn(label: Text('Email')),
+                                    DataColumn(label: Text('Documento de identidad')),
+                                    DataColumn(label: Text('Fecha de Nacimiento')),
+                                  ],
+                                  datos: usuariosPaginados,
+                                  crearFila: _crearDataRow,
+                                  paginaActual: paginaActual,
+                                  totalPaginas: _getTotalPaginas(),
+                                  cambiarPagina: _cambiarPagina,
+                                  mensajeAyuda: 'Desliza para ver el resto de datos.',
+                                ),
+                                
+                                // Botón de confirmar importación
+                                Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 20.0),
+                                    child: BotonVerdePersonalizado(
+                                      onPressed: _confirmarImportacion,
+                                      texto: 'Confirmar Importación',
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+              ),
             ),
+          ),
+        ],
+      ),
     );
   }
 

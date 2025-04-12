@@ -50,6 +50,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
                   horizontal: 30,
                   vertical: 20,
                 ),
+                icono: Icons.file_download_outlined,
               ),
             ),
             
@@ -70,6 +71,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
                   horizontal: 30,
                   vertical: 20,
                 ),
+                icono: Icons.file_upload_outlined,
               ),
             ),
             

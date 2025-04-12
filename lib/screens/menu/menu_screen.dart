@@ -35,7 +35,7 @@ class _MenuScreenState extends State<MenuScreen> {
     'Registro de usuarios',
     'Listado de usuarios',
     'QR',
-    'Importar desde CSV',
+    'Gestión de CSVs',
     'Ajustes',
   ];
 

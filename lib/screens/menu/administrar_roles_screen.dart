@@ -110,8 +110,8 @@ class _AdministrarRolesScreenState extends State<AdministrarRolesScreen> {
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
                                     color: usuario['role'] == 'admin' 
-                                        ? AppColors.naranjaOscuro.withOpacity(0.2)
-                                        : AppColors.verdeVibrante.withOpacity(0.2),
+                                      ? AppColors.naranjaOscuro.withAlpha(51)
+                                      : AppColors.verdeVibrante.withAlpha(51),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(

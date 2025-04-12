@@ -116,10 +116,10 @@ class _AdministrarRolesActualizarScreenState extends State<AdministrarRolesActua
                                       decoration: BoxDecoration(
                                         color: estaSeleccionado 
                                             ? rol == 'admin' 
-                                                ? AppColors.naranjaOscuro.withOpacity(0.2)
+                                                ? AppColors.naranjaOscuro.withAlpha(51)
                                                 : rol == 'ListAdmin'
-                                                    ? AppColors.naranjaBrillante.withOpacity(0.2)
-                                                    : AppColors.verdeVibrante.withOpacity(0.2)
+                                                  ? AppColors.naranjaBrillante.withAlpha(51)
+                                                  : AppColors.verdeVibrante.withAlpha(51)
                                             : Colors.transparent,
                                         border: Border(
                                           bottom: BorderSide(
