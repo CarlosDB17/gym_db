@@ -75,23 +75,6 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-                            const Text(
-                              'Exportación de usuarios a CSV',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 20),
-                            const Text(
-                              'Esta herramienta exportará todos los datos de los usuarios a un archivo CSV.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
                             Text(
                               _exito ? 'Usuarios disponibles: $_totalUsuarios' : '',
                               style: const TextStyle(
@@ -119,6 +102,15 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
                               ),
                             ),
                             const SizedBox(height: 20),
+                            if (!_exito)
+                              const Text(
+                                'Esta herramienta exportará todos los datos de los usuarios a un archivo CSV.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                ),
+                              ),
+                            const SizedBox(height: 10),
                             // Mostrar botón para copiar al portapapeles si hay datos
                             if (_csvData != null && _csvData!.isNotEmpty)
                               ElevatedButton(
@@ -264,7 +256,7 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
       await file.writeAsBytes(bytesWithBOM);
       
       setState(() {
-        _mensaje = 'Archivo guardado en: ${file.path}\nFormato: CSV UTF-8 (delimitado por comas)';
+        _mensaje = 'Archivo guardado en: ${file.path}';
         _exito = true;
       });
       return;

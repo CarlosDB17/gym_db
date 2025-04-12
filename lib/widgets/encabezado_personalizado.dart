@@ -7,11 +7,11 @@ class Encabezado extends StatelessWidget {
   final VoidCallback? onAtrasPressed;
 
   const Encabezado({
-    Key? key,
+    super.key,
     required this.titulo,
     this.mostrarBotonAtras = true,
     this.onAtrasPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +29,7 @@ class Encabezado extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withAlpha((0.15 * 255).toInt()),
                 blurRadius: 10,
                 offset: const Offset(0, 5),
               ),
