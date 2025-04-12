@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../widgets/boton_naranja_personalizado.dart';
-import '../../theme/app_colors.dart';
 import 'csv_importar_usuarios_screen.dart';
 import 'csv_exportar_usuarios_screen.dart';
 
@@ -19,20 +18,7 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Título superior
-            const Padding(
-              padding: EdgeInsets.only(bottom: 40.0),
-              child: Text(
-                'Gestión de archivos CSV',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.verdeOscuro,
-                ),
-              ),
-            ),
-            
+          children: [      
             // Botón para exportar usuarios
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 15.0),
@@ -77,15 +63,15 @@ class _CsvUsuariosScreenState extends State<CsvUsuariosScreen> {
             
             // Texto informativo
             const Padding(
-              padding: EdgeInsets.only(top: 40.0),
+              padding: EdgeInsets.fromLTRB(40.0, 20.0, 40.0, 0.0),
               child: Text(
-                'Selecciona una opción para gestionar los archivos CSV de usuarios',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                  fontStyle: FontStyle.italic,
-                ),
+              'Selecciona una opción para gestionar los archivos CSV de usuarios',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+                fontStyle: FontStyle.italic,
+              ),
               ),
             ),
           ],
