@@ -1,6 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter/services.dart'; // Añadido para Clipboard
+// Comentamos la importación del paquete de permisos por ahora
+// import 'package:permission_handler/permission_handler.dart';
 import '../../theme/app_colors.dart';
 import '../../services/usuario_service.dart';
+import '../../models/usuario.dart';
 import '../../widgets/encabezado_personalizado.dart';
 
 class CsvExportarUsuariosScreen extends StatefulWidget {
@@ -11,8 +21,13 @@ class CsvExportarUsuariosScreen extends StatefulWidget {
 }
 
 class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
-  // ignore: prefer_final_fields
   bool _cargando = false;
+  String _mensaje = '';
+  bool _exito = false;
+  final _usuarioService = UsuarioService();
+  int _totalUsuarios = 0;
+  String? _csvData;
+  String? _nombreArchivo;
 
   @override
   Widget build(BuildContext context) {
@@ -54,28 +69,90 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
                       child: CircularProgressIndicator(color: AppColors.verdeOscuro),
                     )
                   : Center(
-                      child: Padding(
+                      child: SingleChildScrollView(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(height: MediaQuery.of(context).size.height * 0.15),
+                            SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                             const Text(
-                              'Pantalla de exportación de usuarios',
+                              'Exportación de usuarios a CSV',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 22,
                                 fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              'Esta herramienta exportará todos los datos de los usuarios a un archivo CSV.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 16,
                               ),
                             ),
                             const SizedBox(height: 10),
-                            const Text(
-                              '(Pendiente de implementar)',
-                              style: TextStyle(
+                            Text(
+                              _exito ? 'Usuarios disponibles: $_totalUsuarios' : '',
+                              style: const TextStyle(
                                 fontSize: 16,
-                                fontStyle: FontStyle.italic,
-                                color: Colors.grey,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
+                            const SizedBox(height: 30),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.verdeOscuro,
+                                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              onPressed: _exportarUsuarios,
+                              child: const Text(
+                                'Exportar datos de usuarios',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            // Mostrar botón para copiar al portapapeles si hay datos
+                            if (_csvData != null && _csvData!.isNotEmpty)
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.verdeOscuro,
+                                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ),
+                                onPressed: () => _copiarAlPortapapeles(_csvData!),
+                                child: const Text(
+                                  'Copiar datos al portapapeles',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(height: 20),
+                            if (_mensaje.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  _mensaje,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: _exito ? Colors.green : Colors.red,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -86,5 +163,168 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _exportarUsuarios() async {
+    setState(() {
+      _cargando = true;
+      _mensaje = '';
+      _exito = false;
+      _csvData = null;
+      _nombreArchivo = null;
+    });
+
+    try {
+      // Obtener todos los usuarios desde la API
+      final resultado = await _usuarioService.obtenerUsuarios(0, 9999999999);
+      final List<Usuario> usuarios = resultado['usuarios'];
+      final int totalUsuarios = resultado['total'];
+
+      // Generar el archivo CSV
+      final String csvData = _generarCSV(usuarios);
+      _csvData = csvData;
+      
+      // Guardar el archivo CSV y manejar posibles errores
+      try {
+        await _guardarArchivo(csvData);
+      } catch (e) {
+        print("Error al guardar archivo: $e");
+        // Si hay un error al guardar, almacenamos los datos para copiar al portapapeles
+        _nombreArchivo = 'gym_db_usuarios_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.csv';
+        
+        setState(() {
+          _mensaje = 'No se pudo guardar el archivo. '
+                    'Puedes copiar los datos al portapapeles.';
+          _exito = false;
+        });
+      }
+
+      setState(() {
+        _totalUsuarios = totalUsuarios;
+      });
+    } catch (e) {
+      setState(() {
+        _mensaje = 'Error al exportar usuarios: ${e.toString()}';
+        _exito = false;
+      });
+    } finally {
+      setState(() {
+        _cargando = false;
+      });
+    }
+  }
+
+  String _generarCSV(List<Usuario> usuarios) {
+    StringBuffer csvContent = StringBuffer();
+    
+    // Añadir la cabecera en una sola celda (A1)
+    csvContent.writeln('nombre,email,documento_identidad,fecha_nacimiento,foto');
+    
+    // Añadir los datos de cada usuario en una sola celda por fila (A2, A3, etc.)
+    for (var usuario in usuarios) {
+      // Crear la línea con todos los campos unidos por comas
+      String fila = '${usuario.nombre},${usuario.email},${usuario.documentoIdentidad},${usuario.fechaNacimiento}';
+      
+      // Añadir foto solo si existe
+      if (usuario.foto != null && usuario.foto!.isNotEmpty) {
+        fila += ',${usuario.foto}';
+      }
+      
+      // Añadir la línea completa al CSV
+      csvContent.writeln(fila);
+    }
+    
+    return csvContent.toString();
+  }
+
+  Future<void> _guardarArchivo(String csvData) async {
+    // Generar el nombre del archivo con la fecha y hora actual
+    final String fechaHora = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+    final String nombreArchivo = 'gym_db_usuarios_$fechaHora.csv';
+    _nombreArchivo = nombreArchivo;
+
+    // Asegurar que los datos estén codificados en UTF-8
+    List<int> bytes = utf8.encode(csvData);
+    
+    // Añadir BOM (Byte Order Mark) para que Excel reconozca correctamente UTF-8
+    List<int> bytesWithBOM = [0xEF, 0xBB, 0xBF, ...bytes];
+
+    try {
+      // Primero preguntamos al usuario dónde quiere guardar el archivo
+      String? directorioSeleccionado = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'Selecciona dónde guardar el archivo CSV',
+      );
+      
+      if (directorioSeleccionado == null) {
+        throw Exception('Operación cancelada por el usuario');
+      }
+      
+      // Guardar el archivo en la ubicación seleccionada por el usuario con codificación UTF-8
+      final File file = File('$directorioSeleccionado/$nombreArchivo');
+      await file.writeAsBytes(bytesWithBOM);
+      
+      setState(() {
+        _mensaje = 'Archivo guardado en: ${file.path}\nFormato: CSV UTF-8 (delimitado por comas)';
+        _exito = true;
+      });
+      return;
+    } catch (e) {
+      print('Error al usar FilePicker: $e');
+      
+      // Si falla FilePicker, intentar con métodos alternativos
+      try {
+        // Intentar guardar en el directorio de documentos
+        final directory = await getApplicationDocumentsDirectory();
+        final File file = File('${directory.path}/$nombreArchivo');
+        await file.writeAsBytes(bytesWithBOM);
+        
+        setState(() {
+          _mensaje = 'No se pudo guardar en la ubicación seleccionada. '
+                   'Archivo guardado en: ${file.path}';
+          _exito = true;
+        });
+        return;
+      } catch (e2) {
+        print('Error al guardar en directorio de documentos: $e2');
+        
+        // Si estamos en Android, intentar con almacenamiento externo
+        if (Platform.isAndroid) {
+          try {
+            final directory = await getExternalStorageDirectory();
+            if (directory != null) {
+              final File file = File('${directory.path}/$nombreArchivo');
+              await file.writeAsBytes(bytesWithBOM);
+              
+              setState(() {
+                _mensaje = 'Archivo guardado automáticamente en: ${file.path}';
+                _exito = true;
+              });
+              return;
+            }
+          } catch (e3) {
+            print('Error al guardar en almacenamiento externo: $e3');
+          }
+        }
+        
+        // Si todo falla, notificar para usar el portapapeles
+        throw Exception('No se pudo guardar el archivo. Intenta copiar los datos al portapapeles.');
+      }
+    }
+  }
+  
+  void _copiarAlPortapapeles(String datos) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: datos));
+      setState(() {
+        _mensaje = 'Datos copiados al portapapeles. Puedes pegarlos en Excel o un editor de texto.'
+                 '\nNombre del archivo recomendado: $_nombreArchivo';
+        _exito = true;
+      });
+    } catch (e) {
+      setState(() {
+        _mensaje = 'Error al copiar al portapapeles: ${e.toString()}';
+        _exito = false;
+      });
+    }
   }
 }
