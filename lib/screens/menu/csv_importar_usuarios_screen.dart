@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:file_picker/file_picker.dart';
 import 'package:csv/csv.dart';
+import 'dart:convert';
 
 import '../../services/usuario_service.dart';
 import '../../widgets/boton_naranja_personalizado.dart';
@@ -269,26 +271,59 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
 
   // metodo para crear las filas con los datos del csv
   DataRow _crearDataRow(Map<String, dynamic> usuario) {
+    // Corregir tildes en nombre si estamos en web
+    String nombre = usuario['nombre'] ?? '';
+    if (kIsWeb) {
+      try {
+        // Si el nombre tiene problemas de codificación, lo decodificamos
+        nombre = utf8.decode(nombre.runes.toList(), allowMalformed: true);
+      } catch (_) {}
+    }
     return DataRow(
       cells: [
         DataCell(
           (usuario['foto'] != null && usuario['foto'].toString().isNotEmpty)
-              ? ClipOval(
-                  child: Image.network(
-                    usuario['foto'],
-                    height: 50,
-                    width: 50,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => _avatarPorDefecto(),
-                  ),
-                )
+              ? kIsWeb
+                  ? _crearImagenParaWeb(usuario['foto'])
+                  : ClipOval(
+                      child: Image.network(
+                        usuario['foto'],
+                        height: 50,
+                        width: 50,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => _avatarPorDefecto(),
+                      ),
+                    )
               : _avatarPorDefecto(),
         ),
-        DataCell(Text(usuario['nombre'] ?? '')),
+        DataCell(Text(nombre)),
         DataCell(Text(usuario['email'] ?? '')),
         DataCell(Text(usuario['documento_identidad'] ?? '')),
         DataCell(Text(_formatFechaMostrar(usuario['fecha_nacimiento'] ?? ''))),
       ],
+    );
+  }
+  
+  // Método específico para manejar imágenes en entorno web, evitando problemas de CORS
+  Widget _crearImagenParaWeb(String? urlImagen) {
+    if (urlImagen == null || urlImagen.isEmpty) {
+      return _avatarPorDefecto();
+    }
+    String urlFinal = urlImagen;
+    if (urlImagen.contains('storage.googleapis.com/pf25-carlos-db.firebasestorage.app/usuarios/')) {
+      urlFinal = transformarUrlFirebase(urlImagen);
+    }
+    return ClipOval(
+      child: Image.network(
+        urlFinal,
+        height: 50,
+        width: 50,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          print('Error al cargar imagen desde web: $error');
+          return _avatarPorDefecto();
+        },
+      ),
     );
   }
 
@@ -305,8 +340,25 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
       );
 
       if (result != null) {
-        File file = File(result.files.single.path!);
-        await _procesarArchivoCsv(file);
+        if (kIsWeb) {
+          // En web, procesamos directamente los bytes del archivo
+          final bytes = result.files.single.bytes;
+          if (bytes != null) {
+            final String input = String.fromCharCodes(bytes);
+            await _procesarCsvString(input);
+          } else {
+            throw Exception('No se pudieron leer los bytes del archivo');
+          }
+        } else {
+          // En plataformas nativas, usamos el sistema de archivos
+          if (result.files.single.path != null) {
+            File file = File(result.files.single.path!);
+            final String input = await file.readAsString();
+            await _procesarCsvString(input);
+          } else {
+            throw Exception('No se pudo obtener la ruta del archivo');
+          }
+        }
       }
     } catch (e) {
       _mostrarSnackBar('Error al seleccionar el archivo: $e');
@@ -317,13 +369,19 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
     }
   }
 
-  // procesar archivo csv
-  Future<void> _procesarArchivoCsv(File file) async {
+  
+
+  // procesar CSV desde una cadena de texto (compatible con web y plataformas nativas)
+  Future<void> _procesarCsvString(String input) async {
     try {
-      // Leer el contenido del archivo
-      final String input = await file.readAsString();
       print('===== INICIO PROCESAMIENTO CSV =====');
       print('Longitud del archivo: ${input.length} caracteres');
+      
+      // Eliminar el BOM UTF-8 si existe
+      if (input.isNotEmpty && input.codeUnitAt(0) == 0xFEFF) {
+        input = input.substring(1);
+        print('BOM UTF-8 detectado y eliminado');
+      }
       
       // Usar la configuración estándar para CSV
       final List<List<dynamic>> rowsAsListOfValues = const CsvToListConverter(
@@ -339,8 +397,21 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
       }
       
       // Obtener encabezados del CSV (primera fila)
-      final List<String> headers = rowsAsListOfValues[0].map((e) => e.toString().trim().toLowerCase()).toList();
-      print('Encabezados detectados: $headers');
+      final List<String> headers = rowsAsListOfValues[0].map((e) {
+        String header = e.toString().trim().toLowerCase();
+        // Eliminar cualquier carácter BOM residual que pueda quedar en el primer encabezado
+        if (header.startsWith('\uFEFF')) {
+          header = header.substring(1);
+          print('Carácter BOM encontrado en encabezado y eliminado: $header');
+        }
+        if (header.startsWith('ï»¿')) {
+          header = header.substring(3);
+          print('Secuencia BOM UTF-8 encontrada en texto y eliminada: $header');
+        }
+        return header;
+      }).toList();
+      
+      print('Encabezados detectados después de limpieza: $headers');
       
       // Validar que los encabezados necesarios estén presentes
       final requiredHeaders = ['nombre', 'email', 'documento_identidad', 'fecha_nacimiento'];
@@ -769,4 +840,16 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
       context,
     ).showSnackBar(SnackBar(content: Text(mensaje), backgroundColor: color));
   }
+}
+
+// Utilidad para transformar la URL de Google Cloud Storage a la de Firebase Storage API
+String transformarUrlFirebase(String urlOriginal) {
+  final uri = Uri.parse(urlOriginal);
+  final partes = uri.pathSegments;
+  final idx = partes.indexOf('usuarios');
+  if (idx == -1) return urlOriginal;
+  final ruta = partes.sublist(idx).join('/');
+  final bucket = 'pf25-carlos-db.firebasestorage.app';
+  final rutaCodificada = Uri.encodeComponent(ruta);
+  return 'https://firebasestorage.googleapis.com/v0/b/$bucket/o/$rutaCodificada?alt=media';
 }

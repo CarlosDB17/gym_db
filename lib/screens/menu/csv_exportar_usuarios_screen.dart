@@ -6,6 +6,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart'; // Añadido para Clipboard
+import 'package:flutter/foundation.dart' show kIsWeb;
+// Import condicional solo para web
+import 'csv_exportar_usuarios_stub.dart'
+    if (dart.library.html) 'csv_exportar_usuarios_web.dart';
 // Comentamos la importación del paquete de permisos por ahora
 // import 'package:permission_handler/permission_handler.dart';
 import '../../theme/app_colors.dart';
@@ -258,51 +262,51 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
   }
 
   Future<void> _guardarArchivo(String csvData) async {
-    // Generar el nombre del archivo con la fecha y hora actual
     final String fechaHora = DateFormat('dd_MM_yyyy_HHmm').format(DateTime.now());
     final String nombreArchivo = 'gym_db_usuarios_$fechaHora.csv';
     _nombreArchivo = nombreArchivo;
-
-    // Asegurar que los datos estén codificados en UTF-8 sin BOM
     List<int> bytes = utf8.encode(csvData);
-    
+
+    if (kIsWeb) {
+      try {
+        await guardarArchivoWeb(nombreArchivo, bytes);
+        setState(() {
+          _mensaje = 'Archivo CSV descargado correctamente.';
+          _exito = true;
+        });
+        return;
+      } catch (e) {
+        print('Error al descargar archivo en web: $e');
+        throw Exception('No se pudo descargar el archivo en web.');
+      }
+    }
+
+    // Guardar en disco para Android/iOS/Windows
     try {
-      // Primero preguntamos al usuario dónde quiere guardar el archivo
       String? directorioSeleccionado = await FilePicker.platform.getDirectoryPath(
         dialogTitle: 'Selecciona dónde guardar el archivo CSV',
       );
-      
       if (directorioSeleccionado == null) {
         throw Exception('Operación cancelada por el usuario');
       }
-      
-      // Guardar el archivo en la ubicación seleccionada por el usuario
       final File file = File('$directorioSeleccionado/$nombreArchivo');
       await file.writeAsBytes(bytes);
-      
       setState(() {
         _mensaje = 'Archivo guardado en: ${file.path}';
         _exito = true;
       });
-      
-      // Imprimir información de depuración en la consola
       print('===== ARCHIVO GUARDADO =====');
       print('Ruta: ${file.path}');
       print('Tamaño: ${bytes.length} bytes');
       print('Codificación: UTF-8');
       print('========================');
-      
       return;
     } catch (e) {
       print('Error al usar FilePicker: $e');
-      
-      // Si falla FilePicker, intentar con métodos alternativos
       try {
-        // Intentar guardar en el directorio de documentos
         final directory = await getApplicationDocumentsDirectory();
         final File file = File('${directory.path}/$nombreArchivo');
         await file.writeAsBytes(bytes);
-        
         setState(() {
           _mensaje = 'No se pudo guardar en la ubicación seleccionada. '
                    'Archivo guardado en: ${file.path}';
@@ -311,15 +315,12 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
         return;
       } catch (e2) {
         print('Error al guardar en directorio de documentos: $e2');
-        
-        // Si estamos en Android, intentar con almacenamiento externo
         if (Platform.isAndroid) {
           try {
             final directory = await getExternalStorageDirectory();
             if (directory != null) {
               final File file = File('${directory.path}/$nombreArchivo');
               await file.writeAsBytes(bytes);
-              
               setState(() {
                 _mensaje = 'Archivo guardado automáticamente en: ${file.path}';
                 _exito = true;
@@ -330,8 +331,6 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
             print('Error al guardar en almacenamiento externo: $e3');
           }
         }
-        
-        // Si todo falla, notificar para usar el portapapeles
         throw Exception('No se pudo guardar el archivo. Intenta copiar los datos al portapapeles.');
       }
     }

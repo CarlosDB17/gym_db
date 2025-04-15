@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../models/usuario.dart';
 import '../../services/usuario_service.dart';
 import '../../theme/app_colors.dart';
@@ -107,30 +108,19 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
     return DataRow(
       cells: [
         DataCell(
-          usuario.foto != null
-              ? ClipOval(
-                  child: Image.network(
-                    usuario.foto!,
-                    height: 50,
-                    width: 50,
-                    fit: BoxFit.cover,
-                  ),
-                )
-              : ClipOval(
-                  child: Container(
-                    height: 50,
-                    width: 50,
-                    decoration: BoxDecoration(
-                      color: AppColors.naranjaBrillante,
-                      shape: BoxShape.circle,
+          kIsWeb 
+            ? _crearImagenParaWeb(usuario.foto)
+            : usuario.foto != null
+                ? ClipOval(
+                    child: Image.network(
+                      usuario.foto!,
+                      height: 50,
+                      width: 50,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => _avatarPorDefecto(),
                     ),
-                    child: const Icon(
-                      Icons.person,
-                      color: AppColors.blanco,
-                      size: 30,
-                    ),
-                  ),
-                ),
+                  )
+                : _avatarPorDefecto(),
           onTap: () => _navegarYRecargar(usuario),
         ),
         DataCell(Text(usuario.nombre), onTap: () => _navegarYRecargar(usuario)),
@@ -138,6 +128,67 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
         DataCell(Text(usuario.documentoIdentidad), onTap: () => _navegarYRecargar(usuario)),
         DataCell(Text(_formatearFecha(usuario.fechaNacimiento)), onTap: () => _navegarYRecargar(usuario)),
       ],
+    );
+  }
+  
+  // Utilidad para transformar la URL de Google Cloud Storage a la de Firebase Storage API
+  String transformarUrlFirebase(String urlOriginal) {
+    // Extraer la ruta del archivo después del dominio
+    final uri = Uri.parse(urlOriginal);
+    final partes = uri.pathSegments;
+    // Buscar el índice de "usuarios" (o la carpeta raíz de tus imágenes)
+    final idx = partes.indexOf('usuarios');
+    if (idx == -1) return urlOriginal; // No es una ruta esperada, retorna igual
+
+    // Reconstruir la ruta relativa
+    final ruta = partes.sublist(idx).join('/');
+    final bucket = 'pf25-carlos-db.firebasestorage.app';
+    final rutaCodificada = Uri.encodeComponent(ruta);
+    return 'https://firebasestorage.googleapis.com/v0/b/$bucket/o/$rutaCodificada?alt=media';
+  }
+
+  // Método específico para manejar imágenes en entorno web, evitando problemas de CORS
+  Widget _crearImagenParaWeb(String? urlImagen) {
+    if (urlImagen == null) {
+      return _avatarPorDefecto();
+    }
+
+    String urlFinal = urlImagen;
+    // Si la URL es del bucket de Google Cloud Storage, la transformamos
+    if (urlImagen.contains('storage.googleapis.com/pf25-carlos-db.firebasestorage.app/usuarios/')) {
+      urlFinal = transformarUrlFirebase(urlImagen);
+    }
+
+    return ClipOval(
+      child: Image.network(
+        urlFinal,
+        height: 50,
+        width: 50,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          print('Error al cargar imagen desde web: $error');
+          return _avatarPorDefecto();
+        },
+      ),
+    );
+  }
+  
+  // Widget para mostrar avatar por defecto cuando no hay foto
+  Widget _avatarPorDefecto() {
+    return ClipOval(
+      child: Container(
+        height: 50,
+        width: 50,
+        decoration: BoxDecoration(
+          color: AppColors.naranjaBrillante,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(
+          Icons.person,
+          color: AppColors.blanco,
+          size: 30,
+        ),
+      ),
     );
   }
 
