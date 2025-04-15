@@ -29,7 +29,7 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
   int paginaResultados = 0;
   final int limiteResultadosPorPagina = 3;
   
-  // Nuevas variables para el resumen de la importación
+  // Variables para el resumen de la importación
   Map<String, dynamic> resumenImportacion = {};
 
   int paginaActual = 0;
@@ -101,19 +101,19 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
                               columnas: const [
                                 DataColumn(label: Text('Documento')),
                                 DataColumn(label: Text('Estado')),
-                                DataColumn(label: Text('Mensaje')),
+                                DataColumn(label: Text('Información')),
                               ],
                               datos: resultadosPaginados,
                               crearFila: _crearDataRowResultado,
                               paginaActual: paginaResultados,
                               totalPaginas: _getTotalPaginasResultados(),
                               cambiarPagina: _cambiarPaginaResultados,
-                              mensajeAyuda: null, // Eliminar el mensaje de ayuda
+                              mensajeAyuda: 'Desliza para ver la tabla al completo.',
                             ),
                             
                             // Estadísticas de la importación
                             const SizedBox(height: 20),
-                            _buildEstadisticasImportacion(),
+                            _mostrarEstadisticasImportacion(),
                             
                             // Botón para volver a la pantalla de importación
                             Padding(
@@ -595,7 +595,8 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
   
   // Método para crear filas de la tabla de resultados
   DataRow _crearDataRowResultado(Map<String, dynamic> resultado) {
-    final bool esExitoso = resultado['status'] == 'éxito';
+    // Modificar para detectar "éxito" con tilde y también "exito" sin tilde
+    final bool esExitoso = resultado['status'] == 'Éxito' || resultado['status'] == 'Exito';
     final Color colorEstado = esExitoso ? AppColors.verdeOscuro : AppColors.rojoError;
     final IconData iconoEstado = esExitoso ? Icons.check_circle : Icons.error;
     
@@ -607,6 +608,7 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
         )),
         DataCell(
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 iconoEstado,
@@ -624,22 +626,31 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
             ],
           ),
         ),
-        DataCell(Text(
-          resultado['mensaje'] ?? '',
-          style: TextStyle(
-            color: colorEstado,
-            fontSize: 12,
+        DataCell(
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 200),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                resultado['mensaje'] ?? '',
+                style: TextStyle(
+                  color: colorEstado,
+                  fontSize: 12,
+                ),
+                softWrap: true,
+                overflow: TextOverflow.visible,
+              ),
+            ),
           ),
-        )),
+        ),
       ],
     );
   }
 
   // Método para mostrar resumen estadístico de la importación
-  Widget _buildEstadisticasImportacion() {
+  Widget _mostrarEstadisticasImportacion() {
     // Si tenemos el resumen de la API, usamos esos datos
     if (resumenImportacion.isNotEmpty) {
-      int totalProcesados = resumenImportacion['total_procesados'] ?? 0;
       int registradosCorrectamente = resumenImportacion['registrados_correctamente'] ?? 0;
       int conErrores = resumenImportacion['con_errores'] ?? 0;
       
@@ -647,52 +658,27 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
         ),
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Resumen de importación:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            Expanded(
+              child: _crearTarjetaEstadistica(
+                'Éxitos',
+                registradosCorrectamente.toString(),
+                Icons.check_circle,
+                AppColors.verdeOscuro,
+              ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatCard(
-                    'Total',
-                    totalProcesados.toString(),
-                    Icons.people_alt,
-                    Colors.blue,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildStatCard(
-                    'Éxitos',
-                    registradosCorrectamente.toString(),
-                    Icons.check_circle,
-                    AppColors.verdeOscuro,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildStatCard(
-                    'Errores',
-                    conErrores.toString(),
-                    Icons.error_outline,
-                    Colors.red,
-                  ),
-                ),
-              ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: _crearTarjetaEstadistica(
+                'Errores',
+                conErrores.toString(),
+                Icons.error_outline,
+                Colors.red,
+              ),
             ),
           ],
         ),
@@ -702,7 +688,6 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
     // Si no tenemos datos del resumen de la API, calcular en base a resultados
     int exitosos = 0;
     int errores = 0;
-    int total = resultadosImportacion.length;
     
     // Contar los resultados según su estado
     for (var resultado in resultadosImportacion) {
@@ -717,52 +702,28 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        // Se eliminó el boxShadow
       ),
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
-            'Resumen de importación:',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          Expanded(
+            child: _crearTarjetaEstadistica(
+              'Éxitos',
+              exitosos.toString(),
+              Icons.check_circle,
+              AppColors.verdeOscuro,
+            ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  'Total',
-                  total.toString(),
-                  Icons.people_alt,
-                  Colors.blue,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildStatCard(
-                  'Éxitos',
-                  exitosos.toString(),
-                  Icons.check_circle,
-                  AppColors.verdeOscuro,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildStatCard(
-                  'Errores',
-                  errores.toString(),
-                  Icons.error_outline,
-                  Colors.red,
-                ),
-              ),
-            ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: _crearTarjetaEstadistica(
+              'Errores',
+              errores.toString(),
+              Icons.error_outline,
+              Colors.red,
+            ),
           ),
         ],
       ),
@@ -770,9 +731,11 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
   }
 
   // Método para crear tarjetas de estadísticas
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _crearTarjetaEstadistica(String title, String value, IconData icon, Color color) {
     return Card(
       elevation: 1,
+      color: AppColors.blanco, // Establecer color blanco explícitamente
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -789,7 +752,10 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
             ),
             Text(
               title,
-              style: TextStyle(fontSize: 12),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold, // Añadido para poner el título en negrita
+              ),
             ),
           ],
         ),
