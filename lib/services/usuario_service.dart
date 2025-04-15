@@ -8,8 +8,8 @@ import '../models/usuario.dart';
 
 class UsuarioService {
 
-  //final String _baseUrl = "http://192.168.1.38:8000/usuarios";
-  final String _baseUrl = "https://pf25-carlos-db-v6-302016834907.europe-west1.run.app/usuarios";
+  final String _baseUrl = "http://192.168.1.38:8000/usuarios";
+ // final String _baseUrl = "https://pf25-carlos-db-v6-302016834907.europe-west1.run.app/usuarios";
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // obtener usuarios con paginacion
@@ -566,7 +566,9 @@ Future<Map<String, dynamic>> enviarUsuariosAlaAPI(List<Map<String, dynamic>> usu
     if (response.statusCode != 200 && response.statusCode != 201) {
       var errorMessage = 'Error al importar usuarios';
       try {
-        final errorBody = jsonDecode(response.body);
+        // Decodificar explícitamente como UTF-8
+        final utf8Body = utf8.decode(response.bodyBytes);
+        final errorBody = jsonDecode(utf8Body);
         if (errorBody is Map && errorBody.containsKey('detail')) {
           errorMessage = errorBody['detail'];
         } else if (errorBody is Map && errorBody.containsKey('message')) {
@@ -582,8 +584,9 @@ Future<Map<String, dynamic>> enviarUsuariosAlaAPI(List<Map<String, dynamic>> usu
     } else {
       print('Importación de usuarios exitosa.');
       
-      // Devolver los resultados detallados de la importación
-      final responseData = jsonDecode(response.body);
+      // Decodificar explícitamente como UTF-8 para manejar correctamente los caracteres especiales
+      final utf8Body = utf8.decode(response.bodyBytes);
+      final responseData = jsonDecode(utf8Body);
       return responseData; // Devuelve la respuesta completa con los resultados
     }
   } catch (e) {

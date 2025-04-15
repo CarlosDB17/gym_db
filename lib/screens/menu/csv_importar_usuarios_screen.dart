@@ -21,6 +21,16 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
   final UsuarioService _usuarioService = UsuarioService();
   List<Map<String, dynamic>> usuarios = [];
   List<Map<String, dynamic>> usuariosPaginados = [];
+  
+  // Variables para gestionar la tabla de resultados
+  List<Map<String, dynamic>> resultadosImportacion = [];
+  List<Map<String, dynamic>> resultadosPaginados = [];
+  bool mostrarResultados = false;
+  int paginaResultados = 0;
+  final int limiteResultadosPorPagina = 3;
+  
+  // Nuevas variables para el resumen de la importación
+  Map<String, dynamic> resumenImportacion = {};
 
   int paginaActual = 0;
   int limitePorPagina = 3;
@@ -67,20 +77,117 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
                   ? const Center(
                       child: CircularProgressIndicator(color: AppColors.verdeOscuro),
                     )
-                  : usuarios.isEmpty
-                    // Si no hay usuarios cargados, mostrar el contenido centrado
-                    ? Center(
-                        child: Padding(
+                  : mostrarResultados
+                    // Mostrar resultados de la importación
+                    ? SingleChildScrollView(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Center(
+                              child: Text(
+                                'Resultados de la importación',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.verdeOscuro,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            
+                            // Tabla de resultados
+                            TablaPersonalizada<Map<String, dynamic>>(
+                              columnas: const [
+                                DataColumn(label: Text('Documento')),
+                                DataColumn(label: Text('Estado')),
+                                DataColumn(label: Text('Mensaje')),
+                              ],
+                              datos: resultadosPaginados,
+                              crearFila: _crearDataRowResultado,
+                              paginaActual: paginaResultados,
+                              totalPaginas: _getTotalPaginasResultados(),
+                              cambiarPagina: _cambiarPaginaResultados,
+                              mensajeAyuda: null, // Eliminar el mensaje de ayuda
+                            ),
+                            
+                            // Estadísticas de la importación
+                            const SizedBox(height: 20),
+                            _buildEstadisticasImportacion(),
+                            
+                            // Botón para volver a la pantalla de importación
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: BotonNaranjaPersonalizado(
+                                  onPressed: () {
+                                    setState(() {
+                                      mostrarResultados = false;
+                                      resultadosImportacion.clear();
+                                      resultadosPaginados.clear();
+                                    });
+                                  },
+                                  texto: 'Nueva Importación',
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : usuarios.isEmpty
+                      // Si no hay usuarios cargados, mostrar el contenido centrado
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                BotonNaranjaPersonalizado(
+                                  onPressed: _selectFile,
+                                  texto: 'Seleccionar Archivo',
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 22,
+                                  ),
+                                ),
+                                
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 30),
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    child: Text(
+                                      'Recuerda que debe ser un .csv separado por comas.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontStyle: FontStyle.italic,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      // Si hay usuarios cargados, mostrar la tabla con scroll
+                      : SingleChildScrollView(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              BotonNaranjaPersonalizado(
-                                onPressed: _selectFile,
-                                texto: 'Seleccionar Archivo',
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 22,
+                              Center(
+                                child: BotonNaranjaPersonalizado(
+                                  onPressed: _selectFile,
+                                  texto: 'Seleccionar Archivo',
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 22,
+                                  ),
                                 ),
                               ),
                               
@@ -98,78 +205,43 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
                                   ),
                                 ),
                               ),
+                              
+                              const SizedBox(height: 20.0),
+                              
+                              // Tabla de usuarios
+                              TablaPersonalizada<Map<String, dynamic>>(
+                                columnas: const [
+                                  DataColumn(label: Text('Foto')),
+                                  DataColumn(label: Text('Nombre')),
+                                  DataColumn(label: Text('Email')),
+                                  DataColumn(label: Text('Documento de identidad')),
+                                  DataColumn(label: Text('Fecha de Nacimiento')),
+                                ],
+                                datos: usuariosPaginados,
+                                crearFila: _crearDataRow,
+                                paginaActual: paginaActual,
+                                totalPaginas: _getTotalPaginas(),
+                                cambiarPagina: _cambiarPagina,
+                                mensajeAyuda: 'Desliza para ver el resto de datos.',
+                              ),
+                              
+                              // Botón de confirmar importación
+                              Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 20.0),
+                                  child: BotonVerdePersonalizado(
+                                    onPressed: _confirmarImportacion,
+                                    texto: 'Confirmar Importación',
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                      )
-                    // Si hay usuarios cargados, mostrar la tabla con scroll
-                    : SingleChildScrollView(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Center(
-                              child: BotonNaranjaPersonalizado(
-                                onPressed: _selectFile,
-                                texto: 'Seleccionar Archivo',
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 22,
-                                ),
-                              ),
-                            ),
-                            
-                            Padding(
-                              padding: const EdgeInsets.only(top: 30),
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: Text(
-                                  'Recuerda que debe ser un .csv separado por comas.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontStyle: FontStyle.italic,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            
-                            const SizedBox(height: 20.0),
-                            
-                            // Tabla de usuarios
-                            TablaPersonalizada<Map<String, dynamic>>(
-                              columnas: const [
-                                DataColumn(label: Text('Foto')),
-                                DataColumn(label: Text('Nombre')),
-                                DataColumn(label: Text('Email')),
-                                DataColumn(label: Text('Documento de identidad')),
-                                DataColumn(label: Text('Fecha de Nacimiento')),
-                              ],
-                              datos: usuariosPaginados,
-                              crearFila: _crearDataRow,
-                              paginaActual: paginaActual,
-                              totalPaginas: _getTotalPaginas(),
-                              cambiarPagina: _cambiarPagina,
-                              mensajeAyuda: 'Desliza para ver el resto de datos.',
-                            ),
-                            
-                            // Botón de confirmar importación
-                            Center(
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 20.0),
-                                child: BotonVerdePersonalizado(
-                                  onPressed: _confirmarImportacion,
-                                  texto: 'Confirmar Importación',
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 12,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
               ),
             ),
           ),
@@ -445,24 +517,48 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
     }
 
     try {
-      // Ahora recibimos los resultados detallados de la API
+      // Recibimos los resultados detallados de la API
       final resultados = await _usuarioService.enviarUsuariosAlaAPI(usuarios);
       
       // Verificamos si hay resultados detallados
       if (resultados.containsKey('resultados') && resultados['resultados'] is List) {
-        _mostrarDialogoResultados(resultados['resultados']);
+        // Preparar los resultados para la tabla
+        setState(() {
+          // Guardar el resumen de la importación
+          if (resultados.containsKey('resumen')) {
+            resumenImportacion = Map<String, dynamic>.from(resultados['resumen']);
+          }
+          
+          // Convertir los datos a un formato adecuado para la tabla
+          resultadosImportacion = List<Map<String, dynamic>>.from(
+            resultados['resultados'].map((resultado) => {
+              'documento': resultado['usuario'] ?? '',
+              'status': resultado['status'] ?? '',
+              'mensaje': resultado['mensaje'] ?? '',
+            })
+          );
+          
+          // Activar la visualización de resultados
+          mostrarResultados = true;
+          paginaResultados = 0;
+          _actualizarResultadosPaginados();
+          
+          // Limpiar la lista de usuarios después de importar
+          usuarios.clear();
+          usuariosPaginados.clear();
+        });
       } else {
         _mostrarSnackBar(
           'Usuarios importados exitosamente.',
           color: AppColors.verdeOscuro,
         );
+        
+        // Limpiar la lista de usuarios
+        setState(() {
+          usuarios.clear();
+          usuariosPaginados.clear();
+        });
       }
-      
-      // Limpiar la lista de usuarios después de importar
-      setState(() {
-        usuarios.clear();
-        usuariosPaginados.clear();
-      });
     } catch (e) {
       _mostrarSnackBar('Error al importar usuarios: $e');
     } finally {
@@ -471,93 +567,233 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
       });
     }
   }
+
+  // Método para actualizar los resultados paginados
+  void _actualizarResultadosPaginados() {
+    final inicio = paginaResultados * limiteResultadosPorPagina;
+    final fin = (inicio + limiteResultadosPorPagina) < resultadosImportacion.length
+        ? (inicio + limiteResultadosPorPagina)
+        : resultadosImportacion.length;
+
+    resultadosPaginados = resultadosImportacion.sublist(inicio, fin);
+  }
   
-  // Método para mostrar un diálogo con los resultados detallados
-  void _mostrarDialogoResultados(List<dynamic> resultados) {
-    int registradosCorrectamente = 0;
-    int yaRegistrados = 0;
+  // Método para cambiar de página en los resultados
+  void _cambiarPaginaResultados(int direccion) {
+    setState(() {
+      paginaResultados += direccion;
+      _actualizarResultadosPaginados();
+    });
+  }
+  
+  // Método para obtener el total de páginas de resultados
+  int _getTotalPaginasResultados() {
+    return (resultadosImportacion.length / limiteResultadosPorPagina).ceil() > 0
+        ? (resultadosImportacion.length / limiteResultadosPorPagina).ceil()
+        : 1;
+  }
+  
+  // Método para crear filas de la tabla de resultados
+  DataRow _crearDataRowResultado(Map<String, dynamic> resultado) {
+    final bool esExitoso = resultado['status'] == 'éxito';
+    final Color colorEstado = esExitoso ? AppColors.verdeOscuro : AppColors.rojoError;
+    final IconData iconoEstado = esExitoso ? Icons.check_circle : Icons.error;
+    
+    return DataRow(
+      cells: [
+        DataCell(Text(
+          resultado['documento'] ?? '',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        )),
+        DataCell(
+          Row(
+            children: [
+              Icon(
+                iconoEstado,
+                color: colorEstado,
+                size: 16,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                resultado['status'] ?? '',
+                style: TextStyle(
+                  color: colorEstado,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+        DataCell(Text(
+          resultado['mensaje'] ?? '',
+          style: TextStyle(
+            color: colorEstado,
+            fontSize: 12,
+          ),
+        )),
+      ],
+    );
+  }
+
+  // Método para mostrar resumen estadístico de la importación
+  Widget _buildEstadisticasImportacion() {
+    // Si tenemos el resumen de la API, usamos esos datos
+    if (resumenImportacion.isNotEmpty) {
+      int totalProcesados = resumenImportacion['total_procesados'] ?? 0;
+      int registradosCorrectamente = resumenImportacion['registrados_correctamente'] ?? 0;
+      int conErrores = resumenImportacion['con_errores'] ?? 0;
+      
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Resumen de importación:',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    'Total',
+                    totalProcesados.toString(),
+                    Icons.people_alt,
+                    Colors.blue,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildStatCard(
+                    'Éxitos',
+                    registradosCorrectamente.toString(),
+                    Icons.check_circle,
+                    AppColors.verdeOscuro,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildStatCard(
+                    'Errores',
+                    conErrores.toString(),
+                    Icons.error_outline,
+                    Colors.red,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+    
+    // Si no tenemos datos del resumen de la API, calcular en base a resultados
+    int exitosos = 0;
+    int errores = 0;
+    int total = resultadosImportacion.length;
     
     // Contar los resultados según su estado
-    for (var resultado in resultados) {
-      if (resultado['status'] == 'registrado correctamente') {
-        registradosCorrectamente++;
-      } else if (resultado['status'] == 'ya registrado') {
-        yaRegistrados++;
+    for (var resultado in resultadosImportacion) {
+      if (resultado['status'] == 'éxito') {
+        exitosos++;
+      } else if (resultado['status'] == 'error') {
+        errores++;
       }
     }
     
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Resultados de la importación', style: TextStyle(color: AppColors.verdeOscuro)),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Total de usuarios procesados: ${resultados.length}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Registrados correctamente: $registradosCorrectamente',
-                  style: const TextStyle(color: AppColors.verdeOscuro),
-                ),
-                Text(
-                  'Ya existentes en la base de datos: $yaRegistrados',
-                  style: const TextStyle(color: Colors.orange),
-                ),
-                const Divider(height: 20),
-                const Text(
-                  'Detalle de la importación:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-                // Lista detallada de resultados
-                ...resultados.map((resultado) {
-                  final Color statusColor = resultado['status'] == 'registrado correctamente'
-                      ? AppColors.verdeOscuro
-                      : Colors.orange;
-                  
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 1,
-                          child: Text(
-                            resultado['usuario'] ?? '',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: Text(
-                            resultado['status'] ?? '',
-                            style: TextStyle(color: statusColor),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ],
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          actions: [
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.verdeOscuro,
+        ],
+      ),
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Resumen de importación:',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'Total',
+                  total.toString(),
+                  Icons.people_alt,
+                  Colors.blue,
+                ),
               ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cerrar'),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildStatCard(
+                  'Éxitos',
+                  exitosos.toString(),
+                  Icons.check_circle,
+                  AppColors.verdeOscuro,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildStatCard(
+                  'Errores',
+                  errores.toString(),
+                  Icons.error_outline,
+                  Colors.red,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Método para crear tarjetas de estadísticas
+  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+    return Card(
+      elevation: 1,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: color,
+              ),
+            ),
+            Text(
+              title,
+              style: TextStyle(fontSize: 12),
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 
