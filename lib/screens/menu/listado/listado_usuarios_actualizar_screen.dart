@@ -256,10 +256,11 @@ Future<void> _actualizarUsuario() async {
     }
 
     if (nuevoDocumentoIdentidad != _usuario!.documentoIdentidad) {
-      camposActualizados['documento_identidad'] = nuevoDocumentoIdentidad; // cambiar a snake_case
+      camposActualizados['documento_identidad'] = nuevoDocumentoIdentidad; 
     }
 
-    // manejar la foto de manera especial
+    
+    
     String? urlFoto;
     if (_nuevaFoto != null) {
       urlFoto = await _usuarioService.subirFoto(
@@ -267,7 +268,7 @@ Future<void> _actualizarUsuario() async {
       camposActualizados['foto'] = urlFoto;
     }
 
-    // verificar que el mapa no esté vacío
+    // verificar quehizo cambios
     if (camposActualizados.isEmpty) {
       _mostrarSnackBar('No se proporcionaron datos para actualizar.');
       setState(() => _estaCargando = false);

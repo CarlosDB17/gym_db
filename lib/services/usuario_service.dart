@@ -8,8 +8,8 @@ import '../models/usuario.dart';
 
 class UsuarioService {
 
-  final String _baseUrl = "http://192.168.1.38:8000/usuarios";
- // final String _baseUrl = "https://pf25-carlos-db-v6-302016834907.europe-west1.run.app/usuarios";
+ // final String _baseUrl = "http://192.168.1.38:8000/usuarios";
+  final String _baseUrl = "https://pf25-carlos-db-v6-302016834907.europe-west1.run.app/usuarios";
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // obtener usuarios con paginacion

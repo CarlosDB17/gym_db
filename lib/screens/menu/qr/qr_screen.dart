@@ -13,17 +13,14 @@ class QrScreen extends StatefulWidget {
 }
 
 class _QrScreenState extends State<QrScreen> {
-  // controlador para el escaner
   MobileScannerController cameraController = MobileScannerController(
     detectionSpeed: DetectionSpeed.normal,
     facing: CameraFacing.back,
     formats: [BarcodeFormat.qrCode],
   );
 
-  // controlador para el scroll
   final ScrollController _scrollController = ScrollController();
 
-  // servicio de usuario
   final UsuarioService _usuarioService = UsuarioService();
 
   bool scannerEnabled = true;
@@ -184,7 +181,7 @@ class _QrScreenState extends State<QrScreen> {
   // widget para mostrar cuando se esta leyendo un qr
   Widget _buildReadingOverlay() {
     return Container(
-      color: Colors.black.withAlpha(179), // 0.7 * 255 = 179
+      color: Colors.black.withAlpha(179), 
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -204,7 +201,7 @@ class _QrScreenState extends State<QrScreen> {
   // widget para mostrar cuando el escaner esta en pausa
   Widget _buildPausedOverlay() {
     return Container(
-      color: Colors.black.withAlpha(179), // 0.7 * 255 = 179
+      color: Colors.black.withAlpha(179), 
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

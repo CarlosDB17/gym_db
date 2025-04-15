@@ -16,7 +16,7 @@ class VentanaEmergenteSalida extends StatelessWidget {
     this.botonAfirmativo = 'Aceptar',
     this.botonNegativo = 'Cancelar',
     required this.onAccion,
-    this.colorBotonAfirmativo = AppColors.naranjaBrillante,
+    this.colorBotonAfirmativo = AppColors.verdeVibrante,
   });
 
   /// Método estático para mostrar el diálogo personalizado
@@ -27,7 +27,7 @@ class VentanaEmergenteSalida extends StatelessWidget {
     String botonAfirmativo = 'Aceptar',
     String botonNegativo = 'Cancelar',
     required VoidCallback onAccion,
-    Color colorBotonAfirmativo = AppColors.naranjaBrillante,
+    Color colorBotonAfirmativo = AppColors.verdeVibrante,
   }) {
     return showDialog<bool>(
       context: context,
@@ -45,7 +45,11 @@ class VentanaEmergenteSalida extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(titulo),
+      backgroundColor: Colors.white, // Fondo blanco añadido
+      title: Text(
+        titulo,
+        style: const TextStyle(fontWeight: FontWeight.bold), // Título en negrita
+      ),
       content: Text(subtitulo),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       actions: [

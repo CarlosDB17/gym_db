@@ -5,13 +5,11 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter/services.dart'; // Añadido para Clipboard
+import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-// Import condicional solo para web
+// import condicional solo para web
 import 'csv_exportar_usuarios_stub.dart'
     if (dart.library.html) 'csv_exportar_usuarios_web.dart';
-// Comentamos la importación del paquete de permisos por ahora
-// import 'package:permission_handler/permission_handler.dart';
 import '../../../theme/app_colors.dart';
 import '../../../services/usuario_service.dart';
 import '../../../models/usuario.dart';
@@ -45,13 +43,13 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
       ),
       body: Stack(
         children: [
-          // Encabezado reutilizable
+          // encabezado 
           const Encabezado(
             titulo: 'Exportar a CSV',
             mostrarBotonAtras: true,
           ),
           
-          // Contenido principal
+          // contenido principal
           Padding(
             padding: const EdgeInsets.only(top: 130),
             child: Container(
@@ -116,7 +114,7 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
                               ),
                             
                             const SizedBox(height: 10),
-                            // Mostrar botón para copiar al portapapeles si hay datos
+                            // mostrar botón para copiar al portapapeles si hay datos
                             if (_csvData != null && _csvData!.isNotEmpty)
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
@@ -174,16 +172,14 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
     });
 
     try {
-      // Obtener todos los usuarios desde la API
+      // obtengo todos los usuarios desde la api
       final resultado = await _usuarioService.obtenerUsuarios(0, 9999999999);
       final List<Usuario> usuarios = resultado['usuarios'];
       final int totalUsuarios = resultado['total'];
 
-      // Generar el archivo CSV
       final String csvData = _generarCSV(usuarios);
       _csvData = csvData;
       
-      // Guardar el archivo CSV y manejar posibles errores
       try {
         await _guardarArchivo(csvData);
       } catch (e) {
@@ -219,24 +215,22 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
     print('===== INICIO GENERACIÓN CSV =====');
     print('Generando CSV para ${usuarios.length} usuarios');
     
-    // Añadir la cabecera exactamente como la importación la espera
+    // añado la cabecera exactamente como la importacion la espera
     csvContent.writeln('nombre,email,documento_identidad,fecha_nacimiento,foto');
     print('Encabezados CSV: nombre,email,documento_identidad,fecha_nacimiento,foto');
     
-    // Añadir los datos de cada usuario en líneas separadas
+    // añado los datos de cada usuario en lienas separadas
     for (var usuario in usuarios) {
-      // Prepara cada campo, escapando comillas y comas según sea necesario
-      // Cada campo se debe procesar para asegurar que no rompa el formato CSV
-      String nombre = _escaparCampoCSV(usuario.nombre);
-      String email = _escaparCampoCSV(usuario.email);
-      String docId = _escaparCampoCSV(usuario.documentoIdentidad);
+      String nombre = _formatearCampoCSV(usuario.nombre);
+      String email = _formatearCampoCSV(usuario.email);
+      String docId = _formatearCampoCSV(usuario.documentoIdentidad);
       
       // Asegurar que la fecha tiene el formato correcto
-      String fecha = _escaparCampoCSV(usuario.fechaNacimiento);
+      String fecha = _formatearCampoCSV(usuario.fechaNacimiento);
       
       // Manejar la foto según sea necesario
       String foto = usuario.foto != null && usuario.foto!.isNotEmpty 
-          ? _escaparCampoCSV(usuario.foto!)
+          ? _formatearCampoCSV(usuario.foto!)
           : "null";
       
       // Añadir la línea completa al CSV
@@ -251,7 +245,7 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
   }
 
   // Función auxiliar para escapar correctamente campos CSV
-  String _escaparCampoCSV(String valor) {
+  String _formatearCampoCSV(String valor) {
     // Si el valor contiene comas, comillas o saltos de línea, lo encerramos entre comillas
     if (valor.contains(',') || valor.contains('"') || valor.contains('\n')) {
       // Reemplazar comillas dobles con dobles comillas dobles (estándar CSV)
@@ -281,7 +275,7 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
       }
     }
 
-    // Guardar en disco para Android/iOS/Windows
+    // guardar en disco para android ios windows
     try {
       String? directorioSeleccionado = await FilePicker.platform.getDirectoryPath(
         dialogTitle: 'Selecciona dónde guardar el archivo CSV',

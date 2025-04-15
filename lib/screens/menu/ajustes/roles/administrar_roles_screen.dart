@@ -16,7 +16,7 @@ class _AdministrarRolesScreenState extends State<AdministrarRolesScreen> {
   List<Map<String, dynamic>> _usuarios = [];
   bool _cargando = true;
   int _paginaActual = 0;
-  final int _itemsPorPagina = 8;
+  final int _itemsPorPagina = 4;
 
   @override
   void initState() {

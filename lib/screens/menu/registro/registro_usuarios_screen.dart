@@ -166,7 +166,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Por favor, completa todos los campos.'),
-            backgroundColor: AppColors.naranjaOscuro,
+            backgroundColor: AppColors.rojoError,
           ),
         );
       }
@@ -215,7 +215,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
         return;
       }
 
-      // Registrar usuario
+      // registro el usuario
       try {
         final usuario = Usuario(
           nombre: nombre,
