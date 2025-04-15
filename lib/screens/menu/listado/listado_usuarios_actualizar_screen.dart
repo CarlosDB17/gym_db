@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../models/usuario.dart';
-import '../../services/usuario_service.dart';
-import '../../theme/app_colors.dart';
-import '../../widgets/campo_texto_personalizado.dart';
-import '../../widgets/boton_verde_personalizado.dart';
-import '../../widgets/boton_naranja_personalizado.dart';
+import '../../../models/usuario.dart';
+import '../../../services/usuario_service.dart';
+import '../../../theme/app_colors.dart';
+import '../../../widgets/campo_texto_personalizado.dart';
+import '../../../widgets/boton_verde_personalizado.dart';
+import '../../../widgets/boton_naranja_personalizado.dart';
 
 class ListadoUsuariosActualizarScreen extends StatefulWidget {
   const ListadoUsuariosActualizarScreen({super.key});

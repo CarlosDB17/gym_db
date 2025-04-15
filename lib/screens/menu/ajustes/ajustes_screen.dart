@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../utils/session_manager.dart'; 
-import '../../services/usuario_service.dart';
-import '../../widgets/ventana_emergente_salida.dart';
+import '../../../utils/session_manager.dart'; 
+import '../../../services/usuario_service.dart';
+import '../../../widgets/ventana_emergente_salida.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AjustesScreen extends StatefulWidget {

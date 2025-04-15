@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:gym_db/models/usuario.dart';
 import 'package:gym_db/screens/auth/login_screen.dart';
 import 'package:gym_db/screens/menu/menu_screen.dart';
-import 'package:gym_db/screens/menu/listado_usuarios_actualizar_screen.dart';
-import '../screens/menu/administrar_roles_screen.dart';
-import '../screens/menu/administrar_roles_actualizar_screen.dart';
+import 'package:gym_db/screens/menu/listado/listado_usuarios_actualizar_screen.dart';
+import '../screens/menu/ajustes/roles/administrar_roles_screen.dart';
+import '../screens/menu/ajustes/roles/administrar_roles_actualizar_screen.dart';
 
 class AppRoutes {
   static const String login = '/';

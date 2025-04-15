@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import '../../models/usuario.dart';
-import '../../services/usuario_service.dart';
-import '../../theme/app_colors.dart';
-import '../../widgets/boton_verde_personalizado.dart';
-import '../../widgets/boton_naranja_personalizado.dart';
-import '../../widgets/tabla_personalizada.dart';
+import '../../../models/usuario.dart';
+import '../../../services/usuario_service.dart';
+import '../../../theme/app_colors.dart';
+import '../../../widgets/boton_verde_personalizado.dart';
+import '../../../widgets/boton_naranja_personalizado.dart';
+import '../../../widgets/tabla_personalizada.dart';
 
 class ListadoUsuariosScreen extends StatefulWidget {
   const ListadoUsuariosScreen({super.key});

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../services/usuario_service.dart';
-import '../../widgets/tabla_personalizada.dart';
-import '../../theme/app_colors.dart';
+import '../../../../services/usuario_service.dart';
+import '../../../../widgets/tabla_personalizada.dart';
+import '../../../../theme/app_colors.dart';
 
 class AdministrarRolesScreen extends StatefulWidget {
   const AdministrarRolesScreen({super.key});

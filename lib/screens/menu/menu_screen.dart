@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'registro_usuarios_screen.dart';
-import 'listado_usuarios_screen.dart';
-import 'qr_screen.dart';
-import 'csv_usuarios_screen.dart';
-import 'ajustes_screen.dart';
+import 'registro/registro_usuarios_screen.dart';
+import 'listado/listado_usuarios_screen.dart';
+import 'qr/qr_screen.dart';
+import 'csv/csv_usuarios_screen.dart';
+import 'ajustes/ajustes_screen.dart';
 import '../../theme/app_colors.dart';
 import '../../services/usuario_service.dart';
 import '../../widgets/ventana_emergente_salida.dart';
