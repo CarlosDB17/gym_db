@@ -28,7 +28,6 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
   int _totalUsuarios = 0;
   String? _csvData;
   String? _nombreArchivo;
-  List<Usuario> _usuarios = []; // Lista para almacenar los usuarios recuperados
 
   @override
   Widget build(BuildContext context) {
@@ -112,55 +111,6 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
                                 ),
                               ),
                             
-                            // Mostrar la lista de usuarios con sus fotos si hay datos cargados
-                            if (_usuarios.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 20.0),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey[300]!),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  margin: const EdgeInsets.symmetric(vertical: 10),
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    itemCount: _usuarios.length > 5 ? 5 : _usuarios.length,
-                                    itemBuilder: (context, index) {
-                                      final usuario = _usuarios[index];
-                                      return ListTile(
-                                        leading: ClipOval(
-                                          child: usuario.foto != null
-                                              ? Image.network(
-                                                  usuario.foto!,
-                                                  height: 50,
-                                                  width: 50,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error, stackTrace) => 
-                                                    _avatarPorDefecto(),
-                                                )
-                                              : _avatarPorDefecto(),
-                                        ),
-                                        title: Text(usuario.nombre),
-                                        subtitle: Text(usuario.email),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            
-                            if (_usuarios.length > 5)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
-                                child: Text(
-                                  'Mostrando 5 de ${_usuarios.length} usuarios',
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                              ),
-                            
                             const SizedBox(height: 10),
                             // Mostrar botón para copiar al portapapeles si hay datos
                             if (_csvData != null && _csvData!.isNotEmpty)
@@ -208,22 +158,7 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
     );
   }
 
-  // Widget para mostrar avatar por defecto cuando no hay foto
-  Widget _avatarPorDefecto() {
-    return Container(
-      height: 50,
-      width: 50,
-      decoration: BoxDecoration(
-        color: AppColors.naranjaBrillante,
-        shape: BoxShape.circle,
-      ),
-      child: const Icon(
-        Icons.person,
-        color: AppColors.blanco,
-        size: 30,
-      ),
-    );
-  }
+
 
   Future<void> _exportarUsuarios() async {
     setState(() {
@@ -232,7 +167,6 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
       _exito = false;
       _csvData = null;
       _nombreArchivo = null;
-      _usuarios = []; // Limpiar la lista de usuarios
     });
 
     try {
@@ -240,11 +174,6 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
       final resultado = await _usuarioService.obtenerUsuarios(0, 9999999999);
       final List<Usuario> usuarios = resultado['usuarios'];
       final int totalUsuarios = resultado['total'];
-
-      // Guardar la lista de usuarios para mostrarla en la interfaz
-      setState(() {
-        _usuarios = usuarios;
-      });
 
       // Generar el archivo CSV
       final String csvData = _generarCSV(usuarios);
@@ -256,7 +185,7 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
       } catch (e) {
         print("Error al guardar archivo: $e");
         // Si hay un error al guardar, almacenamos los datos para copiar al portapapeles
-        _nombreArchivo = 'gym_db_usuarios_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.csv';
+        _nombreArchivo = 'gym_db_usuarios_${DateFormat('dd_MM_yyyy_HHmm').format(DateTime.now())}.csv';
         
         setState(() {
           _mensaje = 'No se pudo guardar el archivo. '
@@ -315,7 +244,7 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
     }
     
     final csvString = csvContent.toString();
-    print('Primeros 200 caracteres del CSV generado: ${csvString.length > 200 ? csvString.substring(0, 200) + '...' : csvString}');
+    print('Primeros 200 caracteres del CSV generado: ${csvString.length > 200 ? '${csvString.substring(0, 200)}...' : csvString}');
     print('===== FIN GENERACIÓN CSV =====');
     
     return csvString;
@@ -323,7 +252,7 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
 
   Future<void> _guardarArchivo(String csvData) async {
     // Generar el nombre del archivo con la fecha y hora actual
-    final String fechaHora = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+    final String fechaHora = DateFormat('dd_MM_yyyy_HHmm').format(DateTime.now());
     final String nombreArchivo = 'gym_db_usuarios_$fechaHora.csv';
     _nombreArchivo = nombreArchivo;
 
