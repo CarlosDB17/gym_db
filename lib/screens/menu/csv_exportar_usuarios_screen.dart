@@ -215,39 +215,46 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
     print('===== INICIO GENERACIÓN CSV =====');
     print('Generando CSV para ${usuarios.length} usuarios');
     
-    // Añadir la cabecera en una línea separada
+    // Añadir la cabecera exactamente como la importación la espera
     csvContent.writeln('nombre,email,documento_identidad,fecha_nacimiento,foto');
     print('Encabezados CSV: nombre,email,documento_identidad,fecha_nacimiento,foto');
     
     // Añadir los datos de cada usuario en líneas separadas
     for (var usuario in usuarios) {
-      // Manejar posibles comas en los campos
-      String nombre = usuario.nombre.contains(',') ? '"${usuario.nombre}"' : usuario.nombre;
-      String email = usuario.email.contains(',') ? '"${usuario.email}"' : usuario.email;
-      String docId = usuario.documentoIdentidad;
-      String fecha = usuario.fechaNacimiento;
+      // Prepara cada campo, escapando comillas y comas según sea necesario
+      // Cada campo se debe procesar para asegurar que no rompa el formato CSV
+      String nombre = _escaparCampoCSV(usuario.nombre);
+      String email = _escaparCampoCSV(usuario.email);
+      String docId = _escaparCampoCSV(usuario.documentoIdentidad);
       
-      // Construir la fila con los campos adecuadamente escapados
-      String fila = '$nombre,$email,$docId,$fecha,';
+      // Asegurar que la fecha tiene el formato correcto
+      String fecha = _escaparCampoCSV(usuario.fechaNacimiento);
       
-      // Añadir foto solo si existe, en caso contrario añadir "null"
-      if (usuario.foto != null && usuario.foto!.isNotEmpty) {
-        String foto = usuario.foto!.contains(',') ? '"${usuario.foto}"' : usuario.foto!;
-        fila += foto;
-      } else {
-        fila += 'null';
-      }
+      // Manejar la foto según sea necesario
+      String foto = usuario.foto != null && usuario.foto!.isNotEmpty 
+          ? _escaparCampoCSV(usuario.foto!)
+          : "null";
       
-      // Añadir la línea completa al CSV (asegurándonos que cada usuario esté en una nueva línea)
-      csvContent.writeln(fila);
-      print('Fila añadida: $fila');
+      // Añadir la línea completa al CSV
+      csvContent.writeln('$nombre,$email,$docId,$fecha,$foto');
     }
     
     final csvString = csvContent.toString();
-    print('Primeros 200 caracteres del CSV generado: ${csvString.length > 200 ? '${csvString.substring(0, 200)}...' : csvString}');
+    print('CSV generado correctamente con ${usuarios.length} registros');
     print('===== FIN GENERACIÓN CSV =====');
     
     return csvString;
+  }
+
+  // Función auxiliar para escapar correctamente campos CSV
+  String _escaparCampoCSV(String valor) {
+    // Si el valor contiene comas, comillas o saltos de línea, lo encerramos entre comillas
+    if (valor.contains(',') || valor.contains('"') || valor.contains('\n')) {
+      // Reemplazar comillas dobles con dobles comillas dobles (estándar CSV)
+      String valorEscapado = valor.replaceAll('"', '""');
+      return '"$valorEscapado"';
+    }
+    return valor;
   }
 
   Future<void> _guardarArchivo(String csvData) async {
@@ -256,12 +263,9 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
     final String nombreArchivo = 'gym_db_usuarios_$fechaHora.csv';
     _nombreArchivo = nombreArchivo;
 
-    // Asegurar que los datos estén codificados en UTF-8
+    // Asegurar que los datos estén codificados en UTF-8 sin BOM
     List<int> bytes = utf8.encode(csvData);
     
-    // Añadir BOM (Byte Order Mark) para que Excel reconozca correctamente UTF-8
-    List<int> bytesWithBOM = [0xEF, 0xBB, 0xBF, ...bytes];
-
     try {
       // Primero preguntamos al usuario dónde quiere guardar el archivo
       String? directorioSeleccionado = await FilePicker.platform.getDirectoryPath(
@@ -272,14 +276,22 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
         throw Exception('Operación cancelada por el usuario');
       }
       
-      // Guardar el archivo en la ubicación seleccionada por el usuario con codificación UTF-8
+      // Guardar el archivo en la ubicación seleccionada por el usuario
       final File file = File('$directorioSeleccionado/$nombreArchivo');
-      await file.writeAsBytes(bytesWithBOM);
+      await file.writeAsBytes(bytes);
       
       setState(() {
         _mensaje = 'Archivo guardado en: ${file.path}';
         _exito = true;
       });
+      
+      // Imprimir información de depuración en la consola
+      print('===== ARCHIVO GUARDADO =====');
+      print('Ruta: ${file.path}');
+      print('Tamaño: ${bytes.length} bytes');
+      print('Codificación: UTF-8');
+      print('========================');
+      
       return;
     } catch (e) {
       print('Error al usar FilePicker: $e');
@@ -289,7 +301,7 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
         // Intentar guardar en el directorio de documentos
         final directory = await getApplicationDocumentsDirectory();
         final File file = File('${directory.path}/$nombreArchivo');
-        await file.writeAsBytes(bytesWithBOM);
+        await file.writeAsBytes(bytes);
         
         setState(() {
           _mensaje = 'No se pudo guardar en la ubicación seleccionada. '
@@ -306,7 +318,7 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
             final directory = await getExternalStorageDirectory();
             if (directory != null) {
               final File file = File('${directory.path}/$nombreArchivo');
-              await file.writeAsBytes(bytesWithBOM);
+              await file.writeAsBytes(bytes);
               
               setState(() {
                 _mensaje = 'Archivo guardado automáticamente en: ${file.path}';

@@ -248,46 +248,85 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
   // procesar archivo csv
   Future<void> _procesarArchivoCsv(File file) async {
     try {
-      final input = file.readAsStringSync();
-      final List<List<dynamic>> rowsAsListOfValues = const CsvToListConverter()
-          .convert(input);
-
-      // obtener encabezados del csv (primera fila)
-      final headers = rowsAsListOfValues[0];
-
-      // convertir filas a lista de mapas
+      // Leer el contenido del archivo
+      final String input = await file.readAsString();
+      print('===== INICIO PROCESAMIENTO CSV =====');
+      print('Longitud del archivo: ${input.length} caracteres');
+      
+      // Usar la configuración estándar para CSV
+      final List<List<dynamic>> rowsAsListOfValues = const CsvToListConverter(
+        eol: '\n',
+        fieldDelimiter: ',',
+        shouldParseNumbers: false, // Mantener todos los valores como strings
+      ).convert(input);
+      
+      print('Filas detectadas en el CSV: ${rowsAsListOfValues.length}');
+      
+      if (rowsAsListOfValues.isEmpty) {
+        throw Exception('El archivo CSV está vacío o no tiene un formato válido');
+      }
+      
+      // Obtener encabezados del CSV (primera fila)
+      final List<String> headers = rowsAsListOfValues[0].map((e) => e.toString().trim().toLowerCase()).toList();
+      print('Encabezados detectados: $headers');
+      
+      // Validar que los encabezados necesarios estén presentes
+      final requiredHeaders = ['nombre', 'email', 'documento_identidad', 'fecha_nacimiento'];
+      for (var header in requiredHeaders) {
+        if (!headers.contains(header)) {
+          throw Exception('El archivo CSV no contiene la columna obligatoria: $header');
+        }
+      }
+      
+      // Convertir filas a lista de mapas
       List<Map<String, dynamic>> data = [];
       for (int i = 1; i < rowsAsListOfValues.length; i++) {
+        // Ignorar filas vacías
+        if (rowsAsListOfValues[i].every((cell) => cell == null || cell.toString().trim().isEmpty)) {
+          continue;
+        }
+        
         Map<String, dynamic> row = {};
         for (int j = 0; j < headers.length; j++) {
           // Verificar que no estemos accediendo fuera del rango de la fila
           if (j < rowsAsListOfValues[i].length) {
-            String encabezado = headers[j].toString().trim();
+            String encabezado = headers[j];
+            String valor = rowsAsListOfValues[i][j].toString().trim();
+            
+            // Procesar solo las columnas que nos interesan
             if (encabezado == 'nombre' ||
                 encabezado == 'email' ||
                 encabezado == 'documento_identidad' ||
                 encabezado == 'fecha_nacimiento' ||
-                encabezado == 'foto') {  // Añadido soporte para columna de foto
-              row[encabezado] = rowsAsListOfValues[i][j].toString().trim();
+                encabezado == 'foto') {
+              
+              // Tratar valores "null" o vacíos apropiadamente
+              if (valor.toLowerCase() == 'null' || valor.isEmpty) {
+                if (encabezado == 'foto') {
+                  row[encabezado] = null;
+                } else if (encabezado == 'fecha_nacimiento') {
+                  row[encabezado] = '';
+                } else {
+                  row[encabezado] = '';
+                }
+              } else {
+                row[encabezado] = valor;
+              }
             }
           }
         }
 
-        // formatear la fecha al formato esperado por la api
-        if (row.containsKey('fecha_nacimiento')) {
+        // Formatear la fecha al formato esperado por la API
+        if (row.containsKey('fecha_nacimiento') && row['fecha_nacimiento'] != null && row['fecha_nacimiento'].isNotEmpty) {
           row['fecha_nacimiento'] = _formatFecha(row['fecha_nacimiento']);
         }
-
-        // Incluir el campo foto en los datos del usuario
-        if (!row.containsKey('foto')) {
-          row['foto'] = null; // Campo vacío si no existe
-        } else if (row['foto'] == 'null' || row['foto'].isEmpty) {
-          row['foto'] = null; // Convertir "null" en null real
-        }
-
-        // solo agregar usuarios validos
+        
+        // Solo agregar usuarios válidos
         if (_validarUsuario(row)) {
           data.add(row);
+          print('Usuario #${data.length} procesado: ${row['nombre']} (${row['email']})');
+        } else {
+          print('Usuario en fila ${i+1} ignorado por datos incompletos: ${row.toString()}');
         }
       }
 
@@ -297,10 +336,14 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
         _actualizarUsuariosPaginados();
       });
 
+      print('Total usuarios válidos encontrados: ${data.length}');
+      print('===== FIN PROCESAMIENTO CSV =====');
+      
       if (data.isEmpty) {
         _mostrarSnackBar('No se encontraron datos válidos en el archivo CSV.');
       }
     } catch (e) {
+      print('ERROR al procesar CSV: $e');
       _mostrarSnackBar('Error al procesar el archivo CSV: $e');
     }
   }
@@ -402,11 +445,20 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
     }
 
     try {
-      await _usuarioService.enviarUsuariosAlaAPI(usuarios);
-      _mostrarSnackBar(
-        'Usuarios importados exitosamente.',
-        color: AppColors.verdeOscuro,
-      );
+      // Ahora recibimos los resultados detallados de la API
+      final resultados = await _usuarioService.enviarUsuariosAlaAPI(usuarios);
+      
+      // Verificamos si hay resultados detallados
+      if (resultados.containsKey('resultados') && resultados['resultados'] is List) {
+        _mostrarDialogoResultados(resultados['resultados']);
+      } else {
+        _mostrarSnackBar(
+          'Usuarios importados exitosamente.',
+          color: AppColors.verdeOscuro,
+        );
+      }
+      
+      // Limpiar la lista de usuarios después de importar
       setState(() {
         usuarios.clear();
         usuariosPaginados.clear();
@@ -418,6 +470,95 @@ class _CsvImportarUsuariosScreenState extends State<CsvImportarUsuariosScreen> {
         _cargando = false;
       });
     }
+  }
+  
+  // Método para mostrar un diálogo con los resultados detallados
+  void _mostrarDialogoResultados(List<dynamic> resultados) {
+    int registradosCorrectamente = 0;
+    int yaRegistrados = 0;
+    
+    // Contar los resultados según su estado
+    for (var resultado in resultados) {
+      if (resultado['status'] == 'registrado correctamente') {
+        registradosCorrectamente++;
+      } else if (resultado['status'] == 'ya registrado') {
+        yaRegistrados++;
+      }
+    }
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Resultados de la importación', style: TextStyle(color: AppColors.verdeOscuro)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Total de usuarios procesados: ${resultados.length}',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  'Registrados correctamente: $registradosCorrectamente',
+                  style: const TextStyle(color: AppColors.verdeOscuro),
+                ),
+                Text(
+                  'Ya existentes en la base de datos: $yaRegistrados',
+                  style: const TextStyle(color: Colors.orange),
+                ),
+                const Divider(height: 20),
+                const Text(
+                  'Detalle de la importación:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                // Lista detallada de resultados
+                ...resultados.map((resultado) {
+                  final Color statusColor = resultado['status'] == 'registrado correctamente'
+                      ? AppColors.verdeOscuro
+                      : Colors.orange;
+                  
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+                            resultado['usuario'] ?? '',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            resultado['status'] ?? '',
+                            style: TextStyle(color: statusColor),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.verdeOscuro,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cerrar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // metodo para mostrar mensajes

@@ -518,9 +518,9 @@ Future<void> importarUsuarios(List<Map<String, dynamic>> usuarios) async {
   }
 }
 
-// Eliminado el método importarUsuariosDesdeCSV para moverlo a csv_usuarios_screen.dart
 
-Future<void> enviarUsuariosAlaAPI(List<Map<String, dynamic>> usuarios) async {
+
+Future<Map<String, dynamic>> enviarUsuariosAlaAPI(List<Map<String, dynamic>> usuarios) async {
   try {
     print('Iniciando importación de usuarios...');
     print('URL de la solicitud: $_baseUrl/multiples');
@@ -581,6 +581,10 @@ Future<void> enviarUsuariosAlaAPI(List<Map<String, dynamic>> usuarios) async {
       throw Exception('$errorMessage (Código: ${response.statusCode})');
     } else {
       print('Importación de usuarios exitosa.');
+      
+      // Devolver los resultados detallados de la importación
+      final responseData = jsonDecode(response.body);
+      return responseData; // Devuelve la respuesta completa con los resultados
     }
   } catch (e) {
     print('Excepción capturada: $e');
