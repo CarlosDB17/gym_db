@@ -32,6 +32,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
   }
 
   Future<void> _cargarUsuarios({String? filtro}) async {
+    filtro = filtro?.trim(); 
     setState(() {
       _cargando = true;
       _mensajeError = null; 
@@ -210,110 +211,106 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-          backgroundColor: Colors.white,
+      backgroundColor: Colors.white,
       body: SafeArea(
-        child: _cargando
-            ? const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.verdeOscuro,
-                ),
-              )
-            : Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _busquedaController,
-                            decoration: InputDecoration(
-                              labelText: 'Buscar usuario',
-                              labelStyle: const TextStyle(color: Colors.grey),
-                              prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                              filled: true,
-                              fillColor: const Color(0xFFF5F5F5),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: const BorderSide(color: AppColors.verdeVibrante, width: 2),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: const BorderSide(color: AppColors.verdeVibrante, width: 2),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: const BorderSide(color: AppColors.verdeVibrante, width: 2),
-                              ),
-                            ),
-                          ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _busquedaController,
+                      decoration: InputDecoration(
+                        labelText: 'Buscar usuario',
+                        labelStyle: const TextStyle(color: Colors.grey),
+                        prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                        filled: true,
+                        fillColor: const Color(0xFFF5F5F5),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: const BorderSide(color: AppColors.verdeVibrante, width: 2),
                         ),
-                        const SizedBox(width: 8),
-                        BotonVerdePersonalizado(
-                          onPressed: () {
-                            if (_busquedaController.text.trim().isEmpty) {
-                              _mostrarSnackBar('Escribe antes de realizar una búsqueda');
-                            } else {
-                              _cargarUsuarios(filtro: _busquedaController.text);
-                            }
-                          },
-                          texto: 'Buscar',
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: const BorderSide(color: AppColors.verdeVibrante, width: 2),
                         ),
-                        const SizedBox(width: 8),
-                        BotonNaranjaPersonalizado(
-                          onPressed: () {
-                            if (_busquedaRealizada) {
-                              _busquedaController.clear();
-                              setState(() {
-                                _busquedaRealizada = false;
-                              });
-                              _cargarUsuarios();
-                            }
-                          },
-                          texto: 'Limpiar',
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // mostrar mensaje de error si no hay resultados
-                    if (_usuarios.isEmpty && _busquedaRealizada)
-                      const Expanded(
-                        child: Center(
-                          child: Text(
-                            'Sin resultados',
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 16,
-                              fontStyle: FontStyle.italic,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      )
-                    // si hay resultados o no se ha realizado busqueda muestro la tabla
-                    else if (_usuarios.isNotEmpty || !_busquedaRealizada) 
-                      Expanded(
-                        child: TablaPersonalizada<Usuario>(
-                          columnas: const [
-                            DataColumn(label: Text('Foto')),
-                            DataColumn(label: Text('Nombre')),
-                            DataColumn(label: Text('Email')),
-                            DataColumn(label: Text('Documento de identidad')),
-                            DataColumn(label: Text('Fecha de Nacimiento')),
-                          ],
-                          datos: _usuarios,
-                          crearFila: _crearDataRow,
-                          paginaActual: _paginaActual,
-                          totalPaginas: _getTotalPaginas(),
-                          cambiarPagina: _cambiarPagina,
-                          mostrarPaginacion: _totalUsuarios > _usuariosPorPagina,
-                          mensajeAyuda: 'Pulsa en un usuario para editarlo. Desliza para ver el resto de datos.',
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: const BorderSide(color: AppColors.verdeVibrante, width: 2),
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  BotonVerdePersonalizado(
+                    onPressed: () {
+                      if (_busquedaController.text.trim().isEmpty) {
+                        _mostrarSnackBar('Escribe antes de realizar una búsqueda');
+                      } else {
+                        _cargarUsuarios(filtro: _busquedaController.text);
+                      }
+                    },
+                    texto: 'Buscar',
+                  ),
+                  const SizedBox(width: 8),
+                  BotonNaranjaPersonalizado(
+                    onPressed: () {
+                      if (_busquedaRealizada) {
+                        _busquedaController.clear();
+                        setState(() {
+                          _busquedaRealizada = false;
+                        });
+                        _cargarUsuarios();
+                      }
+                    },
+                    texto: 'Limpiar',
+                  ),
+                ],
               ),
+              const SizedBox(height: 16),
+
+              // Mostrar indicador de carga o contenido
+              Expanded(
+                child: _cargando
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.verdeOscuro,
+                        ),
+                      )
+                    : _usuarios.isEmpty && _busquedaRealizada
+                        ? const Center(
+                            child: Text(
+                              'Sin resultados',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 16,
+                                fontStyle: FontStyle.italic,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          )
+                        : TablaPersonalizada<Usuario>(
+                            columnas: const [
+                              DataColumn(label: Text('Foto')),
+                              DataColumn(label: Text('Nombre')),
+                              DataColumn(label: Text('Email')),
+                              DataColumn(label: Text('Documento de identidad')),
+                              DataColumn(label: Text('Fecha de Nacimiento')),
+                            ],
+                            datos: _usuarios,
+                            crearFila: _crearDataRow,
+                            paginaActual: _paginaActual,
+                            totalPaginas: _getTotalPaginas(),
+                            cambiarPagina: _cambiarPagina,
+                            mostrarPaginacion: _totalUsuarios > _usuariosPorPagina,
+                            mensajeAyuda: 'Pulsa en un usuario para editarlo. Desliza para ver el resto de datos.',
+                          ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

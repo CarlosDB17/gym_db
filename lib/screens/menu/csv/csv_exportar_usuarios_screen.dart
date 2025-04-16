@@ -19,7 +19,8 @@ class CsvExportarUsuariosScreen extends StatefulWidget {
   const CsvExportarUsuariosScreen({super.key});
 
   @override
-  State<CsvExportarUsuariosScreen> createState() => _CsvExportarUsuariosScreenState();
+  State<CsvExportarUsuariosScreen> createState() =>
+      _CsvExportarUsuariosScreenState();
 }
 
 class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
@@ -43,19 +44,18 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
       ),
       body: Stack(
         children: [
-          // encabezado 
-          const Encabezado(
-            titulo: 'Exportar a CSV',
-            mostrarBotonAtras: true,
-          ),
-          
+          // encabezado
+          const Encabezado(titulo: 'Exportar a CSV', mostrarBotonAtras: true),
+
           // contenido principal
           Padding(
             padding: const EdgeInsets.only(top: 130),
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(30),
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withAlpha((0.1 * 255).toInt()),
@@ -65,93 +65,109 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
                 ],
               ),
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-                child: _cargando
-                  ? const Center(
-                      child: CircularProgressIndicator(color: AppColors.verdeOscuro),
-                    )
-                  : Center(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-                            Text(
-                              _exito ? 'Usuarios disponibles: $_totalUsuarios' : '',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 30),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.verdeOscuro,
-                                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(30),
+                ),
+                child:
+                    _cargando
+                        ? const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.verdeOscuro,
+                          ),
+                        )
+                        : Center(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.05,
                                 ),
-                              ),
-                              onPressed: _exportarUsuarios,
-                              child: const Text(
-                                'Exportar datos de usuarios',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            if (!_exito)
-                              const Text(
-                                'Esta herramienta exportará todos los datos de los usuarios a un archivo CSV.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                ),
-                              ),
-                            
-                            const SizedBox(height: 10),
-                            // mostrar botón para copiar al portapapeles si hay datos
-                            if (_csvData != null && _csvData!.isNotEmpty)
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.verdeOscuro,
-                                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                ),
-                                onPressed: () => _copiarAlPortapapeles(_csvData!),
-                                child: const Text(
-                                  'Copiar datos al portapapeles',
-                                  style: TextStyle(
-                                    color: Colors.white,
+                                Text(
+                                  _exito
+                                      ? 'Usuarios disponibles: $_totalUsuarios'
+                                      : '',
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ),
-                            const SizedBox(height: 20),
-                            if (_mensaje.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Text(
-                                  _mensaje,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: _exito ? Colors.green : Colors.red,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                                const SizedBox(height: 30),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.verdeOscuro,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 40,
+                                      vertical: 16,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                  ),
+                                  onPressed: _exportarUsuarios,
+                                  child: const Text(
+                                    'Exportar datos de usuarios',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ),
-                          ],
+                                const SizedBox(height: 20),
+                                if (!_exito)
+                                  const Text(
+                                    'Esta herramienta exportará todos los datos de los usuarios a un archivo CSV.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+
+                                const SizedBox(height: 10),
+                                // mostrar botón para copiar al portapapeles si hay datos
+                                if (_csvData != null && _csvData!.isNotEmpty)
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.verdeOscuro,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 40,
+                                        vertical: 16,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                    ),
+                                    onPressed:
+                                        () => _copiarAlPortapapeles(_csvData!),
+                                    child: const Text(
+                                      'Copiar datos al portapapeles',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                const SizedBox(height: 20),
+                                if (_mensaje.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Text(
+                                      _mensaje,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color:
+                                            _exito ? Colors.green : Colors.red,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
               ),
             ),
           ),
@@ -159,8 +175,6 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
       ),
     );
   }
-
-
 
   Future<void> _exportarUsuarios() async {
     setState(() {
@@ -179,17 +193,19 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
 
       final String csvData = _generarCSV(usuarios);
       _csvData = csvData;
-      
+
       try {
         await _guardarArchivo(csvData);
       } catch (e) {
         print("Error al guardar archivo: $e");
         // Si hay un error al guardar, almacenamos los datos para copiar al portapapeles
-        _nombreArchivo = 'gym_db_usuarios_${DateFormat('dd_MM_yyyy_HHmm').format(DateTime.now())}.csv';
-        
+        _nombreArchivo =
+            'gym_db_usuarios_${DateFormat('dd_MM_yyyy_HHmm').format(DateTime.now())}.csv';
+
         setState(() {
-          _mensaje = 'No se pudo guardar el archivo. '
-                    'Puedes copiar los datos al portapapeles.';
+          _mensaje =
+              'No se pudo guardar el archivo. '
+              'Puedes copiar los datos al portapapeles.';
           _exito = false;
         });
       }
@@ -211,36 +227,41 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
 
   String _generarCSV(List<Usuario> usuarios) {
     StringBuffer csvContent = StringBuffer();
-    
+
     print('===== INICIO GENERACIÓN CSV =====');
     print('Generando CSV para ${usuarios.length} usuarios');
-    
+
     // añado la cabecera exactamente como la importacion la espera
-    csvContent.writeln('nombre,email,documento_identidad,fecha_nacimiento,foto');
-    print('Encabezados CSV: nombre,email,documento_identidad,fecha_nacimiento,foto');
-    
+    csvContent.writeln(
+      'nombre,email,documento_identidad,fecha_nacimiento,foto',
+    );
+    print(
+      'Encabezados CSV: nombre,email,documento_identidad,fecha_nacimiento,foto',
+    );
+
     // añado los datos de cada usuario en lienas separadas
     for (var usuario in usuarios) {
       String nombre = _formatearCampoCSV(usuario.nombre);
       String email = _formatearCampoCSV(usuario.email);
       String docId = _formatearCampoCSV(usuario.documentoIdentidad);
-      
+
       // Asegurar que la fecha tiene el formato correcto
       String fecha = _formatearCampoCSV(usuario.fechaNacimiento);
-      
+
       // Manejar la foto según sea necesario
-      String foto = usuario.foto != null && usuario.foto!.isNotEmpty 
-          ? _formatearCampoCSV(usuario.foto!)
-          : "null";
-      
+      String foto =
+          usuario.foto != null && usuario.foto!.isNotEmpty
+              ? _formatearCampoCSV(usuario.foto!)
+              : "null";
+
       // Añadir la línea completa al CSV
       csvContent.writeln('$nombre,$email,$docId,$fecha,$foto');
     }
-    
+
     final csvString = csvContent.toString();
     print('CSV generado correctamente con ${usuarios.length} registros');
     print('===== FIN GENERACIÓN CSV =====');
-    
+
     return csvString;
   }
 
@@ -256,7 +277,9 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
   }
 
   Future<void> _guardarArchivo(String csvData) async {
-    final String fechaHora = DateFormat('dd_MM_yyyy_HHmm').format(DateTime.now());
+    final String fechaHora = DateFormat(
+      'dd_MM_yyyy_HHmm',
+    ).format(DateTime.now());
     final String nombreArchivo = 'gym_db_usuarios_$fechaHora.csv';
     _nombreArchivo = nombreArchivo;
     List<int> bytes = utf8.encode(csvData);
@@ -277,12 +300,32 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
 
     // guardar en disco para android ios windows
     try {
-      String? directorioSeleccionado = await FilePicker.platform.getDirectoryPath(
-        dialogTitle: 'Selecciona dónde guardar el archivo CSV',
-      );
+      String? directorioSeleccionado = await FilePicker.platform
+          .getDirectoryPath(
+            dialogTitle: 'Selecciona dónde guardar el archivo CSV',
+          );
+
       if (directorioSeleccionado == null) {
         throw Exception('Operación cancelada por el usuario');
       }
+
+      // Fix para el problema de duplicación de ruta
+      if (Platform.isAndroid) {
+        // Detectar y corregir la duplicación de directorios
+        final List<String> pathSegments = directorioSeleccionado.split('/');
+        for (int i = 0; i < pathSegments.length - 1; i++) {
+          if (pathSegments[i] == pathSegments[i + 1]) {
+            // Encontramos un segmento duplicado
+            pathSegments.removeAt(i);
+            directorioSeleccionado = pathSegments.join('/');
+            break;
+          }
+        }
+
+        // Debug del directorio final
+        print('Ruta corregida: $directorioSeleccionado');
+      }
+
       final File file = File('$directorioSeleccionado/$nombreArchivo');
       await file.writeAsBytes(bytes);
       setState(() {
@@ -297,13 +340,15 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
       return;
     } catch (e) {
       print('Error al usar FilePicker: $e');
+      // El resto del manejo de errores permanece igual...
       try {
         final directory = await getApplicationDocumentsDirectory();
         final File file = File('${directory.path}/$nombreArchivo');
         await file.writeAsBytes(bytes);
         setState(() {
-          _mensaje = 'No se pudo guardar en la ubicación seleccionada. '
-                   'Archivo guardado en: ${file.path}';
+          _mensaje =
+              'No se pudo guardar en la ubicación seleccionada. '
+              'Archivo guardado en: ${file.path}';
           _exito = true;
         });
         return;
@@ -325,17 +370,20 @@ class _CsvExportarUsuariosScreenState extends State<CsvExportarUsuariosScreen> {
             print('Error al guardar en almacenamiento externo: $e3');
           }
         }
-        throw Exception('No se pudo guardar el archivo. Intenta copiar los datos al portapapeles.');
+        throw Exception(
+          'No se pudo guardar el archivo. Intenta copiar los datos al portapapeles.',
+        );
       }
     }
   }
-  
+
   void _copiarAlPortapapeles(String datos) async {
     try {
       await Clipboard.setData(ClipboardData(text: datos));
       setState(() {
-        _mensaje = 'Datos copiados al portapapeles. Puedes pegarlos en Excel o un editor de texto.'
-                 '\nNombre del archivo recomendado: $_nombreArchivo';
+        _mensaje =
+            'Datos copiados al portapapeles. Puedes pegarlos en Excel o un editor de texto.'
+            '\nNombre del archivo recomendado: $_nombreArchivo';
         _exito = true;
       });
     } catch (e) {

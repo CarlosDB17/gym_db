@@ -254,7 +254,7 @@ class _QrScreenState extends State<QrScreen> {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const Text(
             'Datos del usuario',
@@ -325,7 +325,7 @@ class _QrScreenState extends State<QrScreen> {
                 foregroundColor: AppColors.blanco,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              child: const Text('escanear otro codigo'),
+              child: const Text('Escanear otro codigo QR'),
             ),
           ),
         ],
@@ -338,7 +338,7 @@ class _QrScreenState extends State<QrScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             label,
@@ -365,121 +365,125 @@ class _QrScreenState extends State<QrScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       body: SafeArea(
-        child: SingleChildScrollView(
-          controller: _scrollController, 
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Container(
-                      height: 300,
-                      width: 300,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlpha(51), 
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      clipBehavior: Clip.hardEdge,
-                      child: Stack(
-                        children: [
-                          if (scannerEnabled)
-                            MobileScanner(
-                              controller: cameraController,
-                              onDetect: (capture) {
-                                final List<Barcode> barcodes = capture.barcodes;
-                                for (final barcode in barcodes) {
-                                  if (barcode.rawValue != null && 
-                                      !procesando && 
-                                      ultimoCodigoProcesado != barcode.rawValue) {
-                                    
-                                    setState(() {
-                                      procesando = true;
-                                      leyendoQR = true;
-                                      ultimoCodigoProcesado = barcode.rawValue;
-                                    });
-                                    
-                                    if (esCodigoQRValido(barcode.rawValue!)) {
-                                      procesarCodigoQR(barcode.rawValue!);
-                                    } else {
-                                      setState(() {
-                                        mostrarMensajeQRInvalido = true;
-                                        mensajeQRInvalido = 'Código QR no válido';
-                                        leyendoQR = false;
-                                      });
-                                      
-                                      Future.delayed(const Duration(seconds: 3), () {
-                                        if (mounted) {
-                                          setState(() {
-                                            mostrarMensajeQRInvalido = false;
-                                            mensajeQRInvalido = '';
-                                            procesando = false;
-                                          });
-                                        }
-                                      });
-                                    }
-                                  }
-                                }
-                              },
-                            ),
-                          
-                          Center(
-                            child: Container(
-                              width: 200,
-                              height: 200,
+        child: mostrarResultado
+            ? Center(
+                child: _buildResultadoWidget(),
+              )
+            : Center( // Cambiar a Center para centrar el contenido
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min, // Ajustar tamaño al contenido
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            Container(
+                              height: 300,
+                              width: 300,
                               decoration: BoxDecoration(
-                                border: Border.all(color: Colors.white, width: 2),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withAlpha(51),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ],
+                              ),
+                              clipBehavior: Clip.hardEdge,
+                              child: Stack(
+                                children: [
+                                  if (scannerEnabled)
+                                    MobileScanner(
+                                      controller: cameraController,
+                                      onDetect: (capture) {
+                                        final List<Barcode> barcodes = capture.barcodes;
+                                        for (final barcode in barcodes) {
+                                          if (barcode.rawValue != null &&
+                                              !procesando &&
+                                              ultimoCodigoProcesado != barcode.rawValue) {
+                                            setState(() {
+                                              procesando = true;
+                                              leyendoQR = true;
+                                              ultimoCodigoProcesado = barcode.rawValue;
+                                            });
+
+                                            if (esCodigoQRValido(barcode.rawValue!)) {
+                                              procesarCodigoQR(barcode.rawValue!);
+                                            } else {
+                                              setState(() {
+                                                mostrarMensajeQRInvalido = true;
+                                                mensajeQRInvalido = 'Código QR no válido';
+                                                leyendoQR = false;
+                                              });
+
+                                              Future.delayed(const Duration(seconds: 3), () {
+                                                if (mounted) {
+                                                  setState(() {
+                                                    mostrarMensajeQRInvalido = false;
+                                                    mensajeQRInvalido = '';
+                                                    procesando = false;
+                                                  });
+                                                }
+                                              });
+                                            }
+                                          }
+                                        }
+                                      },
+                                    ),
+
+                                  Center(
+                                    child: Container(
+                                      width: 200,
+                                      height: 200,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.white, width: 2),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+
+                                  if (leyendoQR) _buildReadingOverlay(),
+
+                                  if (!scannerEnabled && !mostrarResultado) _buildPausedOverlay(),
+                                ],
                               ),
                             ),
-                          ),
-                          
-                          if (leyendoQR) _buildReadingOverlay(),
-                          
-                          if (!scannerEnabled && !mostrarResultado) _buildPausedOverlay(),
-                        ],
-                      ),
-                    ),
 
-                    // texto debajo camara qr
-                    if (!mostrarResultado)
-                      const SizedBox(height: 16),
-                    if (!mostrarResultado)
-                      const Text(
-                        'Escanea el código QR para registrar al usuario',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
-                        textAlign: TextAlign.center,
-                      ),
+                            // Añadir más padding encima del texto "Escanea el código QR para registrar al usuario"
+                            if (!mostrarResultado)
+                              const SizedBox(height: 42), // Incrementar el espacio vertical
+                            if (!mostrarResultado)
+                              const Text(
+                                'Escanea el código QR para registrar al usuario',
+                                style: TextStyle(fontSize: 16, color: Colors.grey),
+                                textAlign: TextAlign.center,
+                              ),
 
-                    // qr invalido 
-                    if (mostrarMensajeQRInvalido)
-                      Container(
-                        margin: const EdgeInsets.only(top: 16),
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.naranjaBrillante.withAlpha(26), // 0.1 * 255 = 26
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.naranjaBrillante),
-                        ),
-                        child: Text(
-                          mensajeQRInvalido,
-                          style: TextStyle(color: AppColors.naranjaBrillante),
+                            // qr invalido
+                            if (mostrarMensajeQRInvalido)
+                              Container(
+                                margin: const EdgeInsets.only(top: 16),
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.naranjaBrillante.withAlpha(26),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: AppColors.naranjaBrillante),
+                                ),
+                                child: Text(
+                                  mensajeQRInvalido,
+                                  style: TextStyle(color: AppColors.naranjaBrillante),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                      
-                    if (mostrarResultado) _buildResultadoWidget(),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ],
-          ),
-        ),
       ),
     );
   }
