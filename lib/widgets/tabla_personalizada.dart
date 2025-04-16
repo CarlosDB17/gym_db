@@ -28,17 +28,17 @@ class TablaPersonalizada<T> extends StatelessWidget {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Tabla
+          // tabla
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SingleChildScrollView(
                 child: Theme(
-                  // Aplicar un tema personalizado para ocultar los checkboxes
+                  // aplico un tema personalizado para ocultar los checkboxes
                   data: Theme.of(context).copyWith(
                     dataTableTheme: DataTableThemeData(
-                      checkboxHorizontalMargin: 0, // Elimina el espacio para los checkboxes
+                      checkboxHorizontalMargin: 0, 
                     ),
                   ),
                   child: DataTable(
@@ -52,7 +52,7 @@ class TablaPersonalizada<T> extends StatelessWidget {
                       color: AppColors.verdeOscuro,
                       fontWeight: FontWeight.bold,
                     ),
-                    showCheckboxColumn: false, // Ocultar la columna de checkboxes
+                    showCheckboxColumn: false, // ocultar la columna de checkboxes
                     columns: columnas,
                     rows: datos.map((item) => crearFila(item)).toList(),
                   ),
@@ -61,7 +61,7 @@ class TablaPersonalizada<T> extends StatelessWidget {
             ),
           ),
 
-          // Mensaje de ayuda
+          // mensaje de ayuda
           if (mensajeAyuda != null)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -75,7 +75,7 @@ class TablaPersonalizada<T> extends StatelessWidget {
               ),
             ),
 
-          // Controles de paginación
+          // controles de paginacion
           if (mostrarPaginacion && totalPaginas > 1)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -88,14 +88,22 @@ class TablaPersonalizada<T> extends StatelessWidget {
                       : null,
                     icon: Icon(
                       Icons.arrow_back,
+                      size: 32, 
                       color: paginaActual > 0
                         ? AppColors.verdeOscuro
                         : Colors.grey,
                     ),
                   ),
-                  Text(
-                    'Página ${paginaActual + 1} / $totalPaginas',
-                    style: const TextStyle(color: AppColors.verdeOscuro),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0), 
+                    child: Text(
+                      'Página ${paginaActual + 1} / $totalPaginas',
+                      style: const TextStyle(
+                        color: AppColors.verdeOscuro,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold, 
+                      ),
+                    ),
                   ),
                   IconButton(
                     onPressed: (paginaActual + 1) < totalPaginas
@@ -103,6 +111,7 @@ class TablaPersonalizada<T> extends StatelessWidget {
                       : null,
                     icon: Icon(
                       Icons.arrow_forward,
+                      size: 32, 
                       color: (paginaActual + 1) < totalPaginas
                         ? AppColors.verdeOscuro
                         : Colors.grey,
