@@ -51,132 +51,158 @@ class _ListadoUsuariosActualizarScreenState
     }
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Actualizar Usuario: ${_usuario!.nombre}'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(
+          'Actualizar Usuario: ${_usuario!.nombre}',
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: AppColors.verdeVibrante,
       ),
       body: Stack(
         children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap: _seleccionarFoto,
-                  child: Center(
-                    child: Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundImage: _nuevaFoto != null
-                              ? FileImage(_nuevaFoto!)
-                              : (_usuario!.foto != null
-                                  ? NetworkImage(_usuario!.foto!) as ImageProvider
-                                  : const AssetImage('assets/images/default_avatar.png')),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: AppColors.verdeOscuro,
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min, 
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: _seleccionarFoto,
+                    child: Center(
+                      child: Stack(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Colors.black.withAlpha(51), 
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 3), 
+                                ),
+                              ],
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
-                              Icons.camera_alt,
-                              color: Colors.white,
-                              size: 20,
+                            child: CircleAvatar(
+                              radius: 50,
+                              backgroundImage: _nuevaFoto != null
+                                  ? FileImage(_nuevaFoto!)
+                                  : (_usuario!.foto != null
+                                      ? NetworkImage(_usuario!.foto!) as ImageProvider
+                                      : const AssetImage('assets/images/default_avatar.png')),
                             ),
                           ),
-                        ),
-                      ],
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: AppColors.verdeOscuro,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                CampoTextoPersonalizado(
-                  controlador: _nombreController,
-                  texto: 'Nombre',
-                ),
-                const SizedBox(height: 20),
-                CampoTextoPersonalizado(
-                  controlador: _emailController,
-                  texto: 'Email',
-                ),
-                const SizedBox(height: 20),
-                CampoTextoPersonalizado(
-                  controlador: _documentoIdentidadController,
-                  texto: 'Documento de Identidad',
-                ),
-                const SizedBox(height: 20),
-                CampoTextoPersonalizado(
-                  controlador: _fechaNacimientoController,
-                  texto: 'Fecha de Nacimiento',
-                  alTocar: () async {
-                    // obtener la fecha actual del usuario del controlador
-                    final String fechaActual = _fechaNacimientoController.text;
-                    
-                    // convertir la fecha en formato DD-MM-YYYY a un objeto DateTime
-                    DateTime fechaInicial = DateTime.now();
-                    if (fechaActual.isNotEmpty) {
-                      final List<String> partes = fechaActual.split('-');
-                      if (partes.length == 3) {
-                        try {
-                          fechaInicial = DateTime(
-                            int.parse(partes[2]), // año
-                            int.parse(partes[1]), // mes
-                            int.parse(partes[0]), // día
-                          );
-                        } catch (e) {
-                          // si hay un error de parseo, usar la fecha actual
-                          print('Error al convertir la fecha: $e');
+                  const SizedBox(height: 20),
+                  CampoTextoPersonalizado(
+                    controlador: _nombreController,
+                    texto: 'Nombre',
+                  ),
+                  const SizedBox(height: 20),
+                  CampoTextoPersonalizado(
+                    controlador: _emailController,
+                    texto: 'Email',
+                  ),
+                  const SizedBox(height: 20),
+                  CampoTextoPersonalizado(
+                    controlador: _documentoIdentidadController,
+                    texto: 'Documento de Identidad',
+                  ),
+                  const SizedBox(height: 20),
+                  CampoTextoPersonalizado(
+                    controlador: _fechaNacimientoController,
+                    texto: 'Fecha de Nacimiento',
+                    alTocar: () async {
+                      // obtener la fecha actual del usuario del controlador
+                      final String fechaActual = _fechaNacimientoController.text;
+                      
+                      // convertir la fecha en formato DD-MM-YYYY a un objeto DateTime
+                      DateTime fechaInicial = DateTime.now();
+                      if (fechaActual.isNotEmpty) {
+                        final List<String> partes = fechaActual.split('-');
+                        if (partes.length == 3) {
+                          try {
+                            fechaInicial = DateTime(
+                              int.parse(partes[2]), 
+                              int.parse(partes[1]), 
+                              int.parse(partes[0]), 
+                            );
+                          } catch (e) {
+                            // si hay un error de parseo, usar la fecha actual
+                            print('Error al convertir la fecha: $e');
+                          }
                         }
                       }
-                    }
-                    
-                    final DateTime? fechaSeleccionada = await showDatePicker(
-                      context: context,
-                      initialDate: fechaInicial,
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime.now(),
-                    );
-                    if (fechaSeleccionada != null) {
-                      setState(() {
-                        _fechaNacimientoController.text =
-                          '${fechaSeleccionada.day.toString().padLeft(2, '0')}-${fechaSeleccionada.month.toString().padLeft(2, '0')}-${fechaSeleccionada.year}';
-                      });
-                    }
-                  },
-                  soloLectura: true,
-                ),
-                const SizedBox(height: 30),
-                Center(
-                  child: BotonVerdePersonalizado(
-                    onPressed: _actualizarUsuario,
-                    texto: 'Actualizar Usuario',
-                    isLoading: _estaCargando,
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+                      
+                      final DateTime? fechaSeleccionada = await showDatePicker(
+                        context: context,
+                        initialDate: fechaInicial,
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+                      if (fechaSeleccionada != null) {
+                        setState(() {
+                          _fechaNacimientoController.text =
+                            '${fechaSeleccionada.day.toString().padLeft(2, '0')}-${fechaSeleccionada.month.toString().padLeft(2, '0')}-${fechaSeleccionada.year}';
+                        });
+                      }
+                    },
+                    soloLectura: true,
                   ),
-                ),
-                const SizedBox(height: 20),
-                if (_tieneFoto || _nuevaFoto != null)
+                  const SizedBox(height: 30),
                   Center(
-                    child: BotonNaranjaPersonalizado(
-                      onPressed: _eliminarFoto,
-                      texto: 'Eliminar Foto',
-                      icono: Icons.delete_forever,
+                    child: BotonVerdePersonalizado(
+                      onPressed: _actualizarUsuario,
+                      texto: 'Actualizar Usuario',
+                      icono: Icons.sync_outlined, 
+                      isLoading: _estaCargando,
+                      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 40),
                     ),
                   ),
-                const SizedBox(height: 20),
-                Center(
-                  child: BotonNaranjaPersonalizado(
-                    onPressed: _mostrarDialogoConfirmacion,
-                    texto: 'Eliminar Usuario',
-                    icono: Icons.person_remove,
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      if (_tieneFoto || _nuevaFoto != null)
+                        BotonNaranjaPersonalizado(
+                          onPressed: _eliminarFoto,
+                          texto: 'Eliminar Foto',
+                          icono: Icons.delete_forever,
+                        ),
+                      BotonNaranjaPersonalizado(
+                        onPressed: _mostrarDialogoConfirmacion,
+                        texto: 'Eliminar Usuario',
+                        icono: Icons.person_remove,
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           if (_estaCargando)
@@ -300,7 +326,7 @@ Future<void> _actualizarUsuario() async {
   }
 }
 
-// añadir este método para convertir del formato mostrado (DD-MM-YYYY) al formato almacenado (YYYY-MM-DD)
+// añadir este metodo para convertir del formato mostrado (DD-MM-YYYY) al formato almacenado (YYYY-MM-DD)
 String _convertirFormatoFecha(String fechaFormateada) {
   final partes = fechaFormateada.split('-');
   if (partes.length == 3) {
@@ -390,7 +416,7 @@ String _convertirFormatoFecha(String fechaFormateada) {
       
       // volver a la pantalla anterior y actualizar la lista
       Navigator.pop(context, true);
-      print('Usuario actualizado y regresando con true'); // depuración
+      print('Usuario actualizado y regresando con true');
     } catch (e) {
       _mostrarSnackBar('Error al eliminar el usuario: $e');
     } finally {

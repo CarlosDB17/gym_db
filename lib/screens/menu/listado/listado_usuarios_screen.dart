@@ -34,7 +34,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
   Future<void> _cargarUsuarios({String? filtro}) async {
     setState(() {
       _cargando = true;
-      _mensajeError = null; // Limpiamos mensaje de error anterior
+      _mensajeError = null; 
     });
 
     try {
@@ -54,11 +54,11 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
         _totalUsuarios = data['total'];
         _busquedaRealizada = filtro != null && filtro.isNotEmpty;
         
-        // Capturar mensaje de error si existe
+        // capturar mensaje de error si existe
         if (data.containsKey('mensaje_error')) {
           _mensajeError = data['mensaje_error'];
           
-          // Mostrar mensaje de error en SnackBar si no se encontraron usuarios
+          // mostrar mensaje de error en snackbar si no se encontraron usuarios
           if (_usuarios.isEmpty && mounted) {
             _mostrarSnackBar(_mensajeError!);
           }
@@ -76,10 +76,10 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
     if (partes.length == 3) {
       return '${partes[2]}-${partes[1]}-${partes[0]}';
     }
-    return fecha; // Retorna la fecha original si no tiene el formato esperado
+    return fecha; // devuelve la fecha original si no tiene el formato esperado
   }
 
-  // Método para mostrar un SnackBar
+  // metodo para mostrar un snackbar
   void _mostrarSnackBar(String mensaje, {Color color = Colors.red}) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -91,7 +91,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
     }
   }
 
-  // Método para navegar y recargar usuarios si es necesario
+  // metodo para navegar y recargar usuarios si es necesario
   Future<void> _navegarYRecargar(Usuario usuario) async {
     final resultado = await Navigator.pushNamed(
       context,
@@ -103,7 +103,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
     }
   }
 
-  // Método para crear filas de datos
+  // metodo para crear filas de datos
   DataRow _crearDataRow(Usuario usuario) {
     return DataRow(
       cells: [
@@ -131,30 +131,30 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
     );
   }
   
-  // Utilidad para transformar la URL de Google Cloud Storage a la de Firebase Storage API
+  // metodo para transformar la url de storage a la de firebase storage api, asi no tiene problemas de cors
   String transformarUrlFirebase(String urlOriginal) {
-    // Extraer la ruta del archivo después del dominio
+    // extraer la ruta del archivo despues del dominio
     final uri = Uri.parse(urlOriginal);
     final partes = uri.pathSegments;
-    // Buscar el índice de "usuarios" (o la carpeta raíz de tus imágenes)
+    // buscar el índice de usuarios, raiz
     final idx = partes.indexOf('usuarios');
-    if (idx == -1) return urlOriginal; // No es una ruta esperada, retorna igual
+    if (idx == -1) return urlOriginal; // si no es la ruta esperada devuelve la original
 
-    // Reconstruir la ruta relativa
+    // reconstruir la ruta relativa
     final ruta = partes.sublist(idx).join('/');
     final bucket = 'pf25-carlos-db.firebasestorage.app';
     final rutaCodificada = Uri.encodeComponent(ruta);
     return 'https://firebasestorage.googleapis.com/v0/b/$bucket/o/$rutaCodificada?alt=media';
   }
 
-  // Método específico para manejar imágenes en entorno web, evitando problemas de CORS
+  // metodo para manejar imagenes en web evitando problemas de CORS
   Widget _crearImagenParaWeb(String? urlImagen) {
     if (urlImagen == null) {
       return _avatarPorDefecto();
     }
 
     String urlFinal = urlImagen;
-    // Si la URL es del bucket de Google Cloud Storage, la transformamos
+    // si la URL es del bucket de google ccloud Storage la transformamos
     if (urlImagen.contains('storage.googleapis.com/pf25-carlos-db.firebasestorage.app/usuarios/')) {
       urlFinal = transformarUrlFirebase(urlImagen);
     }
@@ -173,7 +173,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
     );
   }
   
-  // Widget para mostrar avatar por defecto cuando no hay foto
+  // widget para mostrar avatar por defecto cuando no hay foto
   Widget _avatarPorDefecto() {
     return ClipOval(
       child: Container(
@@ -192,7 +192,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
     );
   }
 
-  // Cambiar página
+  // cambiar pagina
   void _cambiarPagina(int direccion) {
     setState(() => _paginaActual += direccion);
     _cargarUsuarios(
@@ -200,7 +200,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
     );
   }
 
-  // Obtener total de páginas
+  // obtener total de páginas
   int _getTotalPaginas() {
     return (_totalUsuarios / _usuariosPorPagina).ceil() > 0 
             ? (_totalUsuarios / _usuariosPorPagina).ceil() 
@@ -276,7 +276,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Mostrar mensaje de error si no hay resultados
+                    // mostrar mensaje de error si no hay resultados
                     if (_usuarios.isEmpty && _busquedaRealizada)
                       const Expanded(
                         child: Center(
@@ -291,7 +291,7 @@ class _ListadoUsuariosScreenState extends State<ListadoUsuariosScreen> {
                           ),
                         ),
                       )
-                    // Si hay resultados o no se ha realizado búsqueda, mostrar la tabla
+                    // si hay resultados o no se ha realizado busqueda muestro la tabla
                     else if (_usuarios.isNotEmpty || !_busquedaRealizada) 
                       Expanded(
                         child: TablaPersonalizada<Usuario>(
