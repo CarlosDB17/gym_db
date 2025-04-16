@@ -411,11 +411,13 @@ Future<Map<String, dynamic>> buscarUsuariosPorValor(String valor, {int skip = 0,
     // Si la respuesta es exitosa (200 OK)
     if (response.statusCode == 200) {
       try {
-        final data = jsonDecode(response.body);
+        // decodificar explicitamente como UTF-8
+        final utf8Body = utf8.decode(response.bodyBytes);
+        final data = jsonDecode(utf8Body);
         
-        // Verificar estructura de datos completa
+        // verificar estructura de datos completa
         if (data is Map && data.containsKey('usuarios') && data.containsKey('total')) {
-          // Convertir los datos a objetos Usuario
+          // convertir los datos a objetos Usuario
           try {
             List<Usuario> usuarios = (data['usuarios'] as List)
                 .map((u) => Usuario.fromJson(u as Map<String, dynamic>))
@@ -437,11 +439,11 @@ Future<Map<String, dynamic>> buscarUsuariosPorValor(String valor, {int skip = 0,
         return {'usuarios': <Usuario>[], 'total': 0};
       }
     } 
-    // Si no se encontraron resultados (404 Not Found u otros códigos de error)
+    // si no se encontraron resultados (404 Not Found u otros codigos de error)
     else {
       print('No se encontraron usuarios para "$valor" - Código: ${response.statusCode}');
       
-      // Intentar extraer el mensaje de error
+      //  extraer el mensaje de error
       String mensajeError = "No se encontraron usuarios";
       try {
         final errorData = jsonDecode(response.body);
@@ -452,7 +454,7 @@ Future<Map<String, dynamic>> buscarUsuariosPorValor(String valor, {int skip = 0,
         print('Error al decodificar mensaje de error: $e');
       }
       
-      // Devolver una lista vacía y el mensaje de error
+      // devolver una lista vacia y el mensaje de error
       return {
         'usuarios': <Usuario>[],
         'total': 0,
@@ -461,7 +463,7 @@ Future<Map<String, dynamic>> buscarUsuariosPorValor(String valor, {int skip = 0,
     }
   } catch (e) {
     print('Excepción capturada en buscarUsuariosPorValor: $e');
-    // Devolver estructura válida incluso en caso de excepción
+    // devolver estructura valida incluso en caso de excepcion
     return {
       'usuarios': <Usuario>[],
       'total': 0,

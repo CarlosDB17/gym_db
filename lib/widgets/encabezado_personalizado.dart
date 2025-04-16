@@ -51,7 +51,7 @@ class Encabezado extends StatelessWidget {
                         borderRadius: BorderRadius.circular(15),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
+                            color: Colors.black.withAlpha((0.15 * 255).toInt()),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),

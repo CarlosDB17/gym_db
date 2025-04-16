@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.naranjaBrillante),
       ),
-      //  la ruta inicial según el estado de la sesión
+      //  la ruta inicial según el estado de la sesion
       initialRoute: sesionActiva ? AppRoutes.menu : AppRoutes.login,
       onGenerateRoute: AppRoutes.generateRoute,
     );
