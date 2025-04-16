@@ -318,12 +318,21 @@ Future<void> _actualizarUsuario() async {
 
     Navigator.pop(context, true);
   } catch (e) {
-    _mostrarSnackBar('Error al actualizar el usuario: $e');
-  } finally {
-    if (mounted) {
-      setState(() => _estaCargando = false);
-    }
+  String mensajeError = 'Error al actualizar el usuario';
+  
+  // Extraer el mensaje de error desde la excepción
+  if (e.toString().contains('Exception:')) {
+    mensajeError = e.toString().replaceAll('Exception: ', '');
+  } else {
+    mensajeError = e.toString();
   }
+  
+  _mostrarSnackBar(mensajeError);
+} finally {
+  if (mounted) {
+    setState(() => _estaCargando = false);
+  }
+}
 }
 
 // añadir este metodo para convertir del formato mostrado (DD-MM-YYYY) al formato almacenado (YYYY-MM-DD)

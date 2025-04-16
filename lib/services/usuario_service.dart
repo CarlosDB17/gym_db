@@ -203,7 +203,7 @@ Future<Usuario> actualizarUsuario(String documentoIdentidad, Map<String, dynamic
     if (fecha is String && fecha.contains('-')) {
       final partes = fecha.split('-');
       if (partes.length == 3) {
-        data['fechaNacimiento'] = '${partes[2]}-${partes[1].padLeft(2, '0')}-${partes[0].padLeft(2, '0')}';
+        data['fechaNacimiento'] = '${partes[0]}-${partes[1].padLeft(2, '0')}-${partes[2].padLeft(2, '0')}';
       }
     }
   }
@@ -243,7 +243,7 @@ Future<Usuario> actualizarUsuario(String documentoIdentidad, Map<String, dynamic
         final usuarioEncontrado = usuariosConEmail['usuarios'][0];
         if (usuarioEncontrado.documentoIdentidad != documentoIdentidad) {
           print('Error: Ya existe un usuario con el email proporcionado.');
-          throw ('Ya existe un usuario con el email proporcionado.');
+          throw Exception('Ya existe un usuario con el email proporcionado.');
         }
       }
     }
@@ -285,12 +285,34 @@ Future<Usuario> actualizarUsuario(String documentoIdentidad, Map<String, dynamic
       print('El documentoIdentidad no cambió. Buscando usuario actualizado...');
       return await buscarPorDocumentoExacto(documentoIdentidad);
     } else {
-      print('Error al actualizar usuario: ${response.body}');
-      throw Exception('Error al actualizar usuario');
+      // Extraer el mensaje de error detallado de la respuesta
+      String errorMessage = 'Error al actualizar usuario';
+      try {
+        // Decodificar explícitamente como UTF-8
+        final utf8Body = utf8.decode(response.bodyBytes);
+        final errorData = jsonDecode(utf8Body);
+        
+        if (errorData is Map && errorData.containsKey('detail')) {
+          final detail = errorData['detail'];
+          
+          // El detalle puede ser una cadena o un array
+          if (detail is String) {
+            errorMessage = detail;
+          } else if (detail is List && detail.isNotEmpty) {
+            errorMessage = detail[0].toString();
+          }
+        }
+      } catch (decodeError) {
+        print('Error al decodificar respuesta: $decodeError');
+        errorMessage = response.body;
+      }
+      
+      print('Mensaje de error formatado: $errorMessage');
+      throw Exception(errorMessage);
     }
   } catch (e) {
-    print('Excepción capturada durante la actualización: $e');
-    rethrow;
+    print('Excepción en actualizar usuario: $e');
+    rethrow; // Relanzar la excepción para que se maneje en la interfaz
   }
 }
 
